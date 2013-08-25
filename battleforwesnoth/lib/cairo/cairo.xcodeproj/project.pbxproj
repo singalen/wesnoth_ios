@@ -516,7 +516,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/cairo.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "cairo/cairo-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					_REENTRANT,
 					HAVE_CONFIG_H,
@@ -541,7 +540,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/cairo.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "cairo/cairo-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					_REENTRANT,
 					HAVE_CONFIG_H,
@@ -580,6 +578,7 @@
 				3CD068BA16314A5A0014DBBB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -480,7 +480,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/boost.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "boost/boost-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"BOOST_ALL_NO_LIB=1",
 					BOOST_IOSTREAMS_USE_DEPRECATED,
@@ -499,7 +498,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/boost.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "boost/boost-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"BOOST_ALL_NO_LIB=1",
 					BOOST_IOSTREAMS_USE_DEPRECATED,
@@ -532,6 +530,7 @@
 				3CD0698716314E980014DBBB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

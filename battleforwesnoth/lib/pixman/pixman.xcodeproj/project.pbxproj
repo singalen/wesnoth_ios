@@ -284,7 +284,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/pixman.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "pixman/pixman-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					HAVE_CONFIG_H,
 					_USE_MATH_DEFINES,
@@ -306,7 +305,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/pixman.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "pixman/pixman-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					HAVE_CONFIG_H,
 					_USE_MATH_DEFINES,
@@ -342,6 +340,7 @@
 				3C97C02D1631C36000BFE895 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

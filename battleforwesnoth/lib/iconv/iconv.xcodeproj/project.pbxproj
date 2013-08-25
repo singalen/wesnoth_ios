@@ -200,7 +200,7 @@
 			buildSettings = {
 				DSTROOT = /tmp/iconv.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "iconv/iconv-Prefix.pch";
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					BUILDING_LIBICONV,
 					"LIBDIR=\\\"\\\"",
@@ -235,7 +235,7 @@
 			buildSettings = {
 				DSTROOT = /tmp/iconv.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "iconv/iconv-Prefix.pch";
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					BUILDING_LIBICONV,
 					"LIBDIR=\\\"\\\"",
@@ -284,6 +284,7 @@
 				3C97C1DA1631CCB600BFE895 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

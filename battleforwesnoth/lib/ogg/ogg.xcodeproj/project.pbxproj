@@ -197,7 +197,7 @@
 			buildSettings = {
 				DSTROOT = /tmp/ogg.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ogg/ogg-Prefix.pch";
+				GCC_PREFIX_HEADER = "";
 				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/libogg-1.3.0/include\"";
 				OTHER_CFLAGS = (
@@ -217,7 +217,7 @@
 				DSTROOT = /tmp/ogg.dst;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "ogg/ogg-Prefix.pch";
+				GCC_PREFIX_HEADER = "";
 				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/libogg-1.3.0/include\"";
 				OTHER_CFLAGS = (

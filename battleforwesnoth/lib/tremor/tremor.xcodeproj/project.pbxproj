@@ -240,7 +240,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/tremor.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "tremor/tremor-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_ALLOCA_H;
 				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				HEADER_SEARCH_PATHS = (
@@ -260,7 +259,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/tremor.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "tremor/tremor-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_ALLOCA_H;
 				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				HEADER_SEARCH_PATHS = (

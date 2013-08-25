@@ -352,7 +352,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/freetype.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "freetype/freetype-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"FT_CONFIG_OPTION_SYSTEM_ZLIB\nFT_CONFIG_CONFIG_H=\"<ftconfig.h>\"\nHAVE_CONFIG_H\nDARWIN_NO_CARBON\nFT_CONFIG_OPTION_SYSTEM_ZLIB\nFT_CONFIG_CONFIG_H=\"<ftconfig.h>\"\nFT2_BUILD_LIBRARY\nFT_CONFIG_MODULES_H=\"<ftmodule.h>\"",
 					"FT_CONFIG_CONFIG_H=\"<ftconfig.h>\"",
@@ -378,7 +377,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/freetype.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "freetype/freetype-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"FT_CONFIG_OPTION_SYSTEM_ZLIB\nFT_CONFIG_CONFIG_H=\"<ftconfig.h>\"\nHAVE_CONFIG_H\nDARWIN_NO_CARBON\nFT_CONFIG_OPTION_SYSTEM_ZLIB\nFT_CONFIG_CONFIG_H=\"<ftconfig.h>\"\nFT2_BUILD_LIBRARY\nFT_CONFIG_MODULES_H=\"<ftmodule.h>\"",
 					"FT_CONFIG_CONFIG_H=\"<ftconfig.h>\"",
@@ -418,6 +416,7 @@
 				3CD06AAF163157900014DBBB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -560,7 +560,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/glib.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "glib/glib-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"LIBDIR=\\\"$(libdir)\\\"",
 					"G_LOG_DOMAIN=\\\"GLib\\\"",
@@ -598,7 +597,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/glib.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "glib/glib-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"LIBDIR=\\\"$(libdir)\\\"",
 					"G_LOG_DOMAIN=\\\"GLib\\\"",

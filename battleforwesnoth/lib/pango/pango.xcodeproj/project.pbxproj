@@ -412,7 +412,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/pango.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "pango/pango-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					G_DISABLE_CAST_CHECKS,
 					"LIBDIR=\\\".\\\"",
@@ -452,7 +451,6 @@
 			buildSettings = {
 				DSTROOT = /tmp/pango.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "pango/pango-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					G_DISABLE_CAST_CHECKS,
 					"LIBDIR=\\\".\\\"",
@@ -506,6 +504,7 @@
 				3C97BF961631BC1A00BFE895 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
