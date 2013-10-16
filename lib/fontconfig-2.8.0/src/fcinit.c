@@ -24,7 +24,7 @@
 
 #include "fcint.h"
 #include <stdlib.h>
-
+#define FC_DEFAULT_FONTS "/usr/share/fonts"
 static FcConfig *
 FcInitFallbackConfig (void)
 {
