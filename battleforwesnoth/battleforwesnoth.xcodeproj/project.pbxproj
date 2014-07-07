@@ -1190,7 +1190,6 @@
 		3CFE03641608A7E000DC330D /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE03631608A7E000DC330D /* OpenGLES.framework */; };
 		3CFE119C1608BE8A00DC330D /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE119B1608BE8A00DC330D /* CoreAudio.framework */; };
 		3CFE11A41608E29A00DC330D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE11A31608E29A00DC330D /* AudioToolbox.framework */; };
-		A65CD529180E84900035576A /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = A65CD528180E84900035576A /* xmlparse.c */; };
 		A69DB6D4196A676100230816 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 /* End PBXBuildFile section */
 
@@ -5923,7 +5922,6 @@
 				3CD06BAD1631A6400014DBBB /* SDLnetTCP.c in Sources */,
 				3CD06BAE1631A6400014DBBB /* SDLnetUDP.c in Sources */,
 				3CD06BB01631A64C0014DBBB /* SDL_ttf.c in Sources */,
-				A65CD529180E84900035576A /* xmlparse.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6176,7 +6174,6 @@
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL-1.3/include\"",
 					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
-					"\"$(SRCROOT)/../lib/glib\"",
 					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
@@ -6282,7 +6279,6 @@
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL-1.3/include\"",
 					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
-					"\"$(SRCROOT)/../lib/glib\"",
 					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
@@ -6420,22 +6416,23 @@
 				);
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_mixer/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/fontconfig-2.8.0",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl",
-					"\"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\"",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include",
+					"\"$(SRCROOT)/../lib/SDL_net/include\"",
+					"\"$(SRCROOT)/../lib/SDL_ttf/include\"",
+					"\"$(SRCROOT)/../lib/SDL_gfx/include\"",
+					"\"$(SRCROOT)/../lib/SDL_mixer/include\"",
+					"\"$(SRCROOT)/../lib/SDL_image/include\"",
+					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
+					"\"$(SRCROOT)/../battleforwesnoth/battleforwesnoth\"",
+					"\"$(SRCROOT)/../lib/glib/android\"",
+					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
+					"\"$(SRCROOT)/../lib/glib\"",
+					"\"$(SRCROOT)/../lib/glib/glib\"",
+					"\"$(SRCROOT)/../lib/gettext-0.18/gettext-tools/intl\"",
+					"\"$(SRCROOT)/../lib/pango-1.28.3\"",
+					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
+					"\"$(SRCROOT)/../lib/SDL-1.3/include\"",
+					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
+					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
@@ -6483,7 +6480,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include /Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android /Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include";
+				USER_HEADER_SEARCH_PATHS = "";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -6523,22 +6521,23 @@
 				);
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_mixer/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/fontconfig-2.8.0",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl",
-					"\"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\"",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib",
-					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include",
+					"\"$(SRCROOT)/../lib/SDL_net/include\"",
+					"\"$(SRCROOT)/../lib/SDL_ttf/include\"",
+					"\"$(SRCROOT)/../lib/SDL_gfx/include\"",
+					"\"$(SRCROOT)/../lib/SDL_mixer/include\"",
+					"\"$(SRCROOT)/../lib/SDL_image/include\"",
+					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
+					"\"$(SRCROOT)/../battleforwesnoth/battleforwesnoth\"",
+					"\"$(SRCROOT)/../lib/glib/android\"",
+					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
+					"\"$(SRCROOT)/../lib/glib\"",
+					"\"$(SRCROOT)/../lib/glib/glib\"",
+					"\"$(SRCROOT)/../lib/gettext-0.18/gettext-tools/intl\"",
+					"\"$(SRCROOT)/../lib/pango-1.28.3\"",
+					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
+					"\"$(SRCROOT)/../lib/SDL-1.3/include\"",
+					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
+					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
@@ -6587,7 +6586,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include /Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android /Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include";
+				USER_HEADER_SEARCH_PATHS = "";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
