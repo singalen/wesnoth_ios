@@ -6226,6 +6226,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 2;
 				USER_HEADER_SEARCH_PATHS = "/dailin/Wesnoth/lib/SDL_net/include /dailin/Wesnoth/battleforwesnoth/battleforwesnoth /dailin/Wesnoth/lib/glib/android /dailin/Wesnoth/lib/cairo-1.10.0/src /dailin/Wesnoth/lib/glib/glib /dailin/Wesnoth/lib/gettext-0.18/gettext-tools/intl /dailin/Wesnoth/lib/pango-1.28.3/include /dailin/Wesnoth/lib/SDL-1.3/include /dailin/Wesnoth/lib/boost_1_44_0 /dailin/Wesnoth/lib/glib /dailin/Wesnoth/lib/SDL_blitpool/include /dailin/Wesnoth/lib/SDL_gfx/include /dailin/Wesnoth/lib/SDL_image/include /dailin/Wesnoth/lib/SDL_ttf/include";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -6332,6 +6333,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 2;
 				USER_HEADER_SEARCH_PATHS = "/dailin/Wesnoth/lib/SDL_net/include /dailin/Wesnoth/battleforwesnoth/battleforwesnoth /dailin/Wesnoth/lib/glib/android /dailin/Wesnoth/lib/cairo-1.10.0/src /dailin/Wesnoth/lib/glib/glib /dailin/Wesnoth/lib/gettext-0.18/gettext-tools/intl /dailin/Wesnoth/lib/pango-1.28.3/include /dailin/Wesnoth/lib/SDL-1.3/include /dailin/Wesnoth/lib/boost_1_44_0 /dailin/Wesnoth/lib/glib /dailin/Wesnoth/lib/SDL_blitpool/include /dailin/Wesnoth/lib/SDL_gfx/include /dailin/Wesnoth/lib/SDL_image/include /dailin/Wesnoth/lib/SDL_ttf/include";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -6386,7 +6388,8 @@
 		3C8A3672160766FD0017F0EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LIBRARY = "libstdc++";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6414,9 +6417,8 @@
 					MOD_MUSIC,
 					MID_MUSI,
 					USE_TIMIDITY_MIDI,
-					HAVE_XMLPARSE_H,
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include",
 					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include",
@@ -6444,7 +6446,7 @@
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 				);
 				INFOPLIST_FILE = "battleforwesnoth/battleforwesnoth-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../lib/SDL-1.3\"",
@@ -6481,7 +6483,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include /Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android /Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include \"$(SRCROOT)/../lib/pango-1.28.3/pango\" \"$(SRCROOT)/../lib/pango-1.28.3\"";
+				USER_HEADER_SEARCH_PATHS = "/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include /Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android /Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -6489,7 +6491,8 @@
 		3C8A3673160766FD0017F0EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LIBRARY = "libstdc++";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6518,7 +6521,7 @@
 					MID_MUSI,
 					USE_TIMIDITY_MIDI,
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include",
 					"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include",
@@ -6546,7 +6549,7 @@
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 				);
 				INFOPLIST_FILE = "battleforwesnoth/battleforwesnoth-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../lib/SDL-1.3\"",
@@ -6584,7 +6587,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include /Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android /Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include \"$(SRCROOT)/../lib/pango-1.28.3/pango\" \"$(SRCROOT)/../lib/pango-1.28.3\"";
+				USER_HEADER_SEARCH_PATHS = "/Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_net/include /Users/MyStaub/Documents/git/wesnoth-iOS/battleforwesnoth/battleforwesnoth /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/android /Users/MyStaub/Documents/git/wesnoth-iOS/lib/cairo-1.10.0/src /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/gettext-0.18/gettext-tools/intl \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/pango-1.28.3/include\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL-1.3/include \"/Users/MyStaub/Documents/git/wesnoth-iOS/lib/boost_1_44_0\" /Users/MyStaub/Documents/git/wesnoth-iOS/lib/glib /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_blitpool/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_gfx/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_image/include /Users/MyStaub/Documents/git/wesnoth-iOS/lib/SDL_ttf/include";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
