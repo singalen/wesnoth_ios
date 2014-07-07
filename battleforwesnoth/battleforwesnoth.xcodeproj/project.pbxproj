@@ -1022,7 +1022,6 @@
 		3C97C1BE1631CC8000BFE895 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C11A1631CAC400BFE895 /* libjpeg.a */; };
 		3C97C1E91631D08B00BFE895 /* libiconv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C1E01631CCB700BFE895 /* libiconv.a */; };
 		3CA8C958160EB0A2004CD2C4 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 3CA8C957160EB0A2004CD2C4 /* images */; };
-		3CBF22C71644C20F008D46F4 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 		3CBF24A016456C89008D46F4 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 		3CC4D9691626F9BF00AFFD82 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D9681626F9BF00AFFD82 /* Default.png */; };
 		3CC4D96B1626FA8500AFFD82 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D96A1626FA8500AFFD82 /* Default@2x.png */; };
@@ -1192,107 +1191,10 @@
 		3CFE119C1608BE8A00DC330D /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE119B1608BE8A00DC330D /* CoreAudio.framework */; };
 		3CFE11A41608E29A00DC330D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE11A31608E29A00DC330D /* AudioToolbox.framework */; };
 		A65CD529180E84900035576A /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = A65CD528180E84900035576A /* xmlparse.c */; };
+		A69DB6D4196A676100230816 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		3C5B7E0416399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97C1C91631CCB600BFE895;
-			remoteInfo = iconv;
-		};
-		3C5B7E0616399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97C1151631CAC300BFE895 /* jpeg.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97C1031631CAC300BFE895;
-			remoteInfo = jpeg;
-		};
-		3C5B7E0816399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97C1371631CB0C00BFE895 /* png.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97C1251631CB0C00BFE895;
-			remoteInfo = png;
-		};
-		3C5B7E0A16399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97C02E1631C36000BFE895 /* pixman.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97C01C1631C36000BFE895;
-			remoteInfo = pixman;
-		};
-		3C5B7E0C16399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97BF971631BC1A00BFE895 /* pango.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97BF851631BC1A00BFE895;
-			remoteInfo = pango;
-		};
-		3C5B7E0E16399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97BF201631BB0700BFE895 /* mikmod.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97BF0E1631BB0700BFE895;
-			remoteInfo = mikmod;
-		};
-		3C5B7E1016399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06D1B1631B6780014DBBB /* tremor.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06D091631B6780014DBBB;
-			remoteInfo = tremor;
-		};
-		3C5B7E1216399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06C8B1631B5880014DBBB;
-			remoteInfo = xml2;
-		};
-		3C5B7E1416399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06BCD1631A7840014DBBB /* glib.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06BBB1631A7840014DBBB;
-			remoteInfo = glib;
-		};
-		3C5B7E1616399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06B271631A20C0014DBBB /* gettext.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06B151631A20C0014DBBB;
-			remoteInfo = gettext;
-		};
-		3C5B7E1816399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06AB0163157900014DBBB /* freetype.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06A9E163157900014DBBB;
-			remoteInfo = freetype;
-		};
-		3C5B7E1A16399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06A3F163154260014DBBB /* flac.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06A2D163154260014DBBB;
-			remoteInfo = flac;
-		};
-		3C5B7E1C16399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD0698816314E980014DBBB /* boost.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD0697616314E980014DBBB;
-			remoteInfo = boost;
-		};
-		3C5B7E1E16399A2100898722 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD068BB16314A5A0014DBBB /* cairo.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD068A916314A5A0014DBBB;
-			remoteInfo = cairo;
-		};
 		3C97BEFD1631B9EE00BFE895 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */;
@@ -1396,13 +1298,6 @@
 			containerPortal = 3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 3CBF22AA1644C078008D46F4;
-			remoteInfo = ogg;
-		};
-		3CBF22C51644C1FA008D46F4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CBF22A91644C078008D46F4;
 			remoteInfo = ogg;
 		};
 		3CBF249E16456C7D008D46F4 /* PBXContainerItemProxy */ = {
@@ -1509,6 +1404,111 @@
 			proxyType = 1;
 			remoteGlobalIDString = 3CD06BBB1631A7840014DBBB;
 			remoteInfo = glib;
+		};
+		A69DB689196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CBF22A91644C078008D46F4;
+			remoteInfo = ogg;
+		};
+		A69DB68B196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C97C1C91631CCB600BFE895;
+			remoteInfo = iconv;
+		};
+		A69DB68D196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C97C1371631CB0C00BFE895 /* png.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C97C1251631CB0C00BFE895;
+			remoteInfo = png;
+		};
+		A69DB68F196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C97C1151631CAC300BFE895 /* jpeg.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C97C1031631CAC300BFE895;
+			remoteInfo = jpeg;
+		};
+		A69DB691196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C97C02E1631C36000BFE895 /* pixman.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C97C01C1631C36000BFE895;
+			remoteInfo = pixman;
+		};
+		A69DB693196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C97BF971631BC1A00BFE895 /* pango.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C97BF851631BC1A00BFE895;
+			remoteInfo = pango;
+		};
+		A69DB695196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C97BF201631BB0700BFE895 /* mikmod.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C97BF0E1631BB0700BFE895;
+			remoteInfo = mikmod;
+		};
+		A69DB697196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD06D1B1631B6780014DBBB /* tremor.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD06D091631B6780014DBBB;
+			remoteInfo = tremor;
+		};
+		A69DB699196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD06C8B1631B5880014DBBB;
+			remoteInfo = xml2;
+		};
+		A69DB69B196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD06BCD1631A7840014DBBB /* glib.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD06BBB1631A7840014DBBB;
+			remoteInfo = glib;
+		};
+		A69DB69D196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD06B271631A20C0014DBBB /* gettext.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD06B151631A20C0014DBBB;
+			remoteInfo = gettext;
+		};
+		A69DB69F196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD06AB0163157900014DBBB /* freetype.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD06A9E163157900014DBBB;
+			remoteInfo = freetype;
+		};
+		A69DB6A1196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD06A3F163154260014DBBB /* flac.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD06A2D163154260014DBBB;
+			remoteInfo = flac;
+		};
+		A69DB6A3196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD0698816314E980014DBBB /* boost.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD0697616314E980014DBBB;
+			remoteInfo = boost;
+		};
+		A69DB6A5196A541400230816 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CD068BB16314A5A0014DBBB /* cairo.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD068A916314A5A0014DBBB;
+			remoteInfo = cairo;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -2625,7 +2625,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3CBF22C71644C20F008D46F4 /* libogg.a in Frameworks */,
+				A69DB6D4196A676100230816 /* libogg.a in Frameworks */,
 				3C5B804516399A2100898722 /* libiconv.a in Frameworks */,
 				3C5B804616399A2100898722 /* libjpeg.a in Frameworks */,
 				3C5B804716399A2100898722 /* libpng.a in Frameworks */,
@@ -4507,21 +4507,21 @@
 			buildRules = (
 			);
 			dependencies = (
-				3CBF22C61644C1FA008D46F4 /* PBXTargetDependency */,
-				3C5B7E0316399A2100898722 /* PBXTargetDependency */,
-				3C5B7E0516399A2100898722 /* PBXTargetDependency */,
-				3C5B7E0716399A2100898722 /* PBXTargetDependency */,
-				3C5B7E0916399A2100898722 /* PBXTargetDependency */,
-				3C5B7E0B16399A2100898722 /* PBXTargetDependency */,
-				3C5B7E0D16399A2100898722 /* PBXTargetDependency */,
-				3C5B7E0F16399A2100898722 /* PBXTargetDependency */,
-				3C5B7E1116399A2100898722 /* PBXTargetDependency */,
-				3C5B7E1316399A2100898722 /* PBXTargetDependency */,
-				3C5B7E1516399A2100898722 /* PBXTargetDependency */,
-				3C5B7E1716399A2100898722 /* PBXTargetDependency */,
-				3C5B7E1916399A2100898722 /* PBXTargetDependency */,
-				3C5B7E1B16399A2100898722 /* PBXTargetDependency */,
-				3C5B7E1D16399A2100898722 /* PBXTargetDependency */,
+				A69DB68A196A541400230816 /* PBXTargetDependency */,
+				A69DB68C196A541400230816 /* PBXTargetDependency */,
+				A69DB68E196A541400230816 /* PBXTargetDependency */,
+				A69DB690196A541400230816 /* PBXTargetDependency */,
+				A69DB692196A541400230816 /* PBXTargetDependency */,
+				A69DB694196A541400230816 /* PBXTargetDependency */,
+				A69DB696196A541400230816 /* PBXTargetDependency */,
+				A69DB698196A541400230816 /* PBXTargetDependency */,
+				A69DB69A196A541400230816 /* PBXTargetDependency */,
+				A69DB69C196A541400230816 /* PBXTargetDependency */,
+				A69DB69E196A541400230816 /* PBXTargetDependency */,
+				A69DB6A0196A541400230816 /* PBXTargetDependency */,
+				A69DB6A2196A541400230816 /* PBXTargetDependency */,
+				A69DB6A4196A541400230816 /* PBXTargetDependency */,
+				A69DB6A6196A541400230816 /* PBXTargetDependency */,
 			);
 			name = "battleforwesnoth-iPad";
 			productName = battleforwesnoth;
@@ -5930,76 +5930,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		3C5B7E0316399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = iconv;
-			targetProxy = 3C5B7E0416399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E0516399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = jpeg;
-			targetProxy = 3C5B7E0616399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E0716399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = png;
-			targetProxy = 3C5B7E0816399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E0916399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = pixman;
-			targetProxy = 3C5B7E0A16399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E0B16399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = pango;
-			targetProxy = 3C5B7E0C16399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E0D16399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = mikmod;
-			targetProxy = 3C5B7E0E16399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E0F16399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = tremor;
-			targetProxy = 3C5B7E1016399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E1116399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = xml2;
-			targetProxy = 3C5B7E1216399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E1316399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = glib;
-			targetProxy = 3C5B7E1416399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E1516399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = gettext;
-			targetProxy = 3C5B7E1616399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E1716399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = freetype;
-			targetProxy = 3C5B7E1816399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E1916399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = flac;
-			targetProxy = 3C5B7E1A16399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E1B16399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = boost;
-			targetProxy = 3C5B7E1C16399A2100898722 /* PBXContainerItemProxy */;
-		};
-		3C5B7E1D16399A2100898722 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = cairo;
-			targetProxy = 3C5B7E1E16399A2100898722 /* PBXContainerItemProxy */;
-		};
 		3C97BEFE1631B9EE00BFE895 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = xml2;
@@ -6040,11 +5970,6 @@
 			name = iconv;
 			targetProxy = 3C97C1E71631D08600BFE895 /* PBXContainerItemProxy */;
 		};
-		3CBF22C61644C1FA008D46F4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = ogg;
-			targetProxy = 3CBF22C51644C1FA008D46F4 /* PBXContainerItemProxy */;
-		};
 		3CBF249F16456C7D008D46F4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = ogg;
@@ -6079,6 +6004,81 @@
 			isa = PBXTargetDependency;
 			name = glib;
 			targetProxy = 3CD06D3D1631B9160014DBBB /* PBXContainerItemProxy */;
+		};
+		A69DB68A196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ogg;
+			targetProxy = A69DB689196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB68C196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = iconv;
+			targetProxy = A69DB68B196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB68E196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = png;
+			targetProxy = A69DB68D196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB690196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = jpeg;
+			targetProxy = A69DB68F196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB692196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = pixman;
+			targetProxy = A69DB691196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB694196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = pango;
+			targetProxy = A69DB693196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB696196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = mikmod;
+			targetProxy = A69DB695196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB698196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = tremor;
+			targetProxy = A69DB697196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB69A196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = xml2;
+			targetProxy = A69DB699196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB69C196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = glib;
+			targetProxy = A69DB69B196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB69E196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = gettext;
+			targetProxy = A69DB69D196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB6A0196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = freetype;
+			targetProxy = A69DB69F196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB6A2196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = flac;
+			targetProxy = A69DB6A1196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB6A4196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = boost;
+			targetProxy = A69DB6A3196A541400230816 /* PBXContainerItemProxy */;
+		};
+		A69DB6A6196A541400230816 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = cairo;
+			targetProxy = A69DB6A5196A541400230816 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -6129,6 +6129,8 @@
 		3C5B807216399A2100898722 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6156,7 +6158,7 @@
 					MID_MUSI,
 					USE_TIMIDITY_MIDI,
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../lib/SDL_net/include\"",
 					"\"$(SRCROOT)/../lib/SDL_ttf/include\"",
@@ -6186,7 +6188,7 @@
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 				);
 				INFOPLIST_FILE = "battleforwesnoth copy-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../lib/SDL-1.3\"",
@@ -6231,6 +6233,8 @@
 		3C5B807316399A2100898722 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -6259,7 +6263,7 @@
 					MID_MUSI,
 					USE_TIMIDITY_MIDI,
 				);
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../lib/SDL_net/include\"",
 					"\"$(SRCROOT)/../lib/SDL_ttf/include\"",
@@ -6289,7 +6293,7 @@
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 				);
 				INFOPLIST_FILE = "battleforwesnoth copy-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../lib/SDL-1.3\"",
@@ -6336,7 +6340,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -6347,11 +6351,11 @@
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -6362,15 +6366,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;

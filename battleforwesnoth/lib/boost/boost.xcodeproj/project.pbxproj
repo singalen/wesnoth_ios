@@ -478,6 +478,8 @@
 		3CD0698616314E980014DBBB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				DSTROOT = /tmp/boost.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -485,8 +487,9 @@
 					BOOST_IOSTREAMS_USE_DEPRECATED,
 					"BOOST_IOSTREAMS_DYN_LINK=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/boost_1_44_0\"";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -496,6 +499,8 @@
 		3CD0698716314E980014DBBB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				DSTROOT = /tmp/boost.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -503,8 +508,9 @@
 					BOOST_IOSTREAMS_USE_DEPRECATED,
 					"BOOST_IOSTREAMS_DYN_LINK=1",
 				);
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/boost_1_44_0\"";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

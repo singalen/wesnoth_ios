@@ -337,7 +337,7 @@
 					"DEPENDS_ON_LIBICONV=1",
 					HAVE_CONFIG_H,
 				);
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../lib/gettext-0.18/gettext-runtime/intl\"",
 					"\"$(SRCROOT)/../../../lib/gettext-0.18/gettext-runtime\"",
@@ -370,7 +370,7 @@
 					"DEPENDS_ON_LIBICONV=1",
 					HAVE_CONFIG_H,
 				);
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../lib/gettext-0.18/gettext-runtime/intl\"",
 					"\"$(SRCROOT)/../../../lib/gettext-0.18/gettext-runtime\"",

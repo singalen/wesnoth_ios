@@ -576,7 +576,7 @@
 					HAVE_PWD_H,
 					HAVE_MEMMOVE,
 				);
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../lib/glib/glib\"",
 					"\"$(SRCROOT)/../../../lib/glib/gmodule\"",
@@ -613,7 +613,7 @@
 					HAVE_PWD_H,
 					HAVE_MEMMOVE,
 				);
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../lib/glib/glib\"",
 					"\"$(SRCROOT)/../../../lib/glib/gmodule\"",
