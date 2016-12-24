@@ -1,6 +1,5 @@
-/* $Id: interface.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2009 - 2012 by Ignacio R. Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2009 - 2016 by Ignacio R. Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -24,78 +23,51 @@
 #include "storyscreen/interface.hpp"
 #include "storyscreen/controller.hpp"
 
-#include "display.hpp"
-#include "game_events.hpp"
+#include "font/text.hpp"
 #include "gettext.hpp"
 #include "intro.hpp"
 #include "language.hpp"
 #include "log.hpp"
 #include "sound.hpp"
-#include "text.hpp"
+#include "video.hpp"
 
 static lg::log_domain log_engine("engine");
 #define LOG_NG LOG_STREAM(info, log_engine)
 
-// TODO: remove when completed
-#include "stub.hpp"
-
-namespace {
-
-	int count_segments(const config::const_child_itors &story)
-	{
-		config::const_child_iterator itor = story.first;
-		int count = 0;
-		while(itor != story.second) {
-			++itor;
-			++count;
-		}
-		return count;
-	}
-} // end anonymous namespace
-
-void show_story(display &disp, const std::string &scenario_name,
+void show_story(CVideo& video, const std::string &scenario_name,
 	const config::const_child_itors &story)
 {
-	const int total_segments = count_segments(story);
+	events::event_context story_context;
+
 	int segment_count = 0;
-	config::const_child_iterator itor = story.first;
+	config::const_child_iterator itor = story.begin();
 	storyscreen::START_POSITION startpos = storyscreen::START_BEGINNING;
-	while (itor != story.second)
+	while (itor != story.end())
 	{
-		storyscreen::controller ctl(disp, vconfig(*itor, true),
-			scenario_name, segment_count, total_segments);
+		storyscreen::controller ctl(video, vconfig(*itor, true),
+			scenario_name, segment_count);
 		storyscreen::STORY_RESULT result = ctl.show(startpos);
 
 		switch(result) {
 		case storyscreen::NEXT:
-			if(itor != story.second) {
+			if(itor != story.end()) {
 				++itor;
 				++segment_count;
 				startpos = storyscreen::START_BEGINNING;
 			}
 			break;
 		case storyscreen::BACK:
-			if(itor != story.first) {
+			if(itor != story.begin()) {
 				--itor;
 				--segment_count;
 				startpos = storyscreen::START_END;
 			}
 			break;
 		case storyscreen::QUIT:
+			video2::trigger_full_redraw();
 			return;
 		}
 	}
+	video2::trigger_full_redraw();
 	return;
-}
-
-void show_endscreen(display& /*disp*/, const t_string& /*text*/, unsigned int /*duration*/)
-{
-	STUB();
-	LOG_NG << "show_endscreen() invoked...\n";
-
-	config story_cfg;
-
-	// FIXME: stub!
-
-	LOG_NG << "show_endscreen() completed...\n";
 }

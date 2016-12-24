@@ -1,6 +1,5 @@
-/* $Id: editor_preferences.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2009 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,6 +16,7 @@
 #define EDITOR_PREFERENCES_HPP_INCLUDED
 
 #include <string>
+#include <vector>
 
 namespace preferences {
 
@@ -32,8 +32,7 @@ namespace editor {
 	int auto_update_transitions();
 	void set_auto_update_transitions(int value);
 
-	bool use_mdi();
-	void set_use_mdi(bool value);
+	//std::vector<std::string>* get_editor_history();
 
 	std::string default_dir();
 
@@ -43,20 +42,15 @@ namespace editor {
 	bool draw_hex_coordinates();
 	void set_draw_hex_coordinates(bool value);
 
+	bool draw_num_of_bitmaps();
+	void set_draw_num_of_bitmaps(bool value);
 
-	/** Set editor red tint level. */
-	void set_tod_r(int value);
-	/** Set editor green tint level. */
-	void set_tod_g(int value);
-	/** Set editor blue tint level. */
-	void set_tod_b(int value);
-
-	/** Get editor red tint level. */
-	int tod_r();
-	/** Get editor green tint level. */
-	int tod_g();
-	/** Get editor blue tint level. */
-	int tod_b();
+	/** Retrieves the list of recently opened files. */
+	std::vector<std::string> recent_files();
+	/** Adds an entry to the recent files list. */
+	void add_recent_files_entry(const std::string& path);
+	/** Removes a single entry from the recent files list. */
+	void remove_recent_files_entry(const std::string& path);
 
 } //end namespace editor
 

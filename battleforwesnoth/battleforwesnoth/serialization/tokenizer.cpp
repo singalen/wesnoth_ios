@@ -1,7 +1,6 @@
-/* $Id: tokenizer.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
    Copyright (C) 2004 - 2009 by Philippe Plantier <ayin@anathas.org>
-   Copyright (C) 2010 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+   Copyright (C) 2010 - 2016 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -43,19 +42,19 @@ tokenizer::tokenizer(std::istream& in) :
 		}
 		char_types_[c] = t;
 	}
-	in_.exceptions(std::ios_base::badbit);
+	in_.stream().exceptions(std::ios_base::badbit);
 	next_char_fast();
 }
 
 tokenizer::~tokenizer()
 {
-	in_.clear(std::ios_base::goodbit);
-	in_.exceptions(std::ios_base::goodbit);
+	in_.stream().clear(std::ios_base::goodbit);
+	in_.stream().exceptions(std::ios_base::goodbit);
 }
 
 const token &tokenizer::next_token()
 {
-#if DEBUG
+#if DEBUG_TOKENIZER
 	previous_token_ = token_;
 #endif
 	token_.value.clear();
@@ -180,7 +179,7 @@ void tokenizer::skip_comment()
 {
 	next_char_fast();
 	if (current_ == '\n' || current_ == EOF) return;
-	std::string *dst = NULL;
+	std::string *dst = nullptr;
 
 	if (current_ == 't')
 	{

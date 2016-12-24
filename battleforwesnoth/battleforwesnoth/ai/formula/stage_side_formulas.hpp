@@ -1,6 +1,5 @@
-/* $Id: stage_side_formulas.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,8 +21,8 @@
 #ifndef AI_FORMULA_STAGE_SIDE_FORMULAS_HPP_INCLUDED
 #define AI_FORMULA_STAGE_SIDE_FORMULAS_HPP_INCLUDED
 
-#include "../composite/stage.hpp"
-#include "../../formula_fwd.hpp"
+#include "ai/composite/stage.hpp"
+#include "formula/formula_fwd.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(push)

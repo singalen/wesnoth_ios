@@ -1,6 +1,5 @@
-/* $Id: action.hpp 55503 2012-10-06 21:46:53Z gabba $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -21,6 +20,8 @@
 #define WB_ACTION_HPP_
 
 #include "typedefs.hpp"
+#include "map/location.hpp"
+#include "game_errors.hpp"
 
 namespace wb {
 
@@ -29,7 +30,7 @@ class visitor;
 /**
  * Abstract base class for all the whiteboard planned actions.
  */
-class action : public boost::enable_shared_from_this<action>
+class action : public std::enable_shared_from_this<action>
 {
 public:
 	action(size_t team_index, bool hidden);
@@ -54,6 +55,8 @@ public:
 
 	/** Gets called by display when drawing a hex, to allow actions to draw to the screen. */
 	virtual void draw_hex(const map_location& hex) = 0;
+	/** Redrawing function, called each time the action situation might have changed. */
+	virtual void redraw(){}
 
 	/** Sets whether or not the action should be drawn on the screen. */
 	void hide();
@@ -65,7 +68,7 @@ public:
 	virtual map_location get_numbering_hex() const = 0;
 
 	/** Return the unit targeted by this action. Null if unit doesn't exist. */
-	virtual unit* get_unit() const = 0;
+	virtual unit_ptr get_unit() const = 0;
 
 	/**
 	 * Returns the id of the unit targeted by this action.
@@ -83,13 +86,6 @@ public:
 		return static_cast<int>(team_index_) + 1;
 	}
 
-	/**
-	 * Indicates to an action whether its status is invalid, and whether it should change its
-	 * display (and avoid any change to the game state) accordingly
-	 */
-	virtual void set_valid(bool valid) = 0;
-	virtual bool is_valid() const = 0;
-
 	/** Constructs and returns a config object representing this object. */
 	virtual config to_config() const;
 	/** Constructs an object of a subclass of wb::action using a config. Current behavior is to return a null pointer for unrecognized config. */
@@ -99,6 +95,42 @@ public:
 	{
 		ctor_err(const std::string& message) : game::error(message){}
 	};
+
+	/**
+	 * Possible errors.
+	 *
+	 * Returned by the @ref check function.
+	 */
+	enum error
+	{
+		OK,
+		INVALID_LOCATION,
+		NO_UNIT,
+		UNIT_CHANGED,
+		LOCATION_OCCUPIED,
+		TOO_FAR,
+		NO_TARGET,
+		NO_ATTACK_LEFT,
+		NOT_AN_ENEMY,
+		UNIT_UNAVAILABLE,
+		NOT_ENOUGH_GOLD,
+		NO_LEADER
+	};
+
+	/**
+	 * Check the validity of the action.
+	 *
+	 * @return the error preventing the action from being executed.
+	 * @retval OK if there isn't any error (the action can be executed.)
+	 */
+	virtual error check_validity() const = 0;
+
+	/**
+	 * Returns whether this action is valid or not.
+	 *
+	 * @note This value is now calculated each time the function is called.
+	 */
+	bool valid(){ return check_validity()==OK; }
 
 private:
 	/** Called by the non-virtual hide() and show(), respectively. */

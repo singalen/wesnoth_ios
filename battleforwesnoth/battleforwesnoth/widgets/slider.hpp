@@ -1,6 +1,5 @@
-/* $Id: slider.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -15,20 +14,21 @@
 #ifndef SLIDER_HPP_INCLUDED
 #define SLIDER_HPP_INCLUDED
 
-#include "SDL.h"
+#include <SDL.h>
 
-#include "../sdl_utils.hpp"
-
+#include "color.hpp"
 #include "widget.hpp"
 
 #include <vector>
+
+class surface;
 
 namespace gui {
 
 class slider : public widget
 {
 public:
-	slider(CVideo &video);
+	slider(CVideo &video, const std::string& image = "buttons/sliders/slider", bool black = false);
 
 	void set_min(int value);
 	void set_max(int value);
@@ -37,6 +37,7 @@ public:
 
 	int value() const;
 	int max_value() const;
+	int min_value() const { return min_; }
 
 	bool value_change();
 
@@ -48,16 +49,19 @@ public:
 	virtual void set_location(SDL_Rect const &rect);
 
 protected:
-	bool requires_event_focus(const SDL_Event *event=NULL) const;
+	bool requires_event_focus(const SDL_Event *event=nullptr) const;
 	virtual void handle_event(const SDL_Event& event);
 	virtual void draw_contents();
+	virtual bool allow_key_events() { return true; }
 
 private:
 	void mouse_motion(const SDL_MouseMotionEvent& event);
 	void mouse_down(const SDL_MouseButtonEvent& event);
+	void mouse_wheel(const SDL_MouseWheelEvent& event);
 	void set_slider_position(int x);
 	SDL_Rect slider_area() const;
-	surface image_, highlightedImage_;
+	surface image_, pressedImage_, activeImage_, disabledImage_;
+	color_t line_color_;
 
 	int min_;
 	int max_;
@@ -82,6 +86,14 @@ class list_slider : public slider
 		const T& item_selected() const; //use item_selected() instead of value()
 	private:
 		std::vector<T> items_;
+};
+
+// This is a different style of slider, which doesn't implement key left/right responses
+class zoom_slider : public slider
+{
+public:
+	zoom_slider(CVideo &video, const std::string& image = "buttons/sliders/slider", bool black = false);
+	virtual bool allow_key_events() { return false; }
 };
 
 }

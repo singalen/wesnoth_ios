@@ -1,6 +1,5 @@
-/* $Id: exploder_cutter.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -13,14 +12,13 @@
    See the COPYING file for more details.
 */
 
-#include "exploder_cutter.hpp"
+#include "tools/exploder_cutter.hpp"
 #include "filesystem.hpp"
+#include "sdl/rect.hpp"
 #include "serialization/parser.hpp"
 #include "serialization/preprocessor.hpp"
 #include "serialization/string_utils.hpp"
-#include "SDL_image.h"
-
-#include <boost/foreach.hpp>
+#include <SDL_image.h>
 
 #include <iostream>
 
@@ -37,7 +35,7 @@ const config cutter::load_config(const std::string &filename)
 	config res;
 
 	try {
-		scoped_istream stream = preprocess_file(conf_string);
+		filesystem::scoped_istream stream = preprocess_file(conf_string);
 		read(res, *stream);
 	} catch(config::error& err) {
 		throw exploder_failure("Unable to load the configuration for the file " + filename + ": "+ err.message);
@@ -49,7 +47,7 @@ const config cutter::load_config(const std::string &filename)
 
 void cutter::load_masks(const config& conf)
 {
-	BOOST_FOREACH(const config &m, conf.child_range("mask"))
+	for(const config &m : conf.child_range("mask"))
 	{
 		const std::string name = m["name"];
 		const std::string image = get_mask_dir() + "/" + std::string(m["image"]);
@@ -79,13 +77,13 @@ void cutter::load_masks(const config& conf)
 			cur_mask.cut = cut;
 			cur_mask.filename = image;
 			surface tmp(IMG_Load(image.c_str()));
-			if(tmp == NULL)
+			if(tmp == nullptr)
 				throw exploder_failure("Unable to load mask image " + image);
 
-			cur_mask.image = surface(make_neutral_surface(tmp));
+			cur_mask.image = make_neutral_surface(tmp);
 		}
 
-		if(masks_[name].image == NULL)
+		if(masks_[name].image == nullptr)
 			throw exploder_failure("Unable to load mask image " + image);
 	}
 }
@@ -95,7 +93,7 @@ cutter::surface_map cutter::cut_surface(surface surf, const config& conf)
 {
 	surface_map res;
 
-	BOOST_FOREACH(const config &part, conf.child_range("part")) {
+	for(const config &part : conf.child_range("part")) {
 		add_sub_image(surf, res, &part);
 	}
 
@@ -106,7 +104,7 @@ cutter::surface_map cutter::cut_surface(surface surf, const config& conf)
 std::string cutter::find_configuration(const std::string &file)
 {
 	//finds the file prefix.
-	const std::string fname = file_name(file);
+	const std::string fname = filesystem::base_name(file);
 	const std::string::size_type dotpos = fname.rfind('.');
 
 	std::string basename;
@@ -138,7 +136,7 @@ void cutter::add_sub_image(const surface &surf, surface_map &map, const config* 
 	int x = atoi(pos[0].c_str());
 	int y = atoi(pos[1].c_str());
 
-	const SDL_Rect cut = create_rect(x - mask.shift.x
+	const SDL_Rect cut = sdl::create_rect(x - mask.shift.x
 			, y - mask.shift.y
 			, mask.image->w
 			, mask.image->h);
@@ -146,8 +144,8 @@ void cutter::add_sub_image(const surface &surf, surface_map &map, const config* 
 	typedef std::pair<std::string, positioned_surface> sme;
 
 	positioned_surface ps;
-	ps.image = surface(::cut_surface(surf, cut));
-	if(ps.image == NULL)
+	ps.image = ::cut_surface(surf, cut);
+	if(ps.image == nullptr)
 		throw exploder_failure("Unable to cut surface!");
 	ps.name = name;
 	ps.mask = mask;

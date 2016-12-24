@@ -1,7 +1,21 @@
+/*
+   Copyright (C) 2008 - 2016 by David White <dave@whitevine.net>
+   Part of the Battle for Wesnoth Project http://www.wesnoth.org
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License 2
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY.
+
+   See the COPYING file for more details.
+*/
+
 #ifndef SIMPLE_WML_HPP_INCLUDED
 #define SIMPLE_WML_HPP_INCLUDED
 
-#include <string.h>
+#include <cstring>
 
 #include <cstddef>
 #include <iosfwd>
@@ -20,12 +34,18 @@ struct error : public game::error {
 class string_span
 {
 public:
-	string_span() : str_(NULL), size_(0)
+	string_span() : str_(nullptr), size_(0)
 	{}
 	string_span(const char* str, int size) : str_(str), size_(size)
 	{}
 	string_span(const char* str) : str_(str), size_(strlen(str))
 	{}
+	string_span(const char* begin, const char* end) : str_(begin), size_(end - begin)
+	{}
+
+	typedef const char* const_iterator;
+	typedef const char* iterator;
+	typedef const char value_type;
 
 	bool operator==(const char* o) const {
 		const char* i1 = str_;
@@ -72,7 +92,7 @@ public:
 
 	int size() const { return size_; }
 	bool empty() const { return size_ == 0; }
-	bool is_null() const { return str_ == NULL; }
+	bool is_null() const { return str_ == nullptr; }
 
 	bool to_bool(bool default_value=false) const;
 	int to_int() const;
@@ -220,7 +240,7 @@ public:
 	const node& root() const { if(!root_) { const_cast<document*>(this)->generate_root(); } return *root_; }
 
 	const char* output();
-	string_span output_compressed();
+	string_span output_compressed(bool bzip2 = false);
 
 	void compress();
 
@@ -240,6 +260,10 @@ public:
 
 	const node* child(const char* name) const {
 		return root().child(name);
+	}
+
+	const node::child_list& children(const char* name) const {
+		return root().children(name);
 	}
 
 	node& set_attr(const char* key, const char* value) {

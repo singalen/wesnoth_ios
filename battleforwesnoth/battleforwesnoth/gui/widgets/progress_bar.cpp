@@ -1,6 +1,5 @@
-/* $Id: progress_bar.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,41 +16,148 @@
 
 #include "gui/widgets/progress_bar.hpp"
 
-#include "gui/auxiliary/widget_definition/progress_bar.hpp"
-#include "gui/auxiliary/window_builder/progress_bar.hpp"
-#include "gui/auxiliary/log.hpp"
+#include "gui/core/log.hpp"
+#include "gui/core/register_widget.hpp"
 #include "gui/widgets/settings.hpp"
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
+#include "utils/functional.hpp"
 
 #define LOG_SCOPE_HEADER get_control_type() + " [" + id() + "] " + __func__
 #define LOG_HEADER LOG_SCOPE_HEADER + ':'
 
-namespace gui2 {
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 REGISTER_WIDGET(progress_bar)
 
-void tprogress_bar::set_percentage(const unsigned percentage)
+void progress_bar::set_active(const bool /*active*/)
 {
-	assert(percentage <= 100);
+	/* DO NOTHING */
+}
+
+bool progress_bar::get_active() const
+{
+	return true;
+}
+
+unsigned progress_bar::get_state() const
+{
+	return ENABLED;
+}
+
+void progress_bar::set_percentage(unsigned percentage)
+{
+	percentage = std::min<unsigned>(percentage, 100);
 
 	if(percentage_ != percentage) {
 		percentage_ = percentage;
 
-		BOOST_FOREACH(tcanvas& c, canvas()) {
+		for(auto & c : get_canvas())
+		{
 			c.set_variable("percentage", variant(percentage));
 		}
 
-		set_dirty();
+		set_is_dirty(true);
 	}
 }
 
-const std::string& tprogress_bar::get_control_type() const
+bool progress_bar::disable_click_dismiss() const
+{
+	return false;
+}
+
+const std::string& progress_bar::get_control_type() const
 {
 	static const std::string type = "progress_bar";
 	return type;
 }
 
-} // namespace gui2
+// }---------- DEFINITION ---------{
 
+progress_bar_definition::progress_bar_definition(const config& cfg)
+	: styled_widget_definition(cfg)
+{
+	DBG_GUI_P << "Parsing progress bar " << id << '\n';
+
+	load_resolutions<resolution>(cfg);
+}
+
+/*WIKI
+ * @page = GUIWidgetDefinitionWML
+ * @order = 1_progress_bar
+ *
+ * == Progress bar ==
+ *
+ * @macro = progress_bar_description
+ *
+ * The definition of a progress bar. This object shows the progress of a certain
+ * action, or the value state of a certain item.
+ *
+ * The following states exist:
+ * * state_enabled, the progress bar is enabled.
+ * @begin{parent}{name="gui/"}
+ * @begin{tag}{name="progress_bar_definition"}{min=0}{max=-1}{super="generic/widget_definition"}
+ * @begin{tag}{name="resolution"}{min=0}{max=-1}{super="generic/widget_definition/resolution"}
+ * @begin{tag}{name="state_enabled"}{min=0}{max=1}{super="generic/state"}
+ * @end{tag}{name="state_enabled"}
+ * @end{tag}{name="resolution"}
+ * @end{tag}{name="progress_bar_definition"}
+ * @end{parent}{name="gui/"}
+ */
+progress_bar_definition::resolution::resolution(const config& cfg)
+	: resolution_definition(cfg)
+{
+	// Note the order should be the same as the enum state_t in progress_bar.hpp.
+	state.push_back(state_definition(cfg.child("state_enabled")));
+}
+
+// }---------- BUILDER -----------{
+
+/*WIKI_MACRO
+ * @begin{macro}{progress_bar_description}
+ * A progress bar shows the progress of a certain object.
+ * @end{macro}
+ */
+
+/*WIKI
+ * @page = GUIWidgetInstanceWML
+ * @order = 2_progress_bar
+ *
+ * == Image ==
+ *
+ * @macro = progress_bar_description
+ *
+ * A progress bar has no extra fields.
+ * @begin{parent}{name="gui/window/resolution/grid/row/column/"}
+ * @begin{tag}{name="progress_bar"}{min=0}{max=-1}{super="generic/widget_instance"}
+ * @end{tag}{name="progress_bar"}
+ * @end{parent}{name="gui/window/resolution/grid/row/column/"}
+ */
+
+namespace implementation
+{
+
+builder_progress_bar::builder_progress_bar(const config& cfg)
+	: builder_styled_widget(cfg)
+{
+}
+
+widget* builder_progress_bar::build() const
+{
+	progress_bar* widget = new progress_bar();
+
+	init_control(widget);
+
+	DBG_GUI_G << "Window builder: placed progress bar '" << id
+			  << "' with definition '" << definition << "'.\n";
+
+	return widget;
+}
+
+} // namespace implementation
+
+// }------------ END --------------
+
+} // namespace gui2

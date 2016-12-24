@@ -1,6 +1,5 @@
-/* $Id: pathfind.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -24,14 +23,14 @@
 class gamemap;
 class team;
 class unit;
-class unit_map;
-class unit_movement_type;
+class unit_type;
+class game_board;
+#include "map/location.hpp"
+#include "movetype.hpp"
 
-#include "map_location.hpp"
-
+#include <vector>
 #include <map>
-#include <list>
-#include <functional>
+#include <set>
 
 namespace pathfind {
 
@@ -39,20 +38,20 @@ class teleport_map;
 
 enum VACANT_TILE_TYPE { VACANT_CASTLE, VACANT_ANY };
 
-/**
- * Function which will find a location on the board that is
- * as near to loc as possible, but which is unoccupied by any units.
- * If no valid location can be found, it will return a null location.
- */
-map_location find_vacant_tile(const gamemap& map,
-                                   const unit_map& un,
-                                   const map_location& loc,
-			     	   VACANT_TILE_TYPE vacancy=VACANT_ANY,
-                                   const unit* pass_check=NULL);
+/// Function that will find a location on the board that is as near
+/// to @a loc as possible, but which is unoccupied by any units.
+map_location find_vacant_tile(const map_location& loc,
+                              VACANT_TILE_TYPE vacancy=VACANT_ANY,
+                              const unit* pass_check=nullptr,
+                              const team* shroud_check=nullptr,
+                              const game_board* board=nullptr);
+/// Wrapper for find_vacant_tile() when looking for a vacant castle tile
+/// near a leader.
+map_location find_vacant_castle(const unit & leader);
 
-/** Function which determines if a given location is in an enemy zone of control. */
-bool enemy_zoc(std::vector<team> const &teams, map_location const &loc,
-               team const &viewing_team, int side, bool see_all=false);
+/** Determines if a given location is in an enemy zone of control. */
+bool enemy_zoc(team const &current_team, map_location const &loc,
+               team const &viewing_team, bool see_all=false);
 
 
 struct cost_calculator
@@ -76,20 +75,13 @@ struct paths
 	{
 	}
 
-	// Construct a list of paths for the unit at loc.
-	// - force_ignore_zocs: find the path ignoring ZOC entirely,
-	//                     if false, will use the unit on the loc's ability
-	// - allow_teleport: indicates whether the paths should include teleportation (false for sight)
-	// - additional_turns: if 0, paths for how far the unit can move this turn will be calculated.
-	//                     If 1, paths for how far the unit can move by the end of next turn
-	//                     will be calculated, and so forth.
-	// viewing_team is usually current team, except for Show Enemy Moves etc.
-	paths(gamemap const &map,
-	      unit_map const &units,
-	      map_location const &loc, std::vector<team> const &teams,
+	/// Construct a list of paths for the specified unit.
+	paths(const unit& u,
 	      bool force_ignore_zocs, bool allow_teleport,
-		 const team &viewing_team, int additional_turns = 0,
-		 bool see_all = false, bool ignore_units = false);
+	      const team &viewing_team, int additional_turns = 0,
+	      bool see_all = false, bool ignore_units = false);
+	/// Virtual destructor (default processing).
+	virtual ~paths();
 
 	struct step
 	{
@@ -107,6 +99,34 @@ struct paths
 	};
 	dest_vect destinations;
 };
+
+/**
+ * A refinement of paths for use when calculating vision.
+ */
+struct vision_path : public paths
+{
+	/// Construct a list of seen hexes for a unit.
+	vision_path(const unit& viewer, map_location const &loc,
+	            const std::map<map_location, int>& jamming_map);
+	vision_path(const movetype::terrain_costs & view_costs, bool slowed,
+	            int sight_range, const map_location & loc,
+	            const std::map<map_location, int>& jamming_map);
+	virtual ~vision_path();
+
+	/// The edges are the non-destination hexes bordering the destinations.
+	std::set<map_location> edges;
+};
+
+/**
+ * A refinement of paths for use when calculating jamming.
+ */
+struct jamming_path : public paths
+{
+	/// Construct a list of jammed hexes for a unit.
+	jamming_path(const unit& jammer, map_location const &loc);
+	virtual ~jamming_path();
+};
+
 
 /** Structure which holds a single route between one location and another. */
 struct plain_route
@@ -171,9 +191,9 @@ struct marked_route
 };
 
 plain_route a_star_search(map_location const &src, map_location const &dst,
-		double stop_at, const cost_calculator* costCalculator,
+		double stop_at, const cost_calculator& costCalculator,
 		const size_t parWidth, const size_t parHeight,
-		const teleport_map* teleports = NULL);
+		const teleport_map* teleports = nullptr, bool border = false);
 
 /**
  * Add marks on a route @a rt assuming that the unit located at the first hex of
@@ -183,7 +203,7 @@ marked_route mark_route(const plain_route &rt);
 
 struct shortest_path_calculator : cost_calculator
 {
-	shortest_path_calculator(const unit& u, const team& t, const unit_map& units,
+	shortest_path_calculator(const unit& u, const team& t,
 		const std::vector<team> &teams, const gamemap &map,
 		bool ignore_unit = false, bool ignore_defense_ = false,
 		bool see_all = false);
@@ -192,11 +212,10 @@ struct shortest_path_calculator : cost_calculator
 private:
 	unit const &unit_;
 	team const &viewing_team_;
-	unit_map const &units_;
 	std::vector<team> const &teams_;
 	gamemap const &map_;
-	int const movement_left_;
-	int const total_movement_;
+	const int movement_left_;
+	const int total_movement_;
 	bool const ignore_unit_;
 	bool const ignore_defense_;
 	bool see_all_;
@@ -204,11 +223,11 @@ private:
 
 struct move_type_path_calculator : cost_calculator
 {
-	move_type_path_calculator(const unit_movement_type& mt, int movement_left, int total_movement, const team& t, const gamemap& map);
+	move_type_path_calculator(const movetype& mt, int movement_left, int total_movement, const team& t, const gamemap& map);
 	virtual double cost(const map_location& loc, const double so_far) const;
 
 private:
-	const unit_movement_type &movement_type_;
+	const movetype &movement_type_;
 	const int movement_left_;
 	const int total_movement_;
 	team const &viewing_team_;
@@ -239,6 +258,50 @@ struct dummy_path_calculator : cost_calculator
 	virtual double cost(const map_location& loc, const double so_far) const;
 };
 
+/**
+ * Structure which uses find_routes() to build a cost map
+ * This maps each hex to a the movements a unit will need to reach
+ * this hex.
+ * Can be used commutative by calling add_unit() multiple times.
+ */
+struct full_cost_map
+{
+	// "normal" constructor
+	full_cost_map(const unit& u, bool force_ignore_zoc,
+			bool allow_teleport, const team &viewing_team,
+			bool see_all=true, bool ignore_units=true);
+
+	// constructor for work with add_unit()
+	// same as "normal" constructor. Just without unit
+	full_cost_map(bool force_ignore_zoc,
+			bool allow_teleport, const team &viewing_team,
+			bool see_all=true, bool ignore_units=true);
+
+	void add_unit(const unit& u, bool use_max_moves=true);
+	void add_unit(const map_location& origin, const unit_type* const unit_type, int side);
+	int get_cost_at(int x, int y) const;
+	std::pair<int, int> get_pair_at(int x, int y) const;
+	double get_average_cost_at(int x, int y) const;
+	virtual ~full_cost_map()
+	{
+	}
+
+	// This is a vector of pairs
+	// Every hex has an entry.
+	// The first int is the accumulated cost for one or multiple units
+	// It is -1 when no unit can reach this hex.
+	// The second int is how many units can reach this hex.
+	// (For some units some hexes or even a whole regions are unreachable)
+	// To calculate a *average cost map* it is recommended to divide first/second.
+	std::vector<std::pair<int, int> > cost_map;
+
+private:
+	const bool force_ignore_zoc_;
+	const bool allow_teleport_;
+	const team &viewing_team_;
+	const bool see_all_;
+	const bool ignore_units_;
+};
 }
 
 #endif

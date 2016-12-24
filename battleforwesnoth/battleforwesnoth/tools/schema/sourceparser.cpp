@@ -1,6 +1,5 @@
-/* $Id: sourceparser.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
- Copyright (C) 2011 - 2012 by Sytyi Nick <nsytyi@gmail.com>
+ Copyright (C) 2011 - 2016 by Sytyi Nick <nsytyi@gmail.com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
  This program is free software; you can redistribute it and/or modify
@@ -19,7 +18,7 @@
 
 #include "tools/schema/sourceparser.hpp"
 
-#include "boost/regex.hpp"
+#include <boost/regex.hpp>
 
 #include <stack>
 
@@ -28,9 +27,9 @@ namespace schema_validation{
  *For details, look http://wiki.wesnoth.org/WML_Annotation_Format , please
  */
 /** line is valid*/
-const std::string valid = "^\\s*\\*\\s*";
+const std::string valid = R"""(^\s*\*\s*)""";
 /** begining of wiki block*/
-const std::string wiki_begin ="^\\s*/\\*(?:WIKI|SCHEMA)";
+const std::string wiki_begin = R"""(^\s*/\*(?:WIKI|SCHEMA))""";
 /** whitespace is possible*/
 const std::string space ="\\s*";
 /** sigh "="*/
@@ -219,8 +218,8 @@ bool class_source_parser::save_schema(){
 	}
 	out.open(output_.c_str(),std::ios::out|std::ios::trunc);
 	if (out.fail()){
-		errors_.add_simple_error("Can not open file "+output_+
-								 "\n Output woulfd not be stored\n");
+		errors_.add_simple_error("Cannot open file "+output_+
+								 "\n Output would not be stored\n");
 		return false;
 	}
 	// remove all forbidden keys
@@ -319,7 +318,7 @@ bool class_source_parser::parse_source(){
 
 	f_.open(input_.c_str(),std::ios::in);
 	if (f_.fail()){
-		errors_.add_simple_error("File "+input_ + " can not be opened\n");
+		errors_.add_simple_error("File "+input_ + " cannot be opened\n");
 		return false;
 	}
 	line_ = 0;
@@ -513,7 +512,7 @@ bool class_source_parser::check_allow_link(const std::string &s){
 		if (!current_.empty()){
 			std::string link = sub[1];
 			current_.back().add_link(link);
-			if (static_cast<const class_tag>(root_).find_tag(link,root_) == NULL){
+			if (static_cast<const class_tag>(root_).find_tag(link,root_) == nullptr){
 				errors_.add_link_error(input_,line_,link);
 			}
 		}

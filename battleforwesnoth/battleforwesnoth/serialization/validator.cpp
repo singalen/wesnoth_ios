@@ -1,6 +1,5 @@
-/* $Id: validator.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2011 - 2012 by Sytyi Nick <nsytyi@gmail.com>
+   Copyright (C) 2011 - 2016 by Sytyi Nick <nsytyi@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify

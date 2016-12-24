@@ -1,6 +1,5 @@
-/* $Id: game_info.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,16 +20,14 @@
 #ifndef AI_GAME_INFO_HPP_INCLUDED
 #define AI_GAME_INFO_HPP_INCLUDED
 
-#include <boost/shared_ptr.hpp>
-#include "../map_location.hpp"
+#include "map/location.hpp"
 namespace pathfind {
     struct paths;
 }
-
 #include <map>
+#include <memory>
 
 class game_display;
-class game_state;
 class gamemap;
 class unit_map;
 class team;
@@ -51,9 +48,9 @@ typedef std::multimap<map_location,map_location> move_map;
 /** The standard way in which a map of possible movement routes to location is recorded*/
 typedef std::map<map_location,pathfind::paths> moves_map;
 
-class interface;
+class ai_composite;
 
-typedef boost::shared_ptr< interface > ai_ptr;
+typedef std::shared_ptr<ai_composite> ai_ptr;
 
 class attack_analysis;
 typedef std::vector<attack_analysis> attacks_vector;
@@ -68,7 +65,6 @@ class candidate_action;
 class engine;
 class goal;
 class known_aspect;
-class ministage;
 class stage;
 
 template<typename T>
@@ -76,8 +72,8 @@ class typesafe_aspect;
 
 template<typename T>
 struct aspect_type {
-	typedef boost::shared_ptr< typesafe_aspect<T> > typesafe_ptr;
-	typedef std::vector< boost::shared_ptr< typesafe_aspect<T> > > typesafe_ptr_vector;
+	typedef std::shared_ptr< typesafe_aspect<T> > typesafe_ptr;
+	typedef std::vector< std::shared_ptr< typesafe_aspect<T> > > typesafe_ptr_vector;
 };
 
 template<typename T>
@@ -85,8 +81,8 @@ class typesafe_known_aspect;
 
 template<typename T>
 struct known_aspect_type {
-	typedef boost::shared_ptr< typesafe_known_aspect<T> > typesafe_ptr;
-	typedef std::vector< boost::shared_ptr< typesafe_known_aspect<T> > > typesafe_ptr_vector;
+	typedef std::shared_ptr< typesafe_known_aspect<T> > typesafe_ptr;
+	typedef std::vector< std::shared_ptr< typesafe_known_aspect<T> > > typesafe_ptr_vector;
 };
 
 class action_result;
@@ -96,22 +92,23 @@ class recruit_result;
 class move_result;
 class move_and_attack_result;
 class stopunit_result;
+class synced_command_result;
 
-typedef boost::shared_ptr<action_result> action_result_ptr;
-typedef boost::shared_ptr<attack_result> attack_result_ptr;
-typedef boost::shared_ptr<recall_result> recall_result_ptr;
-typedef boost::shared_ptr<recruit_result> recruit_result_ptr;
-typedef boost::shared_ptr<move_result> move_result_ptr;
-typedef boost::shared_ptr<move_and_attack_result> move_and_attack_result_ptr;
-typedef boost::shared_ptr<stopunit_result> stopunit_result_ptr;
+typedef std::shared_ptr<action_result> action_result_ptr;
+typedef std::shared_ptr<attack_result> attack_result_ptr;
+typedef std::shared_ptr<recall_result> recall_result_ptr;
+typedef std::shared_ptr<recruit_result> recruit_result_ptr;
+typedef std::shared_ptr<move_result> move_result_ptr;
+typedef std::shared_ptr<move_and_attack_result> move_and_attack_result_ptr;
+typedef std::shared_ptr<stopunit_result> stopunit_result_ptr;
+typedef std::shared_ptr<synced_command_result> synced_command_result_ptr;
 
-typedef boost::shared_ptr< aspect > aspect_ptr;
-typedef boost::shared_ptr< candidate_action > candidate_action_ptr;
-typedef boost::shared_ptr< engine > engine_ptr;
-typedef boost::shared_ptr< goal > goal_ptr;
-typedef boost::shared_ptr< known_aspect > known_aspect_ptr;
-typedef boost::shared_ptr< ministage > ministage_ptr;
-typedef boost::shared_ptr< stage > stage_ptr;
+typedef std::shared_ptr< aspect > aspect_ptr;
+typedef std::shared_ptr< candidate_action > candidate_action_ptr;
+typedef std::shared_ptr< engine > engine_ptr;
+typedef std::shared_ptr< goal > goal_ptr;
+typedef std::shared_ptr< known_aspect > known_aspect_ptr;
+typedef std::shared_ptr< stage > stage_ptr;
 
 typedef std::map<std::string, aspect_ptr > aspect_map;
 typedef std::map<std::string, known_aspect_ptr > known_aspect_map;

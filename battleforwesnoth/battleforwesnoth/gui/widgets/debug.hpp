@@ -1,6 +1,5 @@
-/* $Id: debug.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -23,17 +22,18 @@
 #include <iosfwd>
 #include <string>
 
-namespace gui2 {
+namespace gui2
+{
 
-class twidget;
-class twindow;
+class widget;
+class window;
 
 /**
  * Helper class to output the layout to dot files.
  *
  * The class will generate .dot files in the location where wesnoth is running
  * (so needs write access there). These files can be converted to images
- * containing the graphs. This is used for debugging the widget libary and its
+ * containing the graphs. This is used for debugging the widget library and its
  * sizing algorithm.
  *
  * This class needs to be friends with a lot of classes so it can view the
@@ -43,34 +43,33 @@ class twindow;
  * include the header declaring foo, so it avoids header cluttage.
  *
  */
-class tdebug_layout_graph
+class debug_layout_graph
 {
 public:
-
 	/**
 	 * Constructor.
 	 *
 	 * @param window              The window, whose information will be
 	 *                            generated.
 	 */
-	explicit tdebug_layout_graph(const twindow* window);
+	explicit debug_layout_graph(const window* window);
 
 	/***** ***** ***** ***** FLAGS ***** ***** ***** *****/
 
 	// domain flags
 	static const unsigned MANUAL = 0 << 0; /**<
-	                                        * Shows the info when the F12 is
-	                                        * pressed. The value 0 makes sure
-	                                        * the domain is always valid.
-	                                        */
-	static const unsigned SHOW   = 1 << 0; /**<
-	                                        * Shows the info when the dialog
-	                                        * is shown.
-	                                        */
+											* Shows the info when the F12 is
+											* pressed. The value 0 makes sure
+											* the domain is always valid.
+											*/
+	static const unsigned SHOW = 1 << 0; /**<
+										  * Shows the info when the dialog
+										  * is shown.
+										  */
 	static const unsigned LAYOUT = 1 << 1; /**<
-	                                        * Shows the info in all layout
-	                                        * phases.
-	                                        */
+											* Shows the info in all layout
+											* phases.
+											*/
 	/**
 	 * Sets the level of wanted information.
 	 *
@@ -96,13 +95,11 @@ public:
 	 *
 	 * @param generator           The location where the name was generated.
 	 */
-	void generate_dot_file(
-			const std::string& generator, const unsigned domain);
+	void generate_dot_file(const std::string& generator, const unsigned domain);
 
 private:
-
 	/** The window whose info will be shown. */
-	const twindow* window_;
+	const window* window_;
 
 	/** The order in which the files are generated. */
 	unsigned sequence_number_;
@@ -119,10 +116,12 @@ private:
 	 * @param widget              The widget to write the info about.
 	 * @param id                  The dof-file-id of the widget.
 	 * @param embedded            Is the grid embedded in a container eg parent
-	 *                            inherits from tcontainer_.
+	 *                            inherits from container_base.
 	 */
-	void widget_generate_info(std::ostream& out, const twidget* widget,
-			const std::string& id, const bool embedded = false) const;
+	void widget_generate_info(std::ostream& out,
+							  const widget* widget,
+							  const std::string& id,
+							  const bool embedded = false) const;
 
 	/**
 	 * Generates the basic info about a widget.
@@ -130,8 +129,8 @@ private:
 	 * @param out                 The stream to write the info to.
 	 * @param widget              The widget to write the info about.
 	 */
-	void widget_generate_basic_info(
-			std::ostream& out, const twidget* widget) const;
+	void widget_generate_basic_info(std::ostream& out,
+									const widget* widget) const;
 
 	/**
 	 * Generates the info about the state of the widget.
@@ -139,8 +138,8 @@ private:
 	 * @param out                 The stream to write the info to.
 	 * @param widget              The widget to write the info about.
 	 */
-	void widget_generate_state_info(
-			std::ostream& out, const twidget* widget) const;
+	void widget_generate_state_info(std::ostream& out,
+									const widget* widget) const;
 
 	/**
 	 * Generates the info about the size and layout of the widget.
@@ -148,8 +147,8 @@ private:
 	 * @param out                 The stream to write the info to.
 	 * @param widget              The widget to write the info about.
 	 */
-	void widget_generate_size_info(
-			std::ostream& out, const twidget* widget) const;
+	void widget_generate_size_info(std::ostream& out,
+								   const widget* widget) const;
 
 	/***** ***** Grid ***** *****/
 
@@ -160,8 +159,9 @@ private:
 	 * @param grid                The grid to write the info about.
 	 * @param parent_id           The dot-file-id of the parent of the widget.
 	 */
-	void grid_generate_info(std::ostream& out, const tgrid* grid,
-			const std::string& parent_id) const;
+	void grid_generate_info(std::ostream& out,
+							const grid* grid,
+							const std::string& parent_id) const;
 
 	/**
 	 * Generates the info about a grid cell.
@@ -171,29 +171,28 @@ private:
 	 * @param id                  The dof-file-id of the child.
 	 */
 	void child_generate_info(std::ostream& out,
-			const tgrid::tchild& child, const std::string& id) const;
+							 const grid::child& child,
+							 const std::string& id) const;
 
 	/***** ***** Helper ***** *****/
 
 	/**
 	 * Returns the control_type of a widget.
 	 *
-	 * This is a small wrapper around tcontrol::get_control_type() since a
-	 * grid is no control and used rather frequently, so we want to give it a
+	 * This is a small wrapper around styled_widget::get_control_type() since a
+	 * grid is no styled_widget and used rather frequently, so we want to give it a
 	 * type.
 	 *
 	 * @param widget              The widget to get the type of.
 	 *
-	 * @returns                   If the widget is a control it returns its
+	 * @returns                   If the widget is a styled_widget it returns its
 	 *                            type. If the widget is a grid it returns
 	 *                            'grid', otherwise 'unknown' will be returned.
 	 */
-	std::string get_type(const twidget* widget) const;
-
+	std::string get_type(const widget* widget) const;
 };
 
 } // namespace gui2
 
 #endif
 #endif
-

@@ -1,7 +1,6 @@
-/* $Id: preprocessor.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
    Copyright (C) 2003 by David White <dave@whitevine.net>
-   Copyright (C) 2005 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+   Copyright (C) 2005 - 2016 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,6 +20,7 @@
 
 #include "global.hpp"
 
+#include "buffered_istream.hpp"
 #include "config.hpp"
 #include "filesystem.hpp"
 #include "game_config.hpp"
@@ -30,30 +30,27 @@
 #include "serialization/string_utils.hpp"
 #include "serialization/parser.hpp"
 #include "filesystem.hpp"
-#include "util.hpp"
 #include "version.hpp"
-
-#include <boost/foreach.hpp>
 
 #include <stdexcept>
 
-static lg::log_domain log_config("config");
-#define ERR_CF LOG_STREAM(err, log_config)
-#define WRN_CF LOG_STREAM(warn, log_config)
-#define LOG_CF LOG_STREAM(info, log_config)
-#define DBG_CF LOG_STREAM(debug, log_config)
-
 static lg::log_domain log_preprocessor("preprocessor");
-#define LOG_PREPROC LOG_STREAM(info,log_preprocessor)
+#define ERR_PREPROC LOG_STREAM(err,   log_preprocessor)
+#define WRN_PREPROC LOG_STREAM(warn,  log_preprocessor)
+#define LOG_PREPROC LOG_STREAM(info,  log_preprocessor)
+#define DBG_PREPROC LOG_STREAM(debug, log_preprocessor)
 
 using std::streambuf;
 
+static std::string current_file_str = "CURRENT_FILE";
+static std::string current_dir_str = "CURRENT_DIRECTORY";
 
 // map associating each filename encountered to a number
-typedef std::map<std::string, int> t_file_number_map;
-static t_file_number_map file_number_map;
+static std::map<std::string, int> file_number_map;
 
 static bool encode_filename = true;
+
+static std::string preprocessor_error_detail_prefix = "\n    ";
 
 // get filename associated to this code
 static std::string get_filename(const std::string& file_code){
@@ -65,7 +62,7 @@ static std::string get_filename(const std::string& file_code){
 	int n = 0;
 	s >> std::hex >> n;
 
-	BOOST_FOREACH(const t_file_number_map::value_type& p, file_number_map){
+	for(const auto& p : file_number_map) {
 		if(p.second == n)
 			return p.first;
 	}
@@ -108,6 +105,7 @@ static std::string get_location(const std::string& loc)
 	return res;
 }
 
+
 bool preproc_define::operator==(preproc_define const &v) const {
 	return value == v.value && arguments == v.arguments;
 }
@@ -140,11 +138,12 @@ void preproc_define::write(config_writer& writer, const std::string& name) const
 	writer.write_key_val("name", name);
 	writer.write_key_val("value", value);
 	writer.write_key_val("textdomain", textdomain);
-	writer.write_key_val("linenum", lexical_cast<std::string>(linenum));
+	writer.write_key_val("linenum", std::to_string(linenum));
 	writer.write_key_val("location", get_location(location));
 
-	BOOST_FOREACH(const std::string &arg, arguments)
+	for(const std::string &arg : arguments) {
 		write_argument(writer, arg);
+	}
 
 	writer.close_child(key);
 }
@@ -161,8 +160,9 @@ void preproc_define::read(const config& cfg)
 	linenum = cfg["linenum"];
 	location = cfg["location"].str();
 
-	BOOST_FOREACH(const config &arg, cfg.child_range("argument"))
+	for(const config &arg : cfg.child_range("argument")) {
 		read_argument(arg);
+	}
 }
 
 preproc_map::value_type preproc_define::read_pair(const config &cfg)
@@ -205,7 +205,10 @@ public:
 	 * Preprocesses and sends some text to the #target_ buffer.
 	 * @return false when the input has no data left.
 	 */
+	preprocessor * get_old_preprocessor() { return old_preprocessor_; }
 	virtual bool get_chunk() = 0;
+	///retruns 1 if this parses a macro, -1 if this doesnt parse text (if this is no preprocessor_data). 0 otherwise (this parses a file).
+	virtual int is_macro() { return -1; }
 	virtual ~preprocessor();
 };
 
@@ -236,15 +239,38 @@ class preprocessor_streambuf: public streambuf
 	friend struct preprocessor_deleter;
 	preprocessor_streambuf(preprocessor_streambuf const &);
 public:
+	std::string get_current_file();
 	preprocessor_streambuf(preproc_map *);
 	void error(const std::string &, int);
+	void warning(const std::string &, int);
 };
+
+// decode the filenames placed in a location
+std::string preprocessor_streambuf::get_current_file()
+{
+	unsigned nested_level = 0;
+	preprocessor* pre = current_;
+	while(pre && pre->is_macro()) {
+		if(pre->is_macro() == 1) {
+			++nested_level;
+		}
+		pre = pre->get_old_preprocessor();
+	}
+	std::string res;
+	std::vector< std::string > pos = utils::quoted_split(location_, ' ');
+	if(pos.size() <= 2*nested_level) {
+		return res;
+	}
+	else {
+		return get_filename(pos[2*nested_level]);
+	}
+}
 
 preprocessor_streambuf::preprocessor_streambuf(preproc_map *def) :
 	streambuf(),
 	out_buffer_(""),
 	buffer_(),
-	current_(NULL),
+	current_(nullptr),
 	defines_(def),
 	default_defines_(),
 	textdomain_(PACKAGE),
@@ -259,7 +285,7 @@ preprocessor_streambuf::preprocessor_streambuf(preprocessor_streambuf const &t) 
 	streambuf(),
 	out_buffer_(""),
 	buffer_(),
-	current_(NULL),
+	current_(nullptr),
 	defines_(t.defines_),
 	default_defines_(),
 	textdomain_(PACKAGE),
@@ -326,10 +352,11 @@ std::string lineno_string(const std::string &lineno)
 {
 	std::vector< std::string > pos = utils::quoted_split(lineno, ' ');
 	std::vector< std::string >::const_iterator i = pos.begin(), end = pos.end();
-	std::string included_from = " included from ";
+	std::string included_from =
+		preprocessor_error_detail_prefix + "included from ";
 	std::string res;
 	while (i != end) {
-		std::string const &line = *(i++);
+		const std::string& line = *(i++);
 		if (!res.empty())
 			res += included_from;
 		if (i != end)
@@ -344,14 +371,25 @@ std::string lineno_string(const std::string &lineno)
 
 void preprocessor_streambuf::error(const std::string& error_type, int l)
 {
-	utils::string_map i18n_symbols;
 	std::string position, error;
 	std::ostringstream pos;
 	pos << l << ' ' << location_;
 	position = lineno_string(pos.str());
-	error = error_type + " at " + position;
-	ERR_CF << error << '\n';
+	error = error_type + '\n';
+	error += "at " + position;
+	ERR_PREPROC << error << '\n';
 	throw preproc_config::error(error);
+}
+
+void preprocessor_streambuf::warning(const std::string& warning_type, int l)
+{
+	std::string position, warning;
+	std::ostringstream pos;
+	pos << l << ' ' << location_;
+	position = lineno_string(pos.str());
+	warning = warning_type + '\n';
+	warning += "at " + position;
+	WRN_PREPROC << warning << '\n';
 }
 
 
@@ -402,7 +440,7 @@ class preprocessor_file: preprocessor
 	std::vector< std::string > files_;
 	std::vector< std::string >::const_iterator pos_, end_;
 public:
-	preprocessor_file(preprocessor_streambuf &, std::string const &);
+	preprocessor_file(preprocessor_streambuf &, const std::string&, size_t);
 	virtual bool get_chunk();
 };
 
@@ -438,7 +476,18 @@ class preprocessor_data: preprocessor
 		int stack_pos;
 		int linenum;
 	};
-	scoped_istream in_; /**< Input stream. */
+
+	/**
+	 * Manages the lifetime of the @c std::istream pointer we own.
+	 *
+	 * Since @ref in_ uses the stream as well this object must be created
+	 * before @ref in_ and destroyed after @ref in_ is destroyed.
+	 */
+	filesystem::scoped_istream in_scope_;
+
+	/** Input stream. */
+	buffered_istream in_;
+
 	std::string directory_;
 	/** Buffer for delayed input processing. */
 	std::vector< std::string > strings_;
@@ -459,6 +508,8 @@ class preprocessor_data: preprocessor
 	 */
 	int skipping_;
 	int linenum_;
+	///true iff we are currently parsing a macros content, otherwise false.
+	bool is_define_;
 
 	std::string read_word();
 	std::string read_line();
@@ -468,19 +519,19 @@ class preprocessor_data: preprocessor
 	void push_token(token_desc::TOKEN_TYPE);
 	void pop_token();
 	void put(char);
-	void put(std::string const & /*, int change_line
+	void put(const std::string& /*, int change_line
 	= 0 */);
 	void conditional_skip(bool skip);
 public:
 	preprocessor_data(preprocessor_streambuf &,
 	                  std::istream *,
-	                  std::string const &history,
-	                  std::string const &name, int line,
-	                  std::string const &dir, std::string const &domain,
-	                  std::map<std::string, std::string> *defines);
+	                  const std::string& history,
+	                  const std::string& name, int line,
+	                  const std::string& dir, const std::string& domain,
+	                  std::map<std::string, std::string> *defines, bool is_define = false);
 	~preprocessor_data();
 	virtual bool get_chunk();
-
+	virtual int is_macro() { return is_define_ ? 1 : 0; }
 	friend bool operator==(preprocessor_data::token_desc::TOKEN_TYPE, char);
 	friend bool operator==(char, preprocessor_data::token_desc::TOKEN_TYPE);
 	friend bool operator!=(preprocessor_data::token_desc::TOKEN_TYPE, char);
@@ -495,23 +546,36 @@ bool operator==(char lhs, preprocessor_data::token_desc::TOKEN_TYPE rhs){ return
 bool operator!=(preprocessor_data::token_desc::TOKEN_TYPE rhs, char lhs){ return !(lhs == rhs); }
 bool operator!=(char lhs, preprocessor_data::token_desc::TOKEN_TYPE rhs){ return rhs != lhs; }
 
-preprocessor_file::preprocessor_file(preprocessor_streambuf &t, std::string const &name) :
+preprocessor_file::preprocessor_file(preprocessor_streambuf &t, const std::string& name, size_t symbol_index=-1) :
 	preprocessor(t),
 	files_(),
 	pos_(),
 	end_()
 {
-	if (is_directory(name))
-		get_files_in_dir(name, &files_, NULL, ENTIRE_FILE_PATH, SKIP_MEDIA_DIR, DO_REORDER);
+	if (filesystem::is_directory(name)) {
+
+		filesystem::get_files_in_dir(name, &files_, nullptr, filesystem::ENTIRE_FILE_PATH, filesystem::SKIP_MEDIA_DIR, filesystem::DO_REORDER);
+
+		for(std::string fname : files_) {
+			size_t cpos = fname.rfind(" ");
+			if (cpos != std::string::npos && cpos >= symbol_index) {
+				std::stringstream ss;
+				ss << "Found filename containing whitespace: '" << filesystem::base_name(fname) << "' in included directory '" << name << "'.\nThe included symbol probably looks similar to '"
+				 << filesystem::directory_name(fname.substr(symbol_index)) << "'";
+				// TODO: find a real linenumber
+				target_.error(ss.str(), -1);
+			}
+		}
+	}
 	else {
-		std::istream * file_stream = istream_file(name);
+		std::istream * file_stream = filesystem::istream_file(name);
 		if (!file_stream->good()) {
-			ERR_CF << "Could not open file " << name << "\n";
+			ERR_PREPROC << "Could not open file " << name << std::endl;
 			delete file_stream;
 		}
 		else
-			new preprocessor_data(t, file_stream, "", get_short_wml_path(name),
-				1, directory_name(name), t.textdomain_, NULL);
+			new preprocessor_data(t, file_stream, "", filesystem::get_short_wml_path(name),
+				1, filesystem::directory_name(name), t.textdomain_, nullptr);
 	}
 	pos_ = files_.begin();
 	end_ = files_.end();
@@ -538,18 +602,20 @@ bool preprocessor_file::get_chunk()
 }
 
 preprocessor_data::preprocessor_data(preprocessor_streambuf &t,
-	std::istream *i, std::string const &history, std::string const &name, int linenum,
-	std::string const &directory, std::string const &domain,
-	std::map<std::string, std::string> *defines) :
+	std::istream *i, const std::string& history, const std::string& name, int linenum,
+	const std::string& directory, const std::string& domain,
+	std::map<std::string, std::string> *defines, bool is_define) :
 	preprocessor(t),
-	in_(i),
+	in_scope_(i),
+	in_(*i),
 	directory_(directory),
 	strings_(),
 	local_defines_(defines),
 	tokens_(),
 	slowpath_(0),
 	skipping_(0),
-	linenum_(linenum)
+	linenum_(linenum),
+	is_define_(is_define)
 {
 	std::ostringstream s;
 
@@ -641,22 +707,22 @@ void preprocessor_data::pop_token()
 void preprocessor_data::skip_spaces()
 {
 	for(;;) {
-		int c = in_->peek();
-		if (!in_->good() || (c != ' ' && c != '\t'))
+		int c = in_.peek();
+		if (in_.eof() || (c != ' ' && c != '\t'))
 			return;
-		in_->get();
+		in_.get();
 	}
 }
 
 void preprocessor_data::skip_eol()
 {
 	for(;;) {
-		int c = in_->get();
+		int c = in_.get();
 		if (c == '\n') {
 			++linenum_;
 			return;
 		}
-		if (!in_->good())
+		if (in_.eof())
 			return;
 	}
 }
@@ -665,12 +731,12 @@ std::string preprocessor_data::read_word()
 {
 	std::string res;
 	for(;;) {
-		int c = in_->peek();
+		int c = in_.peek();
 		if (c == preprocessor_streambuf::traits_type::eof() || utils::portable_isspace(c)) {
-			// DBG_CF << "(" << res << ")\n";
+			// DBG_PREPROC << "(" << res << ")\n";
 			return res;
 		}
-		in_->get();
+		in_.get();
 		res += static_cast<char>(c);
 	}
 }
@@ -679,12 +745,12 @@ std::string preprocessor_data::read_line()
 {
 	std::string res;
 	for(;;) {
-		int c = in_->get();
+		int c = in_.get();
 		if (c == '\n') {
 			++linenum_;
 			return res;
 		}
-		if (!in_->good())
+		if (in_.eof())
 			return res;
 		if (c != '\r')
 			res += static_cast<char>(c);
@@ -694,8 +760,8 @@ std::string preprocessor_data::read_line()
 std::string preprocessor_data::read_rest_of_line()
 {
 	std::string res;
-	while(in_->good() && in_->peek() != '\n') {
-		int c = in_->get();
+	while(in_.peek() != '\n' && !in_.eof()) {
+		int c = in_.get();
 		if (c != '\r')
 			res += static_cast<char>(c);
 	}
@@ -728,7 +794,7 @@ void preprocessor_data::put(char c)
 	target_.buffer_ << c;
 }
 
-void preprocessor_data::put(std::string const &s /*, int line_change*/)
+void preprocessor_data::put(const std::string& s /*, int line_change*/)
 {
 	if (skipping_)
 		return;
@@ -748,9 +814,9 @@ void preprocessor_data::conditional_skip(bool skip)
 
 bool preprocessor_data::get_chunk()
 {
-	char c = in_->get();
+	char c = in_.get();
 	token_desc &token = tokens_.back();
-	if (!in_->good()) {
+	if (in_.eof()) {
 		// The end of file was reached.
 		// Make sure we don't have any incomplete tokens.
 		char const *s;
@@ -774,8 +840,8 @@ bool preprocessor_data::get_chunk()
 	if (c == '\376') {
 		std::string buffer(1, c);
 		for(;;) {
-			char d = in_->get();
-			if (!in_->good() || d == '\n')
+			char d = in_.get();
+			if (in_.eof() || d == '\n')
 				break;
 			buffer += d;
 		}
@@ -784,12 +850,12 @@ bool preprocessor_data::get_chunk()
 		put(buffer);
 	} else if (token.type == token_desc::VERBATIM) {
 		put(c);
-		if (c == '>' && in_->peek() == '>') {
-			put(in_->get());
+		if (c == '>' && in_.peek() == '>') {
+			put(in_.get());
 			pop_token();
 		}
-	} else if (c == '<' && in_->peek() == '<') {
-		in_->get();
+	} else if (c == '<' && in_.peek() == '<') {
+		in_.get();
 		push_token(token_desc::VERBATIM);
 		put('<');
 		put('<');
@@ -817,74 +883,133 @@ bool preprocessor_data::get_chunk()
 			skip_spaces();
 			int linenum = linenum_;
 			std::vector< std::string > items = utils::split(read_line(), ' ');
+			std::map< std::string, std::string> optargs;
 			if (items.empty()) {
 				target_.error("No macro name found after #define directive", linenum);
 			}
 			std::string symbol = items.front();
 			items.erase(items.begin());
-			int found_enddef = 0;
+			int found_arg = 0, found_enddef = 0;
 			std::string buffer;
 			for(;;) {
-				if (!in_->good())
+				if (in_.eof())
 					break;
-				char d = in_->get();
+				char d = in_.get();
 				if (d == '\n')
 					++linenum_;
 				buffer += d;
-				if (d == '#')
-					found_enddef = 1;
-				else if (found_enddef > 0)
-					if (++found_enddef == 7) {
+				if (d == '#') {
+					if (in_.peek() == 'a') {
+						found_arg = 1;
+					} else {
+						found_enddef = 1;
+					}
+				} else {
+					if (found_arg > 0 && ++found_arg == 4) {
+						if (std::equal(buffer.end() - 3, buffer.end(), "arg")) {
+							buffer.erase(buffer.end() - 3, buffer.end());
+
+							skip_spaces();
+							std::string argname = read_word();
+							skip_eol();
+
+							std::string argbuffer;
+
+							int found_endarg = 0;
+							for(;;) {
+								if (in_.eof())
+									break;
+								char e = in_.get();
+								if (e == '\n')
+									++linenum_;
+								argbuffer += e;
+
+								if (e == '#') {
+									found_endarg = 1;
+								} else if (found_endarg > 0 && ++found_endarg == 7) {
+									if (std::equal(argbuffer.end() - 6, argbuffer.end(), "endarg")) {
+										argbuffer.erase(argbuffer.end() - 7, argbuffer.end());
+										optargs[argname] = argbuffer;
+										break;
+									} else {
+										target_.error("Unterminated #arg definition", linenum_);
+									}
+								}
+							}
+						}
+					}
+
+					if (found_enddef > 0 && ++found_enddef == 7) {
 						if (std::equal(buffer.end() - 6, buffer.end(), "enddef"))
 							break;
-						else
+						else {
 							found_enddef = 0;
+							if (std::equal(buffer.end()-6, buffer.end(), "define")) { //TODO: Maybe add support for this? This would fill feature request #21343
+								target_.error("Preprocessor error: #define is not allowed inside a #define/#enddef pair", linenum);
+							}
+						}
 					}
+				}
 			}
 			if (found_enddef != 7) {
 				target_.error("Unterminated preprocessor definition", linenum_);
 			}
 			if (!skipping_) {
+				preproc_map::const_iterator old_i = target_.defines_->find(symbol);
+				if (old_i != target_.defines_->end()) {
+					std::ostringstream new_pos, old_pos;
+					const preproc_define& old_d = old_i->second;
+
+					new_pos << linenum << ' ' << target_.location_;
+					old_pos << old_d.linenum << ' ' << old_d.location;
+
+					WRN_PREPROC << "Redefining macro " << symbol
+								<< " without explicit #undef at "
+								<< lineno_string(new_pos.str()) << '\n'
+								<< "previously defined at "
+								<< lineno_string(old_pos.str()) << '\n';
+				}
+
 				buffer.erase(buffer.end() - 7, buffer.end());
-				(*target_.defines_)[symbol] = preproc_define(buffer, items, target_.textdomain_,
-					                       linenum + 1, target_.location_);
-				LOG_CF << "defining macro " << symbol << " (location " << get_location(target_.location_) << ")\n";
+				(*target_.defines_)[symbol] = preproc_define(buffer, items, optargs, target_.textdomain_,
+					                       linenum, target_.location_);
+				LOG_PREPROC << "defining macro " << symbol << " (location " << get_location(target_.location_) << ")\n";
 			}
 		} else if (command == "ifdef") {
 			skip_spaces();
-			std::string const &symbol = read_word();
+			const std::string& symbol = read_word();
 			bool found = target_.defines_->count(symbol) != 0;
-			DBG_CF << "testing for macro " << symbol << ": "
+			DBG_PREPROC << "testing for macro " << symbol << ": "
 				<< (found ? "defined" : "not defined") << '\n';
 			conditional_skip(!found);
 		} else if (command == "ifndef") {
 			skip_spaces();
-			std::string const &symbol = read_word();
+			const std::string& symbol = read_word();
 			bool found = target_.defines_->count(symbol) != 0;
-			DBG_CF << "testing for macro " << symbol << ": "
+			DBG_PREPROC << "testing for macro " << symbol << ": "
 				<< (found ? "defined" : "not defined") << '\n';
 			conditional_skip(found);
 		} else if (command == "ifhave") {
 			skip_spaces();
-			std::string const &symbol = read_word();
-			bool found = !get_wml_location(symbol, directory_).empty();
-			DBG_CF << "testing for file or directory " << symbol << ": "
+			const std::string& symbol = read_word();
+			bool found = !filesystem::get_wml_location(symbol, directory_).empty();
+			DBG_PREPROC << "testing for file or directory " << symbol << ": "
 				<< (found ? "found" : "not found") << '\n';
 			conditional_skip(!found);
 		} else if (command == "ifnhave") {
 			skip_spaces();
-			std::string const &symbol = read_word();
-			bool found = !get_wml_location(symbol, directory_).empty();
-			DBG_CF << "testing for file or directory " << symbol << ": "
+			const std::string& symbol = read_word();
+			bool found = !filesystem::get_wml_location(symbol, directory_).empty();
+			DBG_PREPROC << "testing for file or directory " << symbol << ": "
 				<< (found ? "found" : "not found") << '\n';
 			conditional_skip(found);
 		} else if (command == "ifver" || command == "ifnver") {
 			skip_spaces();
-			std::string const& vsymstr = read_word();
+			const std::string& vsymstr = read_word();
 			skip_spaces();
-			std::string const& vopstr = read_word();
+			const std::string& vopstr = read_word();
 			skip_spaces();
-			std::string const& vverstr = read_word();
+			const std::string& vverstr = read_word();
 
 			const VERSION_COMP_OP vop = parse_version_op(vopstr);
 
@@ -901,12 +1026,15 @@ bool preprocessor_data::get_chunk()
 				version_info const version2(vverstr);
 
 				const bool found = do_version_check(version1, vop, version2);
-				DBG_CF << "testing version '" << version1.str() << "' against '" << version2.str() << "' (" << vopstr << "): "
+				DBG_PREPROC << "testing version '" << version1.str() << "' against '" << version2.str() << "' (" << vopstr << "): "
 					<< (found ? "match" : "no match") << '\n';
 
 				conditional_skip(command == "ifver" ? !found : found);
 			} else {
-				target_.error("Undefined macro in #ifver/#ifnver first argument", linenum_);
+				std::string err = "Undefined macro in #ifver/#ifnver first argument: '";
+				err += vsymstr;
+				err += "'";
+				target_.error(err, linenum_);
 			}
 		} else if (command == "else") {
 			if (token.type == token_desc::SKIP_ELSE) {
@@ -932,7 +1060,7 @@ bool preprocessor_data::get_chunk()
 			pop_token();
 		} else if (command == "textdomain") {
 			skip_spaces();
-			std::string const &s = read_word();
+			const std::string& s = read_word();
 			if (s != target_.textdomain_) {
 				put("#textdomain ");
 				put(s);
@@ -943,10 +1071,10 @@ bool preprocessor_data::get_chunk()
 			target_.error("Unexpected #enddef", linenum_);
 		} else if (command == "undef") {
 			skip_spaces();
-			std::string const &symbol = read_word();
+			const std::string& symbol = read_word();
 			if (!skipping_) {
 				target_.defines_->erase(symbol);
-				LOG_CF << "undefine macro " << symbol << " (location " << get_location(target_.location_) << ")\n";
+				LOG_PREPROC << "undefine macro " << symbol << " (location " << get_location(target_.location_) << ")\n";
 			}
 		} else if (command == "error") {
 			if (!skipping_) {
@@ -955,15 +1083,15 @@ bool preprocessor_data::get_chunk()
 				error << "#error: \"" << read_rest_of_line() << '"';
 				target_.error(error.str(), linenum_);
 			} else
-				DBG_CF << "Skipped an error\n";
+				DBG_PREPROC << "Skipped an error\n";
 		} else if (command == "warning") {
 			if (!skipping_) {
 				skip_spaces();
-				std::string message = read_rest_of_line();
-				WRN_CF << "#warning: \"" << message << "\" at "
-					<< linenum_ << ' ' << get_location(target_.location_) << '\n';
+				std::ostringstream warning;
+				warning << "#warning: \"" << read_rest_of_line() << '"';
+				target_.warning(warning.str(), linenum_);
 			} else
-				DBG_CF << "Skipped a warning\n";
+				DBG_PREPROC << "Skipped a warning\n";
 		} else
 			comment = token.type != token_desc::MACRO_SPACE;
 		skip_eol();
@@ -1009,14 +1137,22 @@ bool preprocessor_data::get_chunk()
 			preproc_map::const_iterator macro;
 			// If this is a known pre-processing symbol, then we insert it,
 			// otherwise we assume it's a file name to load.
-			if (local_defines_ &&
+			if(symbol == current_file_str && strings_.size() - token.stack_pos == 1) {
+				pop_token();
+				put(target_.get_current_file());
+			}
+			else if(symbol == current_dir_str && strings_.size() - token.stack_pos == 1) {
+				pop_token();
+				put(filesystem::directory_name(target_.get_current_file()));
+			}
+			else if (local_defines_ &&
 			    (arg = local_defines_->find(symbol)) != local_defines_->end())
 			{
 				if (strings_.size() - token.stack_pos != 1)
 				{
 					std::ostringstream error;
-					error << "macro argument '" << symbol
-					      << "' does not expect any argument";
+					error << "Macro argument '" << symbol
+					      << "' does not expect any arguments";
 					target_.error(error.str(), linenum_);
 				}
 				std::ostringstream v;
@@ -1025,56 +1161,122 @@ bool preprocessor_data::get_chunk()
 				pop_token();
 				put(v.str());
 			}
-			else if ((macro = target_.defines_->find(symbol)) != target_.defines_->end())
+			else if (target_.depth_ < 100 && (macro = target_.defines_->find(symbol)) != target_.defines_->end())
 			{
-				preproc_define const &val = macro->second;
+				const preproc_define &val = macro->second;
 				size_t nb_arg = strings_.size() - token.stack_pos - 1;
-				if (nb_arg != val.arguments.size())
+				size_t optional_arg_num = 0;
+
+				std::map<std::string, std::string> *defines = new std::map<std::string, std::string>;
+				const std::string& dir = filesystem::directory_name(val.location.substr(0, val.location.find(' ')));
+
+				for (size_t i = 0; i < nb_arg; ++i) {
+					if (i < val.arguments.size()) {
+						// Normal mandatory arguments
+
+						(*defines)[val.arguments[i]] = strings_[token.stack_pos + i + 1];
+					} else {
+						// These should be optional argument overrides
+
+						std::string str = strings_[token.stack_pos + i + 1];
+						size_t equals_pos = str.find_first_of("=");
+
+						if (equals_pos != std::string::npos) {
+							size_t argname_pos = str.substr(0, equals_pos).find_last_of(" \n") + 1;
+
+							std::string argname = str.substr(argname_pos, equals_pos - argname_pos);
+
+							if (val.optional_arguments.find(argname) != val.optional_arguments.end()) {
+								(*defines)[argname] = str.substr(equals_pos + 1);
+
+								optional_arg_num++;
+
+								DBG_PREPROC << "Found override for " << argname << " in call to macro " << symbol << "\n";
+							} else {
+								std::ostringstream warning;
+								warning << "Unrecognized optional argument passed to macro '" << symbol << "': '" << argname << "'";
+								target_.warning(warning.str(), linenum_);
+
+								optional_arg_num++; // To prevent the argument number check from blowing up
+							}
+						}
+					}
+				}
+
+				// If the macro definition has any optional arguments, insert their defaults
+				if (val.optional_arguments.size() > 0) {
+					for (const auto &argument : val.optional_arguments) {
+						if (defines->find(argument.first) == defines->end()) {
+							std::ostringstream res;
+							preprocessor_streambuf *buf = new preprocessor_streambuf(target_);
+
+							buf->textdomain_ = target_.textdomain_;
+							std::istream in(buf);
+
+							std::istringstream *buffer = new std::istringstream(argument.second);
+
+							std::map<std::string, std::string> *temp_defines = new std::map<std::string, std::string>;
+							temp_defines->insert(defines->begin(), defines->end());
+
+							new preprocessor_data(*buf, buffer, val.location, "", val.linenum, dir, val.textdomain, temp_defines, false);
+							res << in.rdbuf();
+
+							DBG_PREPROC << "Setting default for optional argument " << argument.first << " in macro " << symbol << "\n";
+
+							(*defines)[argument.first] = res.str();
+
+							delete buf;
+						}
+					}
+				}
+
+				if (nb_arg - optional_arg_num != val.arguments.size())
 				{
+					const std::vector<std::string>& locations = utils::quoted_split(val.location, ' ');
 					std::ostringstream error;
-					error << "preprocessor symbol '" << symbol << "' expects "
+					error << "Preprocessor symbol '" << symbol << "' defined at "
+					      << get_filename(locations[0]) << ":" << val.linenum << " expects "
 					      << val.arguments.size() << " arguments, but has "
-					      << nb_arg << " arguments";
+					      << nb_arg - optional_arg_num << " arguments";
 					target_.error(error.str(), linenum_);
 				}
 				std::istringstream *buffer = new std::istringstream(val.value);
-				std::map<std::string, std::string> *defines =
-					new std::map<std::string, std::string>;
-				for (size_t i = 0; i < nb_arg; ++i) {
-					(*defines)[val.arguments[i]] = strings_[token.stack_pos + i + 1];
-				}
 				pop_token();
-				std::string const &dir = directory_name(val.location.substr(0, val.location.find(' ')));
 				if (!slowpath_) {
-					DBG_CF << "substituting macro " << symbol << '\n';
+					DBG_PREPROC << "substituting macro " << symbol << '\n';
 					new preprocessor_data(target_, buffer, val.location, "",
-					                      val.linenum, dir, val.textdomain, defines);
+					                      val.linenum, dir, val.textdomain, defines, true);
 				} else {
-					DBG_CF << "substituting (slow) macro " << symbol << '\n';
+					DBG_PREPROC << "substituting (slow) macro " << symbol << '\n';
 					std::ostringstream res;
 					preprocessor_streambuf *buf =
 						new preprocessor_streambuf(target_);
+					// Make the nested preprocessor_data responsible for
+					// restoring our current textdomain if needed.
+					buf->textdomain_ = target_.textdomain_;
 					{	std::istream in(buf);
 						new preprocessor_data(*buf, buffer, val.location, "",
-						                      val.linenum, dir, val.textdomain, defines);
+						                      val.linenum, dir, val.textdomain, defines, true);
 						res << in.rdbuf(); }
 					delete buf;
 					put(res.str());
 				}
 			} else if (target_.depth_ < 40) {
-				LOG_CF << "Macro definition not found for " << symbol << " , attempting to open as file.\n";
+				LOG_PREPROC << "Macro definition not found for " << symbol << " , attempting to open as file.\n";
 				pop_token();
-				std::string nfname = get_wml_location(symbol, directory_);
+				std::string nfname = filesystem::get_wml_location(symbol, directory_);
 				if (!nfname.empty())
 				{
 					if (!slowpath_)
-						new preprocessor_file(target_, nfname);
+						// nfname.size() - symbol.size() gives you an index into nfname
+						// This does not necessarily match the symbol though, as it can start with ~ or ./
+						new preprocessor_file(target_, nfname, nfname.size() - symbol.size());
 					else {
 						std::ostringstream res;
 						preprocessor_streambuf *buf =
 							new preprocessor_streambuf(target_);
 						{	std::istream in(buf);
-							new preprocessor_file(*buf, nfname);
+							new preprocessor_file(*buf, nfname, nfname.size() - symbol.size());
 							res << in.rdbuf(); }
 						delete buf;
 						put(res.str());
@@ -1087,7 +1289,7 @@ bool preprocessor_data::get_chunk()
 					target_.error(error.str(), linenum_);
 				}
 			} else {
-				target_.error("Too much nested preprocessing inclusions", linenum_);
+				target_.error("Too many nested preprocessing inclusions", linenum_);
 			}
 		}
 		else if (!skipping_)
@@ -1125,16 +1327,15 @@ preprocessor_deleter::~preprocessor_deleter()
 {
 	clear(std::ios_base::goodbit);
 	exceptions(std::ios_base::goodbit);
-	rdbuf(NULL);
+	rdbuf(nullptr);
 	delete buf_;
 	delete defines_;
 }
 
-
-std::istream *preprocess_file(std::string const &fname, preproc_map *defines)
+std::istream *preprocess_file(const std::string& fname, preproc_map *defines)
 {
-	log_scope("preprocessing file...");
-	preproc_map *owned_defines = NULL;
+	log_scope("preprocessing file " + fname + " ...");
+	preproc_map *owned_defines = nullptr;
 	if (!defines) {
 		// If no preproc_map has been given, create a new one,
 		// and ensure it is destroyed when the stream is
@@ -1144,6 +1345,7 @@ std::istream *preprocess_file(std::string const &fname, preproc_map *defines)
 		defines = owned_defines;
 	}
 	preprocessor_streambuf *buf = new preprocessor_streambuf(defines);
+
 	new preprocessor_file(*buf, fname);
 	return new preprocessor_deleter(buf, owned_defines);
 }
@@ -1151,63 +1353,71 @@ std::istream *preprocess_file(std::string const &fname, preproc_map *defines)
 void preprocess_resource(const std::string& res_name, preproc_map *defines_map,
 			 bool write_cfg, bool write_plain_cfg,std::string target_directory)
 {
-	if (is_directory(res_name))
+	if (filesystem::is_directory(res_name))
 	{
 		std::vector<std::string> dirs,files;
 
-		get_files_in_dir(res_name, &files, &dirs, ENTIRE_FILE_PATH, SKIP_MEDIA_DIR, DO_REORDER);
+		filesystem::get_files_in_dir(res_name, &files, &dirs, filesystem::ENTIRE_FILE_PATH, filesystem::SKIP_MEDIA_DIR, filesystem::DO_REORDER);
 
 		// subdirectories
-		BOOST_FOREACH(const std::string& dir, dirs)
+		for(const std::string& dir : dirs)
 		{
-			LOG_PREPROC<<"processing sub-dir: "<<dir<<'\n';
-			preprocess_resource(dir,defines_map,write_cfg,write_plain_cfg,target_directory);
+			LOG_PREPROC << "processing sub-dir: " << dir << '\n';
+			preprocess_resource(dir, defines_map, write_cfg, write_plain_cfg, target_directory);
 		}
 
 		// files in current directory
-		BOOST_FOREACH(const std::string& file, files)
+		for(const std::string& file : files)
 		{
-			preprocess_resource(file,defines_map,write_cfg,write_plain_cfg,target_directory);
+			preprocess_resource(file, defines_map, write_cfg, write_plain_cfg, target_directory);
 		}
 		return;
 	}
 
 	// process only config files.
-	if (ends_with(res_name,".cfg") == false)
+	if (filesystem::ends_with(res_name, ".cfg") == false)
 		return;
 
-	LOG_PREPROC<<"processing resource: "<<res_name<<'\n';
+	LOG_PREPROC << "processing resource: " << res_name << '\n';
 
 	//disable filename encoding to get clear #line in cfg.plain
 	encode_filename = false;
 
-	scoped_istream stream = preprocess_file(res_name, defines_map);
+	filesystem::scoped_istream stream = preprocess_file(res_name, defines_map);
 	std::stringstream ss;
-	ss<<(*stream).rdbuf();
-	std::string streamContent = ss.str();
+	// Set the failbit so if we get any preprocessor exceptions (e.g.:preproc_config::error)
+	// they will be propagated in the main program, instead of just setting the
+	// failbit on the stream. This was necessary in order for the MSVC and GCC
+	// binaries to behave the same way.
+	ss.exceptions(std::ios_base::failbit);
 
-	config cfg;
+	ss << (*stream).rdbuf();
+
+	LOG_PREPROC << "processing finished\n";
 
 	if (write_cfg == true || write_plain_cfg == true)
 	{
+		config cfg;
+		std::string streamContent = ss.str();
+
 		read(cfg, streamContent);
-		const std::string preproc_res_name = target_directory + "/" + file_name(res_name);
+		const std::string preproc_res_name = target_directory + "/" + filesystem::base_name(res_name);
 
 		// write the processed cfg file
 		if (write_cfg == true)
 		{
-			LOG_PREPROC<<"writing cfg file: "<<preproc_res_name<<'\n';
-			create_directory_if_missing_recursive(directory_name(preproc_res_name));
-			scoped_ostream outStream(ostream_file(preproc_res_name));
-			write(*outStream,cfg);
+			LOG_PREPROC << "writing cfg file: " << preproc_res_name << '\n';
+			filesystem::create_directory_if_missing_recursive(filesystem::directory_name(preproc_res_name));
+			filesystem::scoped_ostream outStream(filesystem::ostream_file(preproc_res_name));
+			write(*outStream, cfg);
 		}
 
 		// write the plain cfg file
 		if (write_plain_cfg == true)
 		{
-			LOG_PREPROC<<"writing plain cfg file: "<<(preproc_res_name+".plain")<<'\n';
-			create_directory_if_missing_recursive(directory_name(preproc_res_name));
-			write_file(preproc_res_name+".plain",streamContent);
+			LOG_PREPROC << "writing plain cfg file: " << (preproc_res_name + ".plain") << '\n';
+			filesystem::create_directory_if_missing_recursive(filesystem::directory_name(preproc_res_name));
+			filesystem::write_file(preproc_res_name + ".plain", streamContent);
 		}
 	}
 }

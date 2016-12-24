@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2009 - 2012 by Bartosz Waresiak <dragonking@o2.pl>
+   Copyright (C) 2009 - 2016 by Bartosz Waresiak <dragonking@o2.pl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 #ifndef AI_FORMULA_CANDIDATES_HPP_INCLUDED
 #define AI_FORMULA_CANDIDATES_HPP_INCLUDED
 
-#include "formula_function.hpp"
-
 #include <set>
 
 class unit_map;
@@ -36,7 +34,7 @@ namespace game_logic {
 class base_candidate_action;
 
 typedef std::map< std::string, game_logic::const_formula_ptr > candidate_action_filters;
-typedef boost::shared_ptr<game_logic::base_candidate_action> candidate_action_ptr;
+typedef std::shared_ptr<game_logic::base_candidate_action> candidate_action_ptr;
 
 //every new candidate action type should be derived from this class
 //and should complete evaluate and update_callable_map methods
@@ -70,62 +68,6 @@ protected:
 	const_formula_ptr eval_;
 	const_formula_ptr action_;
 	int score_;
-};
-
-struct candidate_action_compare {
-	bool operator() (const candidate_action_ptr laction,
-			const candidate_action_ptr raction) const
-	{
-		return laction->get_score() > raction->get_score();
-	}
-};
-
-typedef std::set<game_logic::candidate_action_ptr, game_logic::candidate_action_compare> candidate_action_set;
-
-//this class is responsible for managing candidate actions
-class candidate_action_manager {
-public:
-	candidate_action_manager()
-		: evaluated_candidate_actions_()
-		, candidate_actions_()
-	{}
-
-	//register candidate actions from config
-	void load_config(const config& cfg, ai::formula_ai* ai, function_symbol_table* function_table);
-
-	//register a single candidate action from config
-	candidate_action_ptr load_candidate_action_from_config(const config& cfg, ai::formula_ai* ai, function_symbol_table* function_table);
-
-	//evaluate candidate action, return true if we have candidate action that have score > 0
-	bool evaluate_candidate_actions(ai::formula_ai* ai, unit_map& units);
-
-	const_formula_ptr get_best_action_formula() const {
-		if( evaluated_candidate_actions_.empty() )
-			return game_logic::formula_ptr();
-		return (*evaluated_candidate_actions_.begin())->get_action();
-	}
-
-	//calls same method from best candidate action
-	void update_callable_map(game_logic::map_formula_callable& callable){
-		if( evaluated_candidate_actions_.empty() )
-			return;
-		(*evaluated_candidate_actions_.begin())->update_callable_map(callable);
-	}
-
-	void register_candidate_action(candidate_action_ptr& candidate_action){
-		candidate_actions_.push_back(candidate_action);
-	}
-
-	bool has_candidate_actions() const { return !candidate_actions_.empty(); }
-
-	void clear() {
-		candidate_actions_.clear();
-		evaluated_candidate_actions_.clear();
-	}
-
-private:
-	game_logic::candidate_action_set evaluated_candidate_actions_;
-	std::vector<candidate_action_ptr> candidate_actions_;
 };
 
 

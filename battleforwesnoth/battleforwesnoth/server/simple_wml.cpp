@@ -1,14 +1,39 @@
+/*
+   Copyright (C) 2008 - 2016 by David White <dave@whitevine.net>
+   Part of the Battle for Wesnoth Project http://www.wesnoth.org
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License 2
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY.
+
+   See the COPYING file for more details.
+*/
+
 #include <iostream>
 #include <sstream>
 
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-
-#include "simple_wml.hpp"
-
-#include "../log.hpp"
-
 #include "global.hpp"
+
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
+#include <boost/iostreams/filter/counter.hpp>
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4456)
+#pragma warning(disable: 4458)
+#endif
+#include <boost/iostreams/filter/gzip.hpp>
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+#include "server/simple_wml.hpp"
+
+#include "log.hpp"
 
 static lg::log_domain log_config("config");
 #define ERR_SWML LOG_STREAM(err, log_config)
@@ -30,7 +55,11 @@ char* uncompress_buffer(const string_span& input, string_span* span)
 		state = 1;
 		boost::iostreams::filtering_stream<boost::iostreams::input> filter;
 		state = 2;
-		filter.push(boost::iostreams::gzip_decompressor());
+		if (!span->empty() && *span->begin() == 'B') {
+			filter.push(boost::iostreams::bzip2_decompressor());
+		} else {
+			filter.push(boost::iostreams::gzip_decompressor());
+		}
 		filter.push(stream);
 		state = 3;
 
@@ -78,25 +107,33 @@ char* uncompress_buffer(const string_span& input, string_span* span)
 	}
 }
 
-char* compress_buffer(const char* input, string_span* span)
+char* compress_buffer(const char* input, string_span* span, bool bzip2)
 {
 	int nalloc = strlen(input);
 	int state = 0;
 	try {
 		std::string in(input);
 		state = 1;
-		std::istringstream stream(in);
+		std::istringstream istream(in);
 		state = 2;
-		boost::iostreams::filtering_stream<boost::iostreams::input> filter;
+		boost::iostreams::filtering_stream<boost::iostreams::output> filter;
 		state = 3;
-		filter.push(boost::iostreams::gzip_compressor());
-		filter.push(stream);
+		if (bzip2) {
+			filter.push(boost::iostreams::bzip2_compressor());
+		} else {
+			filter.push(boost::iostreams::gzip_compressor());
+		}
 		state = 4;
 		nalloc = in.size()*2 + 80;
+		std::vector<char> buf(nalloc);
+		boost::iostreams::array_sink out(&buf[0], buf.size());
+		filter.push(boost::iostreams::counter());
+		filter.push(out);
 
-		std::vector<char> buf(in.size()*2 + 80);
 		state = 5;
-		const int len = filter.read(&buf[0], buf.size()).gcount();
+
+		boost::iostreams::copy(istream, filter, buf.size());
+		const int len = filter.component<boost::iostreams::counter>(1)->characters();
 		assert(len < 128*1024*1024);
 		if((!filter.eof() && !filter.good()) || len == static_cast<int>(buf.size())) {
 			throw error("failed to compress");
@@ -112,7 +149,7 @@ char* compress_buffer(const char* input, string_span* span)
 		state = 8;
 
 		*span = string_span(small_out, len);
-		assert(*small_out == 31);
+		assert(*small_out == (bzip2 ? 'B' : 31));
 		state = 9;
 		return small_out;
 	} catch (std::bad_alloc& e) {
@@ -165,7 +202,7 @@ char* string_span::duplicate() const
 error::error(const char* msg)
   : game::error(msg)
 {
-	ERR_SWML << "ERROR: '" << msg << "'\n";
+	ERR_SWML << "ERROR: '" << msg << "'" << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& o, const string_span& s)
@@ -209,7 +246,7 @@ node::node(document& doc, node* parent, const char** str, int depth) :
 			if(s[1] == '/') {
 				output_cache_ = string_span(begin, s - begin);
 				s = strchr(s, ']');
-				if(s == NULL) {
+				if(s == nullptr) {
 					throw error("end element unterminated");
 				}
 
@@ -219,7 +256,7 @@ node::node(document& doc, node* parent, const char** str, int depth) :
 
 			++s;
 			const char* end = strchr(s, ']');
-			if(end == NULL) {
+			if(end == nullptr) {
 				throw error("unterminated element");
 			}
 
@@ -241,14 +278,14 @@ node::node(document& doc, node* parent, const char** str, int depth) :
 			break;
 		case '#':
 			s = strchr(s, '\n');
-			if(s == NULL) {
+			if(s == nullptr) {
 				throw error("did not find newline after '#'");
 			}
 			break;
 		default: {
 			const char* end = strchr(s, '=');
-			if(end == NULL) {
-				ERR_SWML << "attribute: " << s << "\n";
+			if(end == nullptr) {
+				ERR_SWML << "attribute: " << s << std::endl;
 				throw error("did not find '=' after attribute");
 			}
 
@@ -256,7 +293,7 @@ node::node(document& doc, node* parent, const char** str, int depth) :
 			s = end + 1;
 			if(*s == '_') {
 				s = strchr(s, '"');
-				if(s == NULL) {
+				if(s == nullptr) {
 					throw error("did not find '\"' after '_'");
 				}
 			}
@@ -264,7 +301,7 @@ node::node(document& doc, node* parent, const char** str, int depth) :
 			if (*s != '"') {
 				end = strchr(s, '\n');
 				if (!end) {
-					ERR_SWML << "ATTR: '" << name << "' (((" << s << ")))\n";
+					ERR_SWML << "ATTR: '" << name << "' (((" << s << ")))" << std::endl;
 					throw error("did not find end of attribute");
 				}
 				if (memchr(s, '"', end - s))
@@ -281,7 +318,7 @@ node::node(document& doc, node* parent, const char** str, int depth) :
 #endif
 					++end;
 				}
-				if(end == NULL)
+				if(end == nullptr)
 					throw error("did not find end of attribute");
 
 				// Stop if newline.
@@ -316,7 +353,7 @@ node::node(document& doc, node* parent, const char** str, int depth) :
 			read_attribute:
 			string_span value(s, end - s);
 			if(attr_.empty() == false && !(attr_.back().first < name)) {
-				ERR_SWML << "attributes: '" << attr_.back().first << "' < '" << name << "'\n";
+				ERR_SWML << "attributes: '" << attr_.back().first << "' < '" << name << "'" << std::endl;
 				throw error("attributes not in order");
 			}
 
@@ -409,9 +446,8 @@ node& node::set_attr_dup(const char* key, const string_span& value)
 
 node& node::set_attr_int(const char* key, int value)
 {
-	char buf[64];
-	sprintf(buf, "%d", value);
-	return set_attr_dup(key, buf);
+	std::string temp = std::to_string(value);
+	return set_attr_dup(key, temp.c_str());
 }
 
 node& node::add_child_at(const char* name, size_t index)
@@ -584,7 +620,7 @@ node* node::child(const char* name)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 const node* node::child(const char* name) const
@@ -592,14 +628,14 @@ const node* node::child(const char* name) const
 	for(child_map::const_iterator i = children_.begin(); i != children_.end(); ++i) {
 		if(i->first == name) {
 			if(i->second.empty()) {
-				return NULL;
+				return nullptr;
 			} else {
 				return i->second.front();
 			}
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 const node::child_list& node::children(const char* name) const
@@ -799,7 +835,7 @@ void node::apply_diff(const node& diff)
 {
 	set_dirty();
 	const node* inserts = diff.child("insert");
-	if(inserts != NULL) {
+	if(inserts != nullptr) {
 		for(attribute_list::const_iterator i = inserts->attr_.begin(); i != inserts->attr_.end(); ++i) {
 			char* name = i->first.duplicate();
 			char* value = i->second.duplicate();
@@ -810,7 +846,7 @@ void node::apply_diff(const node& diff)
 	}
 
 	const node* deletes = diff.child("delete");
-	if(deletes != NULL) {
+	if(deletes != nullptr) {
 		for(attribute_list::const_iterator i = deletes->attr_.begin(); i != deletes->attr_.end(); ++i) {
 			std::pair<attribute_list::iterator,
 	                  attribute_list::iterator> range = std::equal_range(attr_.begin(), attr_.end(), i->first, string_span_pair_comparer());
@@ -901,18 +937,18 @@ int node::nattributes_recursive() const
 
 void node::set_dirty()
 {
-	for(node* n = this; n != NULL && n->output_cache_.is_null() == false; n = n->parent_) {
+	for(node* n = this; n != nullptr && n->output_cache_.is_null() == false; n = n->parent_) {
 		n->output_cache_ = string_span();
 	}
 }
 
 document::document() :
 	compressed_buf_(),
-	output_(NULL),
+	output_(nullptr),
 	buffers_(),
-	root_(new node(*this, NULL)),
-	prev_(NULL),
-	next_(NULL)
+	root_(new node(*this, nullptr)),
+	prev_(nullptr),
+	next_(nullptr)
 {
 	attach_list();
 }
@@ -921,15 +957,15 @@ document::document(char* buf, INIT_BUFFER_CONTROL control) :
 	compressed_buf_(),
 	output_(buf),
 	buffers_(),
-	root_(NULL),
-	prev_(NULL),
-	next_(NULL)
+	root_(nullptr),
+	prev_(nullptr),
+	next_(nullptr)
 {
 	if(control == INIT_TAKE_OWNERSHIP) {
 		buffers_.push_back(buf);
 	}
 	const char* cbuf = buf;
-	root_ = new node(*this, NULL, &cbuf);
+	root_ = new node(*this, nullptr, &cbuf);
 
 	attach_list();
 }
@@ -938,15 +974,15 @@ document::document(const char* buf, INIT_STATE state) :
 	compressed_buf_(),
 	output_(buf),
 	buffers_(),
-	root_(NULL),
-	prev_(NULL),
-	next_(NULL)
+	root_(nullptr),
+	prev_(nullptr),
+	next_(nullptr)
 {
 	if(state == INIT_COMPRESSED) {
 		output_compressed();
-		output_ = NULL;
+		output_ = nullptr;
 	} else {
-		root_ = new node(*this, NULL, &buf);
+		root_ = new node(*this, nullptr, &buf);
 	}
 
 	attach_list();
@@ -954,18 +990,18 @@ document::document(const char* buf, INIT_STATE state) :
 
 document::document(string_span compressed_buf) :
 	compressed_buf_(compressed_buf),
-	output_(NULL),
+	output_(nullptr),
 	buffers_(),
-	root_(NULL),
-	prev_(NULL),
-	next_(NULL)
+	root_(nullptr),
+	prev_(nullptr),
+	next_(nullptr)
 {
 	string_span uncompressed_buf;
 	buffers_.push_back(uncompress_buffer(compressed_buf, &uncompressed_buf));
 	output_ = uncompressed_buf.begin();
 	const char* cbuf = output_;
 	try {
-		root_ = new node(*this, NULL, &cbuf);
+		root_ = new node(*this, nullptr, &cbuf);
 	} catch(...) {
 		delete [] buffers_.front();
 		buffers_.clear();
@@ -1040,16 +1076,16 @@ const char* document::output()
 	return output_;
 }
 
-string_span document::output_compressed()
+string_span document::output_compressed(bool bzip2)
 {
 	if(compressed_buf_.empty() == false &&
-	   (root_ == NULL || root_->is_dirty() == false)) {
-		assert(*compressed_buf_.begin() == 31);
+	   (root_ == nullptr || root_->is_dirty() == false)) {
+		assert(*compressed_buf_.begin() == (bzip2 ? 'B' : 31));
 		return compressed_buf_;
 	}
 
-	buffers_.push_back(compress_buffer(output(), &compressed_buf_));
-	assert(*compressed_buf_.begin() == 31);
+	buffers_.push_back(compress_buffer(output(), &compressed_buf_, bzip2));
+	assert(*compressed_buf_.begin() == (bzip2 ? 'B' : 31));
 
 	return compressed_buf_;
 }
@@ -1058,8 +1094,8 @@ void document::compress()
 {
 	output_compressed();
 	debug_delete(root_);
-	root_ = NULL;
-	output_ = NULL;
+	root_ = nullptr;
+	output_ = nullptr;
 	std::vector<char*> new_buffers;
 	for(std::vector<char*>::iterator i = buffers_.begin(); i != buffers_.end(); ++i) {
 		if(*i != compressed_buf_.begin()) {
@@ -1075,16 +1111,16 @@ void document::compress()
 
 void document::generate_root()
 {
-	if(output_ == NULL) {
+	if(output_ == nullptr) {
 		assert(compressed_buf_.empty() == false);
 		string_span uncompressed_buf;
 		buffers_.push_back(uncompress_buffer(compressed_buf_, &uncompressed_buf));
 		output_ = uncompressed_buf.begin();
 	}
 
-	assert(root_ == NULL);
+	assert(root_ == nullptr);
 	const char* cbuf = output_;
-	root_ = new node(*this, NULL, &cbuf);
+	root_ = new node(*this, nullptr, &cbuf);
 }
 
 document* document::clone()
@@ -1108,9 +1144,9 @@ void document::swap(document& o)
 void document::clear()
 {
 	compressed_buf_ = string_span();
-	output_ = NULL;
+	output_ = nullptr;
 	debug_delete(root_);
-	root_ = new node(*this, NULL);
+	root_ = new node(*this, nullptr);
 	for(std::vector<char*>::iterator i = buffers_.begin(); i != buffers_.end(); ++i) {
 		delete [] *i;
 	}
@@ -1119,12 +1155,12 @@ void document::clear()
 }
 
 namespace {
-document* head_doc = NULL;
+document* head_doc = nullptr;
 }
 
 void document::attach_list()
 {
-	prev_ = NULL;
+	prev_ = nullptr;
 	next_ = head_doc;
 
 	if(next_) {
@@ -1146,7 +1182,7 @@ void document::detach_list()
 	if(prev_) {
 		prev_->next_ = next_;
 	}
-	next_ = prev_ = NULL;
+	next_ = prev_ = nullptr;
 }
 
 std::string document::stats()
@@ -1161,7 +1197,7 @@ std::string document::stats()
 	int nnodes = 0;
 	int ndirty = 0;
 	int nattributes = 0;
-	for(document* d = head_doc; d != NULL; d = d->next_) {
+	for(document* d = head_doc; d != nullptr; d = d->next_) {
 		ndocs++;
 		nbuffers += d->buffers_.size();
 

@@ -1,6 +1,5 @@
-/* $Id: joystick.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2011 - 2012 by Fabian Mueller
+   Copyright (C) 2011 - 2016 by Fabian Mueller
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -13,12 +12,13 @@
    See the COPYING file for more details.
 */
 
-#include <vector>
-#include "sdl_utils.hpp"
-#include "map.hpp"
-
 #ifndef JOYSTICK_HPP_
 #define JOYSTICK_HPP_
+
+#include <vector>
+#include "map/location.hpp"
+
+#include <SDL.h>
 
 class joystick_manager {
 

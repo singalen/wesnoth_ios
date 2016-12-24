@@ -1,6 +1,5 @@
-/* $Id: chat_events.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2006 - 2016 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
    wesnoth playturn Copyright (C) 2003 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -18,7 +17,8 @@
 #define CHAT_EVENTS_H_INCLUDED
 
 #include "global.hpp"
-
+class config;
+#include <ctime>
 #include <string>
 
 namespace events {
@@ -32,16 +32,18 @@ public:
 	enum MESSAGE_TYPE { MESSAGE_PUBLIC, MESSAGE_PRIVATE };
 
 	void send_command(const std::string& cmd, const std::string& args="");
+
+	virtual void send_to_server(const config& cfg) = 0;
 protected:
 	void do_speak(const std::string& message, bool allies_only=false);
 
 	//called from do_speak
 	virtual void add_chat_message(const time_t& time,
 			const std::string& speaker, int side, const std::string& message,
-			MESSAGE_TYPE type=MESSAGE_PRIVATE)=0;
+			MESSAGE_TYPE type=MESSAGE_PRIVATE) = 0;
+	virtual void send_chat_message(const std::string& message, bool allies_only=false) = 0;
 
-	virtual void send_chat_message(const std::string& message, bool allies_only=false)=0;
-
+	//Why are these virtual?
 	virtual void send_whisper(const std::string& receiver, const std::string& message);
 
 	virtual void add_whisper_sent(const std::string& receiver, const std::string& message);

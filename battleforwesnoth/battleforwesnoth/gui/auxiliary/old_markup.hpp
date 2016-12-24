@@ -1,6 +1,5 @@
-/* $Id: old_markup.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -24,7 +23,7 @@ namespace gui2
 /**
  * Implements simple parsing of legacy GUI1 item markup.
  */
-class tlegacy_menu_item
+class legacy_menu_item
 {
 	/*
 	 * Legacy options/menu items have some special markup:
@@ -41,25 +40,30 @@ class tlegacy_menu_item
 	 * with special meanings for certain characters.
 	 */
 public:
-	explicit tlegacy_menu_item(const std::string& str = std::string());
+	explicit legacy_menu_item(const std::string& str = std::string());
 
-	const std::string& icon() const {
+	const std::string& icon() const
+	{
 		return icon_;
 	}
 
-	const std::string& label() const {
+	const std::string& label() const
+	{
 		return label_;
 	}
 
-	const std::string& description() const {
+	const std::string& description() const
+	{
 		return desc_;
 	}
 
-	bool is_default() const {
+	bool is_default() const
+	{
 		return default_;
 	}
 
-	tlegacy_menu_item& operator=(const tlegacy_menu_item& rhs) {
+	legacy_menu_item& operator=(const legacy_menu_item& rhs)
+	{
 		if(&rhs != this) {
 			icon_ = rhs.icon_;
 			label_ = rhs.label_;
@@ -85,7 +89,6 @@ private:
 	 */
 	bool default_;
 };
-
 }
 
 #endif

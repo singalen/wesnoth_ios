@@ -1,6 +1,5 @@
-/* $Id: exploder.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -13,8 +12,8 @@
    See the COPYING file for more details.
 */
 
-#include "../game_config.hpp"
-#include "exploder_composer.hpp"
+#include "game_config.hpp"
+#include "tools/exploder_composer.hpp"
 
 #include <iostream>
 

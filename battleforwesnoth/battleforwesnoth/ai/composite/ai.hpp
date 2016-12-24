@@ -1,6 +1,5 @@
-/* $Id: ai.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,9 +20,8 @@
 #ifndef AI_COMPOSITE_AI_HPP_INCLUDED
 #define AI_COMPOSITE_AI_HPP_INCLUDED
 
-#include "contexts.hpp"
-#include "../interface.hpp"
-#include "component.hpp"
+#include "ai/composite/contexts.hpp"
+#include "ai/composite/component.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -34,7 +32,7 @@
 //============================================================================
 namespace ai {
 
-class ai_composite : public ai_context, public virtual default_ai_context_proxy, public interface, public component {
+class ai_composite : public ai_context, public virtual default_ai_context_proxy, public component {
 public:
 
 
@@ -59,7 +57,7 @@ public:
 	/**
 	 * Evaluate command (using fai)
 	 */
-        virtual std::string evaluate(const std::string& str);
+	virtual std::string evaluate(const std::string& str);
 
 	/**
 	 * On new turn
@@ -96,6 +94,9 @@ public:
 	void create_engine(std::vector<engine_ptr> &engines, const config &cfg);
 
 
+	void replace_aspect(std::map<std::string,aspect_ptr> &aspects, const config &cfg, std::string id);
+
+
 	void on_create();
 
 	/**
@@ -107,6 +108,8 @@ public:
 	virtual std::string get_id() const;
 	virtual std::string get_name() const;
 	virtual std::string get_engine() const;
+	
+	static config preparse_cfg(ai_context& ctx, const config& cfg);
 
 protected:
 

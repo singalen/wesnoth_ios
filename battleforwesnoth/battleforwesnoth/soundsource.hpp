@@ -1,6 +1,5 @@
-/* $Id: soundsource.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Karol Nowak <grzywacz@sul.uni.lodz.pl>
+   Copyright (C) 2006 - 2016 by Karol Nowak <grzywacz@sul.uni.lodz.pl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,8 +17,7 @@
 #include <map>
 
 #include "generic_event.hpp"
-#include "map_location.hpp"
-#include "savegame_config.hpp"
+#include "map/location.hpp"
 
 class config;
 class display;
@@ -32,7 +30,7 @@ class manager;
 /*
  * Sound source is an object on a map (a location) which has one or more
  * sounds effects associated with it, which are played randomly and with
- * appropriate delays, when sound emiting object is visible on screen.
+ * appropriate delays, when sound emitting object is visible on screen.
  */
 class positional_source {
 	unsigned int last_played_;
@@ -75,7 +73,8 @@ public:
 	void write_config(config& cfg) const;
 };
 
-class manager : public events::observer, public savegame::savegame_config {
+class manager : public events::observer
+{
 
 	typedef std::map<std::string, positional_source *> positional_source_map;
 	typedef positional_source_map::iterator            positional_source_iterator;
@@ -94,6 +93,7 @@ public:
 	// add or replace a soundsource
 	void add(const sourcespec &source);
 	void remove(const std::string &id);
+	config get(const std::string &id);
 	void update();
 
 	// checks which sound sources are visible
@@ -101,11 +101,9 @@ public:
 
 	/**
 	 * Serializes information into cfg as new children of key
-	 * "sound_source", appendend to existing content.
+	 * "sound_source", appended to existing content.
 	 */
 	void write_sourcespecs(config& cfg) const;
-
-	config to_config() const;
 };
 
 /**

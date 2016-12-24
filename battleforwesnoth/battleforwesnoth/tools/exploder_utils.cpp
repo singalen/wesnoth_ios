@@ -1,6 +1,5 @@
-/* $Id: exploder_utils.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -13,9 +12,11 @@
    See the COPYING file for more details.
 */
 
-#include "exploder_utils.hpp"
+#include "tools/exploder_utils.hpp"
 #include "game_config.hpp"
 #include "serialization/string_utils.hpp"
+#include <cstdio> //for FILE
+#include <memory>
 #include <png.h>
 #include <zlib.h>
 
@@ -166,28 +167,33 @@ namespace {
 	};
 }
 
+static void close_FILE(std::FILE* f)
+{
+	if(f != nullptr) { std::fclose(f); }
+}	
+
 //saves the given SDL structure into a given filename.
 void save_image(surface surf, const std::string &filename)
 {
 	//opens the actual file
-	const util::scoped_FILE file(fopen(filename.c_str(),"wb"));
+	const std::unique_ptr<std::FILE, void(*)(std::FILE*)> file(fopen(filename.c_str(),"wb"), &close_FILE);
 
 	//initializes PNG write structures
-	//TODO: review whether providing NULL error handlers is something
+	//TODO: review whether providing nullptr error handlers is something
 	//sensible
 	png_struct* png_ptr = png_create_write_struct
-		(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+		(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if(!png_ptr)
 		throw exploder_failure("Unable to initialize the png write structure");
 
 	png_info* info_ptr = png_create_info_struct(png_ptr);
 	if(!info_ptr) {
-		png_destroy_write_struct(&png_ptr, NULL);
+		png_destroy_write_struct(&png_ptr, nullptr);
 		throw exploder_failure("Unable to initialize the png info structure");
 	}
 
 	//instructs the PNG library to use the open file
-	png_init_io(png_ptr, file);
+	png_init_io(png_ptr, file.get());
 
 	//sets compression level to the maximum
 	png_set_compression_level(png_ptr,
@@ -205,12 +211,12 @@ void save_image(surface surf, const std::string &filename)
 	//converts the data to the RGBA format. We cannot pass SDL data
 	//directly to the png lib, even if we know its pixel format, because of
 	//endianness problems.
-	util::scoped_array<rgba> rgba_data(new rgba[surf->w * surf->h]);
+	std::unique_ptr<rgba[]> rgba_data(new rgba[surf->w * surf->h]);
 
 	Uint32 *surf_data = lock.pixels();
 	int pos = 0;
 	for(int y = 0; y < surf->h; ++y) {
-		row_pointers[y] = reinterpret_cast<png_byte*>(rgba_data + pos);
+		row_pointers[y] = reinterpret_cast<png_byte*>(&rgba_data[pos]);
 		for(int x = 0; x < surf->w; ++x) {
 			Uint8 red, green, blue, alpha;
 			SDL_GetRGBA(*surf_data, surf->format, &red, &green, &blue, &alpha);
@@ -225,7 +231,7 @@ void save_image(surface surf, const std::string &filename)
 	png_set_rows(png_ptr, info_ptr, row_pointers);
 
 	//writes the actual image data
-	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
 
 	//cleans everything
 	png_write_end(png_ptr, info_ptr);

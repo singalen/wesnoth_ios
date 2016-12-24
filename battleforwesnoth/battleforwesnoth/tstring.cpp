@@ -1,7 +1,6 @@
-/* $Id: tstring.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
    Copyright (C) 2004 by Philippe Plantier <ayin@anathas.org>
-   Copyright (C) 2005 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+   Copyright (C) 2005 - 2016 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -23,11 +22,16 @@
 
 #include <map>
 #include <vector>
+#include <mutex>
 
 #include "tstring.hpp"
 #include "gettext.hpp"
 #include "log.hpp"
 #include <boost/functional/hash.hpp>
+
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
 
 static lg::log_domain log_config("config");
 #define LOG_CF LOG_STREAM(info, log_config)
@@ -40,7 +44,7 @@ namespace {
 	const char UNTRANSLATABLE_PART = 0x02;
 	const char TEXTDOMAIN_SEPARATOR = 0x03;
 	const char ID_TRANSLATABLE_PART = 0x04;
-	const char UNTRANSLATABLE_STRING = 0x05;
+	const char PLURAL_PART = 0x05;
 
 	std::vector<std::string> id_to_textdomain;
 	std::map<std::string, unsigned int> textdomain_to_id;
@@ -66,72 +70,24 @@ t_string_base::walker::walker(const t_string_base& string) :
 	}
 }
 
-#ifdef _MSC_VER
-/*
- * From the IRC log of 23.07.2010
- * 07:52 <silene> Upth: what did it break?
- * 07:53 <Upth> silene: since that revision, the windows executable crashes
- * immediately before loading the main menu
- * 07:54 <silene> what kind of crash?
- * 07:54 <Upth> assertion failed in the std::string library
- * 07:54 <Upth> then "fatal error"
- * 07:54 <Upth> and abnormal termination
- * 07:54 <silene> which assertion?
- * 07:55 <Upth> Expression: ("_Myptr + _Off <= (((_Mystring
- * *)this->_Mycont)->_Myptr() + ((_Mystring *)this->_Mycont)->_Mysize) &&
- * _Myptr + _Off >= ((_Mystring *)this->_Mycont)->_Myptr()", 0)
- * 07:56 <shadowmaster> ugly.
- * 07:57 <Upth> in the iterator += overload, called from the iterator +
- * overload, called from std::basic_string::end(), called from line 409 of
- * parser.cpp in write_key_val
- * 07:58 <Upth> err std::basic_string::end() is called from
- * t_string::walker::end(), which is called on line 409 of parser.cpp
- * 07:58 <silene> that doesn't make sense; as far as i can tell it's a compiler
- * bug
- * 07:58 <silene> which compiler is that so that the code is made conditional
- * on it?
- * 07:58 <Upth> MSVC9
- */
-t_string_base::walker::walker(const t_string& string) :
-	string_(string.get().value_),
-	begin_(0),
-	end_(string_.size()),
-	textdomain_(),
-	translatable_(false)
-{
-	if(string.get().translatable_) {
-		update();
-	}
-}
-
-t_string_base::walker::walker(const std::string& string) :
-	string_(string),
-	begin_(0),
-	end_(string_.size()),
-	textdomain_(),
-	translatable_(false)
-{
-	update();
-}
-#endif
+static std::string mark = std::string(TRANSLATABLE_PART, 1) + UNTRANSLATABLE_PART +
+	ID_TRANSLATABLE_PART + PLURAL_PART;
 
 void t_string_base::walker::update()
 {
 	unsigned int id;
-
-	static std::string mark = std::string(TRANSLATABLE_PART, 1) + UNTRANSLATABLE_PART +
-		ID_TRANSLATABLE_PART;
 
 	if(begin_ == string_.size())
 		return;
 
 	switch(string_[begin_]) {
 	case TRANSLATABLE_PART: {
+		// Format: [TRANSLATABLE_PART]textdomain[TEXTDOMAIN_SEPARATOR]msgid[...]
 		std::string::size_type textdomain_end =
 			string_.find(TEXTDOMAIN_SEPARATOR, begin_ + 1);
 
 		if(textdomain_end == std::string::npos || textdomain_end >= string_.size() - 1) {
-			ERR_CF << "Error: invalid string: " << string_ << "\n";
+			ERR_CF << "Error: invalid string: " << string_ << std::endl;
 			begin_ = string_.size();
 			return;
 		}
@@ -147,8 +103,9 @@ void t_string_base::walker::update()
 		break;
 	}
 	case ID_TRANSLATABLE_PART:
+		// Format: [ID_TRANSLATABLE_PART][2-byte textdomain ID]msgid[...]
 		if(begin_ + 3 >= string_.size()) {
-			ERR_CF << "Error: invalid string: " << string_ << "\n";
+			ERR_CF << "Error: invalid string: " << string_ << std::endl;
 			begin_ = string_.size();
 			return;
 		}
@@ -158,7 +115,7 @@ void t_string_base::walker::update()
 
 		id = string_[begin_ + 1] + string_[begin_ + 2] * 256;
 		if(id >= id_to_textdomain.size()) {
-			ERR_CF << "Error: invalid string: " << string_ << "\n";
+			ERR_CF << "Error: invalid string: " << string_ << std::endl;
 			begin_ = string_.size();
 			return;
 		}
@@ -174,7 +131,7 @@ void t_string_base::walker::update()
 			end_ = string_.size();
 
 		if(end_ <= begin_ + 1) {
-			ERR_CF << "Error: invalid string: " << string_ << "\n";
+			ERR_CF << "Error: invalid string: " << string_ << std::endl;
 			begin_ = string_.size();
 			return;
 		}
@@ -184,12 +141,71 @@ void t_string_base::walker::update()
 		begin_ += 1;
 		break;
 
+	case PLURAL_PART:
+		begin_ = string_.find_first_of(mark, end_ + 5);
+		if(begin_ == std::string::npos)
+			begin_ = string_.size();
+		if(string_[begin_] == PLURAL_PART) {
+			ERR_CF << "Error: invalid string: " << string_ << std::endl;
+			begin_ = string_.size();
+			return;
+		}
+		update();
+		break;
+
 	default:
 		end_ = string_.size();
 		translatable_ = false;
 		textdomain_ = "";
 		break;
 	}
+
+	if(translatable_ && string_[end_] == PLURAL_PART) {
+		// Format: [PLURAL_PART][4-byte count]msgid_plural[...]
+		if(end_ + 5 >= string_.size()) {
+			ERR_CF << "Error: invalid string: " << string_ << std::endl;
+			begin_ = string_.size();
+			return;
+		}
+		std::string::size_type real_end = string_.find_first_of(mark, end_ + 6);
+		if(real_end < string_.size() && string_[real_end] == PLURAL_PART) {
+			ERR_CF << "Error: invalid string: " << string_ << std::endl;
+			begin_ = string_.size();
+			return;
+		}
+		countable_ = true;
+		union {
+			int32_t count;
+			char data[4];
+		} cvt;
+		std::copy_n(string_.data() + end_ + 1, 4, cvt.data);
+		count_ = cvt.count;
+	} else {
+		countable_ = false;
+		count_ = 0;
+	}
+}
+
+std::string::const_iterator t_string_base::walker::plural_begin() const
+{
+	if(!countable_) {
+		return begin();
+	}
+
+	return end() + 5;
+}
+
+std::string::const_iterator t_string_base::walker::plural_end() const
+{
+	if(!countable_) {
+		return end();
+	}
+
+	std::string::size_type pl_end = string_.find_first_of(mark, end_ + 5);
+	if(pl_end == std::string::npos) {
+		pl_end = string_.size();
+	}
+	return string_.begin() + pl_end;
 }
 
 t_string_base::t_string_base() :
@@ -250,6 +266,46 @@ t_string_base::t_string_base(const std::string& string, const std::string& textd
 	value_ += char(id & 0xff);
 	value_ += char(id >> 8);
 	value_ += string;
+}
+
+t_string_base::t_string_base(const std::string& sing, const std::string& pl, int count, const std::string& textdomain) :
+	value_(1, ID_TRANSLATABLE_PART),
+	translated_value_(),
+	translation_timestamp_(0),
+	translatable_(true),
+	last_untranslatable_(false)
+{
+	if (sing.empty() && pl.empty()) {
+		value_.clear();
+		translatable_ = false;
+		return;
+	}
+
+	std::map<std::string, unsigned int>::const_iterator idi = textdomain_to_id.find(textdomain);
+	unsigned int id;
+
+	if(idi == textdomain_to_id.end()) {
+		id = id_to_textdomain.size();
+		textdomain_to_id[textdomain] = id;
+		id_to_textdomain.push_back(textdomain);
+	} else {
+		id = idi->second;
+	}
+
+	value_ += char(id & 0xff);
+	value_ += char(id >> 8);
+	value_ += sing;
+	value_ += PLURAL_PART;
+
+	union {
+		int32_t count;
+		char data[4];
+	} cvt;
+	cvt.count = count;
+	for(char c : cvt.data) {
+		value_ += c;
+	}
+	value_ += pl;
 }
 
 t_string_base::t_string_base(const char* string) :
@@ -489,7 +545,12 @@ const std::string& t_string_base::str() const
 		std::string part(w.begin(), w.end());
 
 		if(w.translatable()) {
-			translated_value_ += dsgettext(w.textdomain().c_str(), part.c_str());
+			if(w.countable()) {
+				std::string plural(w.plural_begin(), w.plural_end());
+				translated_value_ += translation::dsngettext(w.textdomain().c_str(), part.c_str(), plural.c_str(), w.count());
+			} else {
+				translated_value_ += translation::dsgettext(w.textdomain().c_str(), part.c_str());
+			}
 		} else {
 			translated_value_ += part;
 		}
@@ -499,7 +560,7 @@ const std::string& t_string_base::str() const
 	return translated_value_;
 }
 
-t_string::t_string() : super()
+t_string::t_string() : val_(new base())
 {
 }
 
@@ -507,35 +568,41 @@ t_string::~t_string()
 {
 }
 
-t_string::t_string(const t_string &o) : super(o)
+t_string::t_string(const t_string &o) : val_(o.val_)
 {
 }
 
-t_string::t_string(const base &o) : super(o)
+t_string::t_string(const base &o) : val_(new base(o))
 {
 }
 
-t_string::t_string(const char *o) : super(base(o))
+t_string::t_string(const char *o) : val_(new base(o))
 {
 }
 
-t_string::t_string(const std::string &o) : super(base(o))
+t_string::t_string(const std::string &o) : val_(new base(o))
 {
 }
 
-t_string::t_string(const std::string &o, const std::string &textdomain) : super(base(o, textdomain))
+t_string::t_string(const std::string &o, const std::string &textdomain) : val_(new base(o, textdomain))
+{
+}
+
+t_string::t_string(const std::string &s, const std::string& pl, int c, const std::string &textdomain)
+		: val_(new base(s, pl, c, textdomain))
 {
 }
 
 t_string &t_string::operator=(const t_string &o)
 {
-	super::operator=(o);
+	val_ = o.val_;
 	return *this;
 }
 
 t_string &t_string::operator=(const char *o)
 {
-	super::operator=(base(o));
+	t_string o2(o);
+	swap(o2);
 	return *this;
 }
 
@@ -544,8 +611,7 @@ void t_string::add_textdomain(const std::string &name, const std::string &path)
 	LOG_CF << "Binding textdomain " << name << " to path " << path << "\n";
 
 	// Register and (re-)bind this textdomain
-	bindtextdomain(name.c_str(), path.c_str());
-	bind_textdomain_codeset(name.c_str(), "UTF-8");
+	translation::bind_textdomain(name.c_str(), path.c_str(), "UTF-8");
 }
 
 void t_string::reset_translations()
@@ -558,4 +624,3 @@ std::ostream& operator<<(std::ostream& stream, const t_string_base& string)
 	stream << string.str();
 	return stream;
 }
-

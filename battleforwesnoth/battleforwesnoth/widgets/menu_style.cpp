@@ -1,6 +1,5 @@
-/* $Id: menu_style.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   wesnoth menu styles Copyright (C) 2006 - 2012 by Patrick Parker <patrick_x99@hotmail.com>
+   wesnoth menu styles Copyright (C) 2006 - 2016 by Patrick Parker <patrick_x99@hotmail.com>
    wesnoth menu Copyright (C) 2003-5 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -20,24 +19,20 @@
 
 #include "widgets/menu.hpp"
 
-#include "font.hpp"
-#include <image.hpp>
+#include "font/sdl_ttf.hpp"
+#include "image.hpp"
+#include "sdl/utils.hpp"
 #include "video.hpp"
 
 namespace gui {
 
 	//static initializations
-menu::imgsel_style menu::bluebg_style("misc/selection2", true,
+menu::imgsel_style menu::bluebg_style("dialogs/selection", true,
 										   0x000000, 0x000000, 0x333333,
 										   0.35, 0.0, 0.3);
 menu::style menu::simple_style;
-#ifdef USE_TINY_GUI
-menu::imgsel_style menu::bigger_style("misc/selection2", true,
-										  0x000000, 0x000000, 0x001829,
-                                          0.35, 0.0, 0.3, 15); //18);
-#endif
+
 menu::style &menu::default_style = menu::bluebg_style;
-menu *empty_menu = NULL;
 
 	//constructors
 menu::style::style() : font_size_(font::SIZE_NORMAL),
@@ -56,18 +51,6 @@ menu::imgsel_style::imgsel_style(const std::string &img_base, bool has_bg,
 								 normal_rgb2_(normal_rgb), selected_rgb2_(selected_rgb), heading_rgb2_(heading_rgb),
 								 normal_alpha2_(normal_alpha), selected_alpha2_(selected_alpha), heading_alpha2_(heading_alpha)
 {}
-#ifdef USE_TINY_GUI
-menu::imgsel_style::imgsel_style(const std::string &img_base, bool has_bg,
-                                     int normal_rgb, int selected_rgb, int heading_rgb,
-                                     double normal_alpha, double selected_alpha, double heading_alpha, int fontSize)
-	: img_base_(img_base), has_background_(has_bg),  initialized_(false), load_failed_(false),
-	normal_rgb2_(normal_rgb), selected_rgb2_(selected_rgb), heading_rgb2_(heading_rgb),
-	normal_alpha2_(normal_alpha), selected_alpha2_(selected_alpha), heading_alpha2_(heading_alpha)
-{
-    font_size_ = fontSize;
-    cell_padding_ = fontSize * 3/5;
-}
-#endif
 menu::imgsel_style::~imgsel_style()
 {}
 
@@ -127,6 +110,7 @@ bool menu::imgsel_style::load_images()
 					img_map_["border-top"]->h,
 					img_map_["border-left"]->w);
 
+
 			if(has_background_ && !load_image("background"))
 			{
 				load_failed_ = true;
@@ -166,7 +150,7 @@ void menu::imgsel_style::draw_row_bg(menu& menu_ref, const size_t row_index, con
 			bg_cache_.height = rect.h;
 		}
 		SDL_Rect clip = rect;
-		menu_ref.video().blit_surface(rect.x,rect.y,bg_cache_.surf,NULL,&clip);
+		menu_ref.video().blit_surface(rect.x,rect.y,bg_cache_.surf,nullptr,&clip);
 	}
 	else {
 		style::draw_row_bg(menu_ref, row_index, rect, type);
@@ -191,7 +175,7 @@ void menu::imgsel_style::draw_row(menu& menu_ref, const size_t row_index, const 
 			area.x = rect.x;
 			area.y = rect.y;
 			do {
-				menu_ref.video().blit_surface(area.x,area.y,image,NULL,&clip);
+				menu_ref.video().blit_surface(area.x,area.y,image,nullptr,&clip);
 				area.x += image->w;
 			} while( area.x < rect.x + rect.w );
 
@@ -199,7 +183,7 @@ void menu::imgsel_style::draw_row(menu& menu_ref, const size_t row_index, const 
 			area.x = rect.x;
 			area.y = rect.y;
 			do {
-				menu_ref.video().blit_surface(area.x,area.y,image,NULL,&clip);
+				menu_ref.video().blit_surface(area.x,area.y,image,nullptr,&clip);
 				area.y += image->h;
 			} while( area.y < rect.y + rect.h );
 
@@ -207,7 +191,7 @@ void menu::imgsel_style::draw_row(menu& menu_ref, const size_t row_index, const 
 			area.x = rect.x + rect.w - thickness_;
 			area.y = rect.y;
 			do {
-				menu_ref.video().blit_surface(area.x,area.y,image,NULL,&clip);
+				menu_ref.video().blit_surface(area.x,area.y,image,nullptr,&clip);
 				area.y += image->h;
 			} while( area.y < rect.y + rect.h );
 
@@ -215,7 +199,7 @@ void menu::imgsel_style::draw_row(menu& menu_ref, const size_t row_index, const 
 			area.x = rect.x;
 			area.y = rect.y + rect.h - thickness_;
 			do {
-				menu_ref.video().blit_surface(area.x,area.y,image,NULL,&clip);
+				menu_ref.video().blit_surface(area.x,area.y,image,nullptr,&clip);
 				area.x += image->w;
 			} while( area.x < rect.x + rect.w );
 
@@ -239,7 +223,8 @@ void menu::imgsel_style::draw_row(menu& menu_ref, const size_t row_index, const 
 			area.y = rect.y + rect.h - image->h;
 			menu_ref.video().blit_surface(area.x,area.y,image);
 		}
-	} else {
+	}
+		else {
 		//default drawing
 		style::draw_row(menu_ref, row_index, rect, type);
 	}

@@ -1,6 +1,5 @@
-/* $Id: schema_validator.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2011 - 2012 by Sytyi Nick <nsytyi@gmail.com>
+   Copyright (C) 2011 - 2016 by Sytyi Nick <nsytyi@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,8 +21,6 @@
 #include "serialization/preprocessor.hpp"
 #include "wml_exception.hpp"
 
-#include <boost/foreach.hpp>
-
 namespace schema_validation{
 
 static lg::log_domain log_validation("validation");
@@ -35,13 +32,13 @@ static lg::log_domain log_validation("validation");
 static std::string at(const std::string & file, int line){
 	std::ostringstream ss;
 	ss << line << " " << file;
-	return ::lineno_string(ss.str());
+	return "at " + ::lineno_string(ss.str());
 }
 
 static void print_output(const std::string & message,bool flag_exception = false ){
 #ifndef VALIDATION_ERRORS_LOG
 	if(flag_exception){
-			throw twml_exception("Validation error occured",message);
+			throw wml_exception("Validation error occured",message);
 		}else{
 	ERR_VL << message;
 }
@@ -56,8 +53,9 @@ static void extra_tag_error(const std::string & file, int line,
 							const std::string & name,int n,
 							const std::string & parent, bool flag_exception){
 	std::ostringstream ss;
-	ss 	 <<at(file,line) << ": extra tag [" << name << "]; there may only be "
-			<< n << " ["<< name <<"] in [" << parent <<"]\n";
+	ss << "Extra tag [" << name << "]; there may only be "
+	   << n << " [" << name << "] in [" << parent << "]\n"
+	   << at(file, line) << "\n";
 	print_output (ss.str (),flag_exception);
 }
 
@@ -65,8 +63,9 @@ static void wrong_tag_error(const std::string & file, int line,
 							const std::string & name,const std::string & parent,
 							bool flag_exception){
 	std::ostringstream ss;
-	ss 	 <<at(file,line) << ": tag [" << name << "] may not be used in [" <<
-			parent <<"]\n";
+	ss << "Tag [" << name << "] may not be used in ["
+	   << parent << "]\n"
+	   << at(file, line) << "\n";
 	print_output (ss.str (),flag_exception);
 }
 
@@ -74,8 +73,9 @@ static void missing_tag_error(const std::string & file, int line,
 							  const std::string & name,int n,
 							  const std::string & parent, bool flag_exception){
 	std::ostringstream ss;
-	ss 	 <<at(file,line) << ": missing tag [" << name << "]; there must be "
-			<< n << " ["<<  name  <<"]s in [" << parent <<"]\n";
+	ss << "Missing tag [" << name << "]; there must be "
+	   << n << " [" <<  name  << "]s in [" << parent << "]\n"
+	   << at(file, line) << "\n";
 	print_output (ss.str (),flag_exception);
 }
 
@@ -83,8 +83,9 @@ static void extra_key_error(const std::string & file, int line,
 					 const std::string & tag,const std::string & key,
 					 bool flag_exception){
 	std::ostringstream ss;
-	ss << at(file,line) << ": Invalid key '"<< key <<"=' in tag ["<< tag
-			<< "] on line " << line  << "\n";
+	ss << "Invalid key '" << key << "=' in tag [" << tag
+	   << "]\n"
+	   << at(file, line) << "\n";
 	print_output (ss.str (),flag_exception);
 }
 
@@ -92,8 +93,9 @@ static void missing_key_error(const std::string & file, int line,
 					 const std::string & tag,const std::string & key,
 					 bool flag_exception){
 	std::ostringstream ss;
-	ss << at(file,line) << ": In tag "<< tag
-			<< " which begins here, " << " missing key "<< key << "\n";
+	ss << "Missing key '" << key << "=' in tag [" << tag
+	   << "]\n"
+	   << at(file, line) << "\n";
 	print_output (ss.str (),flag_exception);
 }
 
@@ -101,8 +103,9 @@ static void wrong_value_error(const std::string & file, int line,
 					 const std::string & tag,const std::string & key,
 					 const std::string & value,bool flag_exception){
 	std::ostringstream ss;
-	ss << at(file,line) << ": Invalid value '"<< value << "' in key '" << key <<
-			"=' in tag ["<< tag <<"] on line " << line << "'\n";
+	ss << "Invalid value '" << value << "' in key '" << key
+	   << "=' in tag [" << tag << "]\n"
+	   << at(file, line) << "\n";
 	print_output (ss.str (),flag_exception);
 }
 
@@ -111,7 +114,7 @@ static void wrong_value_error(const std::string & file, int line,
 schema_validator::~schema_validator(){}
 
 schema_validator::schema_validator(const std::string & config_file_name)
-	: config_read_ (false)
+	: config_read_(false)
 	, create_exceptions_(strict_validation_enabled)
 	, root_()
 	, stack_()
@@ -119,9 +122,8 @@ schema_validator::schema_validator(const std::string & config_file_name)
 	, cache_()
 	, types_()
 {
-	config_read_ = read_config_file(config_file_name);
-	if (! config_read_) {
-		ERR_VL << "Schema file "<< config_file_name << " was not read.\n";
+	if ( !read_config_file(config_file_name) ) {
+		ERR_VL << "Schema file "<< config_file_name << " was not read." << std::endl;
 		throw abstract_validator::error("Schema file "+ config_file_name
 										+ " was not read.\n");
 	}else{
@@ -139,19 +141,20 @@ bool schema_validator::read_config_file(const std::string &filename){
 	try {
 		preproc_map preproc(
 				game_config::config_cache::instance().get_preproc_map());
-		scoped_istream stream = preprocess_file(filename, &preproc);
+		filesystem::scoped_istream stream = preprocess_file(filename, &preproc);
 		read(cfg, *stream);
-	} catch(config::error&) {
+	} catch(config::error& e) {
+		ERR_VL << "Failed to read file "<< filename << ":\n" << e.what() << "\n";
 		return false;
 	}
-	BOOST_FOREACH(const config &g, cfg.child_range("wml_schema")) {
-		BOOST_FOREACH(const config &schema, g.child_range("tag")) {
+	for(const config &g : cfg.child_range("wml_schema")) {
+		for(const config &schema : g.child_range("tag")) {
 			if (schema["name"].str() == "root"){
 				//@NOTE Don't know, maybe merging of roots needed.
 				root_ = class_tag (schema);
 			}
 		}
-		BOOST_FOREACH(const config &type, g.child_range("type")) {
+		for(const config &type : g.child_range("type")) {
 			try{
 				types_[type["name"].str()] = boost::regex( type["value"].str());
 			}
@@ -161,6 +164,7 @@ bool schema_validator::read_config_file(const std::string &filename){
 		}
 	}
 
+	config_read_ = true;
 	return true;
 }
 /*
@@ -173,7 +177,7 @@ void schema_validator::open_tag(const std::string & name,
 								const std::string &file,
 								bool addittion){
 	if (! stack_.empty()){
-		const class_tag * tag = NULL;
+		const class_tag * tag = nullptr;
 		if (stack_.top()){
 			tag = stack_.top()->find_tag(name,root_);
 			if (! tag){
@@ -188,7 +192,7 @@ void schema_validator::open_tag(const std::string & name,
 		}
 		stack_.push(tag);
 	}else{
-		stack_.push(NULL);
+		stack_.push(nullptr);
 	}
 	counter_.push(cnt_map());
 	cache_.push(message_map());
@@ -243,7 +247,7 @@ void schema_validator::validate(const config & cfg, const std::string & name,
 		for (class_tag::const_key_iterator key = k.first;
 			 key != k.second ; ++key){
 			if (key->second.is_mandatory()){
-				if (cfg.get(key->first) == NULL){
+				if (cfg.get(key->first) == nullptr){
 					cache_.top()[&cfg].push_back(
 							message_info(MISSING_KEY,file,start_line,0,
 										 name,key->first ));

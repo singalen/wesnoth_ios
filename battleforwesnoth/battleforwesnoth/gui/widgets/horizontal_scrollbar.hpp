@@ -1,6 +1,5 @@
-/* $Id: horizontal_scrollbar.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,50 +17,96 @@
 
 #include "gui/widgets/scrollbar.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
+
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 /** A horizontal scrollbar. */
-class thorizontal_scrollbar : public tscrollbar_
+class horizontal_scrollbar : public scrollbar_base
 {
 public:
-
-	thorizontal_scrollbar() :
-		tscrollbar_()
+	horizontal_scrollbar() : scrollbar_base()
 	{
 	}
 
 private:
+	/** Inherited from tscrollbar. */
+	unsigned get_length() const override
+	{
+		return get_width();
+	}
 
 	/** Inherited from tscrollbar. */
-	unsigned get_length() const { return get_width(); }
+	unsigned minimum_positioner_length() const override;
 
 	/** Inherited from tscrollbar. */
-	unsigned minimum_positioner_length() const;
+	unsigned maximum_positioner_length() const override;
 
 	/** Inherited from tscrollbar. */
-	unsigned maximum_positioner_length() const;
+	unsigned offset_before() const override;
 
 	/** Inherited from tscrollbar. */
-	unsigned offset_before() const;
+	unsigned offset_after() const override;
 
 	/** Inherited from tscrollbar. */
-	unsigned offset_after() const;
+	bool on_positioner(const point& coordinate) const override;
 
 	/** Inherited from tscrollbar. */
-	bool on_positioner(const tpoint& coordinate) const;
+	int on_bar(const point& coordinate) const override;
 
 	/** Inherited from tscrollbar. */
-	int on_bar(const tpoint& coordinate) const;
+	bool in_orthogonal_range(const point& coordinate) const override;
 
 	/** Inherited from tscrollbar. */
-	int get_length_difference(const tpoint& original, const tpoint& current) const
-		{ return current.x - original.x; }
+	int get_length_difference(const point& original, const point& current) const override
+	{
+		return current.x - original.x;
+	}
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 };
+
+// }---------- DEFINITION ---------{
+
+struct horizontal_scrollbar_definition : public styled_widget_definition
+{
+	explicit horizontal_scrollbar_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+
+		unsigned minimum_positioner_length;
+		unsigned maximum_positioner_length;
+
+		unsigned left_offset;
+		unsigned right_offset;
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_horizontal_scrollbar : public builder_styled_widget
+{
+	explicit builder_horizontal_scrollbar(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-

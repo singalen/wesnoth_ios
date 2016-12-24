@@ -1,6 +1,5 @@
-/* $Id: sound.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -84,6 +83,14 @@ void play_UI_sound(const std::string& files);
 // A class to periodically check for new music that needs to be played
 class music_thinker : public events::pump_monitor {
 	void process(events::pump_info &info);
+};
+
+// A class to mute music when the game is in background
+class music_muter : public events::sdl_handler {
+public:
+	music_muter();
+	void handle_event(const SDL_Event&) override {}
+	void handle_window_event(const SDL_Event& event) override;
 };
 
 // Save music playlist for snapshot

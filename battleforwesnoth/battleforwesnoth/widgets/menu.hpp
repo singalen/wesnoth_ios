@@ -1,6 +1,5 @@
-/* $Id: menu.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,6 +15,7 @@
 #ifndef WIDGET_MENU_HPP_INCLUDED
 #define WIDGET_MENU_HPP_INCLUDED
 
+#include <map>
 #include <set>
 
 #include "scrollarea.hpp"
@@ -25,9 +25,6 @@ namespace image{
 }
 
 namespace gui {
-
-class menu;
-extern menu *empty_menu;
 
 class menu : public scrollarea
 {
@@ -46,7 +43,6 @@ public:
 		virtual void draw_row_bg(menu& menu_ref, const size_t row_index, const SDL_Rect& rect, ROW_TYPE type);
 		virtual void draw_row(menu& menu_ref, const size_t row_index, const SDL_Rect& rect, ROW_TYPE type);
 		void scale_images(int max_width, int max_height);
-
 		surface get_item_image(const image::locator &i_locator) const;
 		size_t get_font_size() const;
 		size_t get_cell_padding() const;
@@ -69,11 +65,6 @@ public:
 		imgsel_style(const std::string &img_base, bool has_bg,
 								 int normal_rgb, int selected_rgb, int heading_rgb,
 								 double normal_alpha, double selected_alpha, double heading_alpha);
-#ifdef USE_TINY_GUI
-        imgsel_style(const std::string &img_base, bool has_bg,
-					 int normal_rgb, int selected_rgb, int heading_rgb,
-					 double normal_alpha, double selected_alpha, double heading_alpha, int fontSize);
-#endif
 		virtual ~imgsel_style();
 
 		virtual SDL_Rect item_size(const std::string& item) const;
@@ -94,6 +85,7 @@ public:
 		bool load_failed_;
 		int normal_rgb2_, selected_rgb2_, heading_rgb2_;
 		double normal_alpha2_, selected_alpha2_, heading_alpha2_;
+		//FIXME: why is this better than a plain surface?
 		struct bg_cache
 		{
 			bg_cache() : surf(), width(-1), height(-1)
@@ -104,14 +96,13 @@ public:
 		};
 		bg_cache bg_cache_;
 	};
+
 	friend class style;
 	friend class imgsel_style;
 	static style &default_style;
 	static style simple_style;
 	static imgsel_style bluebg_style;
-#ifdef USE_TINY_GUI
-	static imgsel_style bigger_style;
-#endif
+
 	struct item
 	{
 		item() : fields(), help(), id(0)
@@ -160,7 +151,7 @@ public:
 
 	menu(CVideo& video, const std::vector<std::string>& items,
 	     bool click_selects=false, int max_height=-1, int max_width=-1,
-		 const sorter* sorter_obj=NULL, style *menu_style=NULL, const bool auto_join=true);
+		 const sorter* sorter_obj=nullptr, style *menu_style=nullptr, const bool auto_join=true);
 
 	/** Default implementation, but defined out-of-line for efficiency reasons. */
 	~menu();
@@ -171,10 +162,13 @@ public:
 	void move_selection_keeping_viewport(size_t id);
 	void reset_selection();
 
+	const item& get_item(int index) const;
+	const item& get_selected_item() const;
+
 	// allows user to change_item while running (dangerous)
 	void change_item(int pos1,int pos2,const std::string& str);
 
-	void erase_item(size_t index);
+	virtual void erase_item(size_t index);
 
 	void set_heading(const std::vector<std::string>& heading);
 
@@ -182,7 +176,7 @@ public:
 	/// strip_spaces is false, spaces will remain at the item edges. If
 	/// keep_viewport is true, the menu tries to keep the selection at
 	/// the same position as it were before the items were set.
-	void set_items(const std::vector<std::string>& items, bool strip_spaces=true,
+	virtual void set_items(const std::vector<std::string>& items, bool strip_spaces=true,
 				   bool keep_viewport=false);
 
 	/// Set a new max height for this menu. Note that this does not take
@@ -190,6 +184,9 @@ public:
 	/// everything, such as set_items().
 	void set_max_height(const int new_max_height);
 	void set_max_width(const int new_max_width);
+
+	int get_max_height() { return max_height_; }
+	int get_max_width() { return max_width_; }
 
 	size_t number_of_items() const { return items_.size(); }
 
@@ -206,20 +203,32 @@ public:
 	//this should be changed to a more object-oriented approach
 	void set_sorter(sorter *s);
 	void sort_by(int column);
-	int get_sort_by() {return sortby_;};
-	bool get_sort_reversed() {return sortreversed_;};
+	int get_sort_by() {return sortby_;}
+	bool get_sort_reversed() {return sortreversed_;}
 
 protected:
 	bool item_ends_with_image(const std::string& item) const;
 	virtual void handle_event(const SDL_Event& event);
 	void set_inner_location(const SDL_Rect& rect);
 
-	bool requires_event_focus(const SDL_Event *event=NULL) const;
+	bool requires_event_focus(const SDL_Event *event=nullptr) const;
 	const std::vector<int>& column_widths() const;
 	virtual void draw_row(const size_t row_index, const SDL_Rect& rect, ROW_TYPE type);
 
 	style *style_;
 	bool silent_;
+
+	int hit(int x, int y) const;
+
+	std::pair<int,int> hit_cell(int x, int y) const;
+	int hit_column(int x) const;
+
+	int hit_heading(int x, int y) const;
+
+	void invalidate_row(size_t id);
+	void invalidate_row_pos(size_t pos);
+	void invalidate_heading();
+
 private:
 	size_t max_items_onscreen() const;
 
@@ -229,7 +238,7 @@ private:
 	mutable int max_items_, item_height_;
 
 	void adjust_viewport_to_selection();
-	void key_press(SDLKey key);
+	void key_press(SDL_Keycode key);
 
 	std::vector<item> items_;
 	std::vector<size_t> item_pos_;
@@ -260,12 +269,6 @@ private:
 	void clear_item(int item);
 	void draw_contents();
 	void draw();
-	int hit(int x, int y) const;
-
-	std::pair<int,int> hit_cell(int x, int y) const;
-	int hit_column(int x) const;
-
-	int hit_heading(int x, int y) const;
 
 	mutable std::map<int,SDL_Rect> itemRects_;
 
@@ -311,10 +314,6 @@ private:
 	void move_selection_to(size_t id, bool silent=false, SELECTION_MOVE_VIEWPORT move_viewport=MOVE_VIEWPORT);
 	void move_selection_up(size_t dep);
 	void move_selection_down(size_t dep);
-
-	void invalidate_row(size_t id);
-	void invalidate_row_pos(size_t pos);
-	void invalidate_heading();
 
 	std::set<int> invalid_;
 };

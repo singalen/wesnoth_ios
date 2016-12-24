@@ -1,6 +1,5 @@
-/* $Id: scrollpane.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -20,13 +19,14 @@
 #include "global.hpp"
 
 #include <algorithm>
+#include <boost/dynamic_bitset.hpp>
 
 #include "widgets/scrollpane.hpp"
 
 namespace {
 class widget_finder {
 public:
-	widget_finder(gui::widget* w) : w_(w) {};
+	widget_finder(gui::widget* w) : w_(w) {}
 
 	bool operator()(const std::pair<int, gui::scrollpane::scrollpane_widget>& p)
 	{
@@ -71,7 +71,7 @@ void scrollpane::hide(bool value)
 
 void scrollpane::add_widget(widget* w, int x, int y, int z_order)
 {
-	if (w == NULL)
+	if (w == nullptr)
 		return;
 
 	widget_map::iterator itor = std::find_if(content_.begin(), content_.end(), widget_finder(w));
@@ -123,7 +123,7 @@ void scrollpane::scroll(unsigned int pos)
 void scrollpane::update_widget_positions()
 {
 	widget_map::iterator itor;
-	std::vector<bool> hidden(content_.size());
+	boost::dynamic_bitset<> hidden(content_.size());
 	int i = 0;
 	for(itor = content_.begin(); itor != content_.end(); ++itor) {
 		hidden[i++] = (itor->second.w->state_ == HIDDEN);
@@ -163,8 +163,8 @@ SDL_Rect scrollpane::client_area() const
 
 void scrollpane::update_content_size()
 {
-	unsigned int maxx = 0;
-	unsigned int maxy = 0;
+	int maxx = 0;
+	int maxy = 0;
 
 	for(widget_map::iterator itor = content_.begin(); itor != content_.end(); ++itor) {
 		if(itor->second.x + itor->second.w->width() > maxx) {

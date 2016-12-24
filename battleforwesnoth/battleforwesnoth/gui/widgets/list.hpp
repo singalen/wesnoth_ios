@@ -1,6 +1,5 @@
-/* $Id: list.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,7 +20,10 @@
 #include "gui/widgets/generator.hpp"
 #include "gui/widgets/scrollbar_container.hpp"
 
-namespace gui2 {
+#include <boost/dynamic_bitset.hpp>
+
+namespace gui2
+{
 
 /**
  * The list class.
@@ -29,10 +31,10 @@ namespace gui2 {
  * For now it's a generic for all kind of lists, horizontal, vertical etc.
  * Might be that there will be different types per class, not sure yet.
  */
-class tlist
-		: public tcontainer_
+class list_view : public container_base
 {
-	friend class tdebug_layout_graph;
+	friend class debug_layout_graph;
+
 public:
 	/**
 	 * Constructor.
@@ -45,11 +47,11 @@ public:
 	 * @param select              Select an item when selected, if false it
 	 *                            changes the visible state instead.
 	 */
-	tlist(const bool has_minimum
-			, const bool has_maximum
-			, const tgenerator_::tplacement placement
-			, const bool select
-			, const tbuilder_grid_const_ptr list_builder);
+	list_view(const bool has_minimum,
+		  const bool has_maximum,
+		  const generator_base::tplacement placement,
+		  const bool select,
+		  const builder_grid_const_ptr list_builder);
 
 	/***** ***** ***** ***** Row handling. ***** ***** ****** *****/
 	/**
@@ -77,13 +79,12 @@ public:
 	 *                            the wanted id (if any). If the member id is an
 	 *                            empty string, it is send to all members.
 	 *                            Having both empty and non-empty id's gives
-	 *                            undefined behaviour.
+	 *                            undefined behavior.
 	 * @param index               The item before which to add the new item,
 	 *                            0 == begin, -1 == end.
 	 */
-	void add_row(
-			  const std::map<std::string /* widget id */, string_map>& data
-			, const int index = -1);
+	void add_row(const std::map<std::string /* widget id */, string_map>& data,
+				 const int index = -1);
 
 	/**
 	 * Appends several rows to the grid.
@@ -139,7 +140,7 @@ public:
 	 *                            be equal to the number of items in the
 	 *                            listbox.
 	 */
-	void set_row_shown(const std::vector<bool>& shown);
+	void set_row_shown(const boost::dynamic_bitset<>& shown);
 
 	/**
 	 * Returns the grid of the wanted row.
@@ -153,7 +154,7 @@ public:
 	 *                            to make sure the row is a valid row.
 	 * @returns                   The grid of the wanted row.
 	 */
-	const tgrid* get_row_grid(const unsigned row) const;
+	const grid* get_row_grid(const unsigned row) const;
 
 	/**
 	 * The possibly-giving-problems nonconst version of get_row_grid
@@ -162,7 +163,7 @@ public:
 	 *                            to make sure the row is a valid row.
 	 * @returns                   The grid of the wanted row.
 	 */
-	tgrid* get_row_grid(const unsigned row);
+	grid* get_row_grid(const unsigned row);
 
 	/**
 	 * Selectes a row.
@@ -184,8 +185,8 @@ public:
 	 * Request to update the size of the content after changing the content.
 	 *
 	 * When a resize is required the container first can try to handle it
-	 * itself. If it can't honour the request the function will call @ref
-	 * twindow::invalidate_layout().
+	 * itself. If it can't honor the request the function will call @ref
+	 * window::invalidate_layout().
 	 *
 	 * @note Calling this function on a widget with size == (0, 0) results
 	 * false but doesn't call invalidate_layout, the engine expects to be in
@@ -201,14 +202,14 @@ public:
 	/** Inherited from tcontrol_. */
 	void init();
 
-	/** Inherited from tcontainer_. */
-	bool get_active() const { return state_ != DISABLED; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
 
-	/** Inherited from tcontainer_. */
-	unsigned get_state() const { return state_; }
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
 
-	/** Inherited from tscrollbar_container. */
-	void place(const tpoint& origin, const tpoint& size);
+	/** See @ref widget::place. */
+	virtual void place(const point& origin, const point& size) override;
 
 private:
 	/**
@@ -216,7 +217,11 @@ private:
 	 *
 	 * Note the order of the states must be the same as defined in settings.hpp.
 	 */
-	enum tstate { ENABLED, DISABLED, COUNT };
+	enum state_t {
+		ENABLED,
+		DISABLED,
+		COUNT
+	};
 
 	/**
 	 * Current state of the widget.
@@ -224,19 +229,19 @@ private:
 	 * The state of the widget determines what to render and how the widget
 	 * reacts to certain 'events'.
 	 */
-	tstate state_;
+	state_t state_;
 
 	/**
 	 * Contains a pointer to the generator.
 	 *
 	 * The pointer is not owned by this class, it's stored in the content_grid_
-	 * of the tscrollbar_container super class and freed when it's grid is
+	 * of the scrollbar_container super class and freed when it's grid is
 	 * freed.
 	 */
-	tgenerator_* generator_;
+	generator_base* generator_;
 
 	/** Contains the builder for the new items. */
-	tbuilder_grid_const_ptr list_builder_;
+	builder_grid_const_ptr list_builder_;
 
 	bool need_layout_;
 #if 0
@@ -262,39 +267,36 @@ private:
 	/** Layouts the children if needed. */
 	void layout_children(const bool force);
 #if 0
-	/** Inherited from tscrollbar_container. */
-	virtual void set_content_size(const tpoint& origin, const tpoint& size);
+	/** Inherited from scrollbar_container. */
+	virtual void set_content_size(const point& origin, const point& size);
 #endif
-	/** Inherited from tcontainer_. */
-	void set_self_active(const bool)  {}
+	/** See @ref container_base::set_self_active. */
+	virtual void set_self_active(const bool active) override;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 
 	/***** ***** ***** signal handlers ***** ****** *****/
 
-	void signal_handler_left_button_down(const event::tevent event);
+	void signal_handler_left_button_down(const event::ui_event event);
 
-	void signal_handler_pre_child_left_button_click(
-			  tgrid* grid
-			, const event::tevent event
-			, bool& handled
-			, bool& halt);
+	void signal_handler_pre_child_left_button_click(grid* grid,
+													const event::ui_event event,
+													bool& handled,
+													bool& halt);
 
-	void signal_handler_left_button_click(
-			  tgrid* grid
-			, const event::tevent event);
+	void signal_handler_left_button_click(grid* grid,
+										  const event::ui_event event);
 
-	void signal_handler_sdl_key_down(const event::tevent event
-			, bool& handled
-			, const SDLKey key
-			, SDLMod modifier);
+	void signal_handler_sdl_key_down(const event::ui_event event,
+									 bool& handled,
+									 const SDL_Keycode key,
+									 SDL_Keymod modifier);
 };
 
-typedef tlist tlistbox;
+typedef list_view listbox;
 
 } // namespace gui2
 
 #endif
 #endif
-

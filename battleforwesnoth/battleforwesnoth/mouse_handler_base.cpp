@@ -1,6 +1,5 @@
-/* $Id: mouse_handler_base.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2006 - 2016 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
    wesnoth playturn Copyright (C) 2003 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -21,12 +20,11 @@
 #include "log.hpp"
 #include "preferences.hpp"
 #include "tooltips.hpp"
+#include "sdl/rect.hpp"
 
 static lg::log_domain log_display("display");
 #define WRN_DP LOG_STREAM(warn, log_display)
-#ifdef __IPHONEOS__
-extern bool gIsDragging;
-#endif
+
 namespace events {
 
 command_disabler::command_disabler()
@@ -44,7 +42,7 @@ int commands_disabled= 0;
 static bool command_active()
 {
 #ifdef __APPLE__
-	return (SDL_GetModState()&KMOD_META) != 0;
+	return (SDL_GetModState()&KMOD_CTRL) != 0;
 #else
 	return false;
 #endif
@@ -61,7 +59,9 @@ mouse_handler_base::mouse_handler_base() :
 	drag_from_hex_(),
 	last_hex_(),
 	show_menu_(false),
-    didDrag_(false)
+	scroll_start_x_(0),
+	scroll_start_y_(0),
+	scroll_started_(false)
 {
 }
 
@@ -94,7 +94,7 @@ bool mouse_handler_base::mouse_motion_default(int x, int y, bool /*update*/)
 		//if the game is run in a window, we could miss a LMB/MMB up event
 		// if it occurs outside our window.
 		// thus, we need to check if the LMB/MMB is still down
-		minimap_scrolling_ = ((SDL_GetMouseState(NULL,NULL) & (SDL_BUTTON(1) | SDL_BUTTON(2))) != 0);
+		minimap_scrolling_ = ((SDL_GetMouseState(nullptr,nullptr) & (SDL_BUTTON(1) | SDL_BUTTON(2))) != 0);
 		if(minimap_scrolling_) {
 			const map_location& loc = gui().minimap_location_on(x,y);
 			if(loc.valid()) {
@@ -121,47 +121,10 @@ bool mouse_handler_base::mouse_motion_default(int x, int y, bool /*update*/)
 					+ std::pow(static_cast<double>(drag_from_y_- my), 2);
 			if (drag_distance > drag_threshold()*drag_threshold()) {
 				dragging_started_ = true;
-#ifdef __IPHONEOS__
-				dragged_x_ = 0;
-				dragged_y_ = 0;
-#endif
 				cursor::set_dragging(true);
 			}
 		}
 	}
-#ifdef __IPHONEOS__
-	if (is_dragging() && dragging_started_ && dragging_left_)
-	{
-		SDL_GetMouseState(&mx,&my);
-		int dx = drag_from_x_ - mx;
-		int dy = drag_from_y_ - my;
-		int scrollChangeX = -dragged_x_ + dx;
-		int scrollChangeY = -dragged_y_ + dy;
-		gui().scroll(scrollChangeX, scrollChangeY);
-		dragged_x_ = dx;
-		dragged_y_ = dy;
-		didDrag_ = true;
-		gIsDragging = true;
-		// KP: fixes #5
-		unsigned long curTime = SDL_GetTicks();
-		if ((curTime - drag_start_time_) > 100) // update velocity every 1/10 second
-		{
-			float seconds = (float)(curTime - drag_start_time_) / 1000;
-			float xVelocity = (float)-dragged_x_ / seconds;
-			float yVelocity = (float)-dragged_y_ / seconds;
-			
-			drag_last_xVelocity_ = xVelocity;
-			drag_last_yVelocity_ = yVelocity;
-			
-			drag_start_time_ = curTime;
-			drag_from_x_ = mx;
-			drag_from_y_ = my;
-			dragged_x_ = 0;
-			dragged_y_ = 0;
-		}
-		//return true;
-	}
-#endif
 	return false;
 }
 
@@ -173,8 +136,6 @@ void mouse_handler_base::mouse_press(const SDL_MouseButtonEvent& event, const bo
 	show_menu_ = false;
 	map_location loc = gui().hex_clicked_on(event.x,event.y);
 	mouse_update(browse, loc);
-	int scrollx = 0;
-	int scrolly = 0;
 
 	if (is_left_click(event)) {
 		if (event.state == SDL_PRESSED) {
@@ -198,16 +159,18 @@ void mouse_handler_base::mouse_press(const SDL_MouseButtonEvent& event, const bo
 		}
 	} else if (is_middle_click(event)) {
 		if (event.state == SDL_PRESSED) {
-			map_location loc = gui().minimap_location_on(event.x,event.y);
+			set_scroll_start(event.x, event.y);
+			scroll_started_ = true;
+
+			map_location minimap_loc = gui().minimap_location_on(event.x,event.y);
 			minimap_scrolling_ = false;
-			if(loc.valid()) {
+			if(minimap_loc.valid()) {
 				simple_warp_ = false;
 				minimap_scrolling_ = true;
-				last_hex_ = loc;
-				gui().scroll_to_tile(loc,display::WARP,false);
+				last_hex_ = minimap_loc;
+				gui().scroll_to_tile(minimap_loc,display::WARP,false);
 			} else if(simple_warp_) {
 				// middle click not on minimap, check gamemap instead
-				loc = gui().hex_clicked_on(event.x,event.y);
 				if(loc.valid()) {
 					last_hex_ = loc;
 					gui().scroll_to_tile(loc,display::WARP,false);
@@ -216,26 +179,8 @@ void mouse_handler_base::mouse_press(const SDL_MouseButtonEvent& event, const bo
 		} else if (event.state == SDL_RELEASED) {
 			minimap_scrolling_ = false;
 			simple_warp_ = false;
+			scroll_started_ = false;
 		}
-	} else if (allow_mouse_wheel_scroll(event.x, event.y)) {
-		if (event.button == SDL_BUTTON_WHEELUP) {
-			scrolly = - preferences::scroll_speed();
-		} else if (event.button == SDL_BUTTON_WHEELDOWN) {
-			scrolly = preferences::scroll_speed();
-		} else if (event.button == SDL_BUTTON_WHEELLEFT) {
-			scrollx = - preferences::scroll_speed();
-		} else if (event.button == SDL_BUTTON_WHEELRIGHT) {
-			scrollx = preferences::scroll_speed();
-		}
-	}
-
-	if (scrollx != 0 || scrolly != 0) {
-		CKey pressed;
-		// Alt + mousewheel do an 90° rotation on the scroll direction
-		if (pressed[SDLK_LALT] || pressed[SDLK_RALT])
-			gui().scroll(scrolly,scrollx);
-		else
-			gui().scroll(scrollx,scrolly);
 	}
 	if (!dragging_left_ && !dragging_right_ && dragging_started_) {
 		dragging_started_ = false;
@@ -290,35 +235,70 @@ bool mouse_handler_base::left_click(int x, int y, const bool /*browse*/)
 	return false;
 }
 
-void mouse_handler_base::left_drag_end(int x, int y, const bool browse)
+void mouse_handler_base::move_action(const bool /*browse*/)
 {
-#ifdef __IPHONEOS__
-    unsigned long endTime = SDL_GetTicks();
-	float seconds = (float)(endTime - drag_start_time_) / 1000;
-	float xVelocity, yVelocity;
-    bool flag;
-	if (seconds < 0.25)
-	{
-		xVelocity = drag_last_xVelocity_;
-		yVelocity = drag_last_yVelocity_;
-        flag = true;
-        gIsDragging = true;
-	}
-	else
-	{
-		//xVelocity = (float)-dragged_x_ / seconds;
-		//yVelocity = (float)-dragged_y_ / seconds;
-		xVelocity = 0;
-		yVelocity = 0;
-        flag = false;
-        gIsDragging = false;
-	}
-	gui().set_scroll_velocity(xVelocity, yVelocity,flag);
-#endif
-	left_click(x, y, browse);
+	// Overridden with unit move code elsewhere
+}
+
+void mouse_handler_base::left_drag_end(int /*x*/, int /*y*/, const bool browse)
+{
+	move_action(browse);
 }
 
 void mouse_handler_base::left_mouse_up(int /*x*/, int /*y*/, const bool /*browse*/)
+{
+}
+
+void mouse_handler_base::mouse_wheel(int scrollx, int scrolly, bool browse)
+{
+	int x, y;
+	SDL_GetMouseState(&x, &y);
+
+	int movex = scrollx * preferences::scroll_speed();
+	int movey = scrolly * preferences::scroll_speed();
+
+	// Don't scroll map and map zoom slider at same time
+	std::shared_ptr<gui::slider> s = gui().find_slider("map-zoom-slider");
+	if (s && sdl::point_in_rect(x, y, s->location())) {
+		movex = 0; movey = 0;
+	}
+
+	if (movex != 0 || movey != 0) {
+		CKey pressed;
+		// Alt + mousewheel do an 90° rotation on the scroll direction
+		if (pressed[SDLK_LALT] || pressed[SDLK_RALT]) {
+			gui().scroll(-movey,-movex);
+		} else {
+			gui().scroll(-movex,-movey);
+		}
+	}
+
+	if (scrollx < 0) {
+		mouse_wheel_left(x, y, browse);
+	} else if (scrollx > 0) {
+		mouse_wheel_right(x, y, browse);
+	}
+
+	if (scrolly < 0) {
+		mouse_wheel_down(x, y, browse);
+	} else if (scrolly > 0) {
+		mouse_wheel_up(x, y, browse);
+	}
+}
+
+void mouse_handler_base::mouse_wheel_up(int /*x*/, int /*y*/, const bool /*browse*/)
+{
+}
+
+void mouse_handler_base::mouse_wheel_down(int /*x*/, int /*y*/, const bool /*browse*/)
+{
+}
+
+void mouse_handler_base::mouse_wheel_left(int /*x*/, int /*y*/, const bool /*browse*/)
+{
+}
+
+void mouse_handler_base::mouse_wheel_right(int /*x*/, int /*y*/, const bool /*browse*/)
 {
 }
 
@@ -327,10 +307,10 @@ bool mouse_handler_base::right_click(int x, int y, const bool browse)
 	if (right_click_show_menu(x, y, browse)) {
 		gui().draw(); // redraw highlight (and maybe some more)
 		const theme::menu* const m = gui().get_theme().context_menu();
-		if (m != NULL) {
+		if (m != nullptr) {
 			show_menu_ = true;
 		} else {
-			WRN_DP << "no context menu found...\n";
+			WRN_DP << "no context menu found..." << std::endl;
 		}
 		return true;
 	}
@@ -352,12 +332,6 @@ void mouse_handler_base::init_dragging(bool& dragging_flag)
 	dragging_flag = true;
 	SDL_GetMouseState(&drag_from_x_, &drag_from_y_);
 	drag_from_hex_ = gui().hex_clicked_on(drag_from_x_, drag_from_y_);
-#ifdef __IPHONES__
-    drag_last_xVelocity_ = 0;
-	drag_last_yVelocity_ = 0;
-	drag_start_time_ = SDL_GetTicks();
-#endif
-
 }
 
 void mouse_handler_base::cancel_dragging()
@@ -365,10 +339,6 @@ void mouse_handler_base::cancel_dragging()
 	dragging_started_ = false;
 	dragging_left_ = false;
 	dragging_right_ = false;
-#ifdef __IPHONEOS__
-    gIsDragging = false;
-    gui().set_scroll_velocity(0, 0, false);
-#endif
 	cursor::set_dragging(false);
 }
 

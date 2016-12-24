@@ -1,6 +1,5 @@
-/* $Id: list.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,71 +17,58 @@
 #define GETTEXT_DOMAIN "wesnoth-lib"
 
 #include "gui/widgets/list.hpp"
+#include "gui/widgets/listbox.hpp"
 
-#include "foreach.hpp"
-#include "gui/auxiliary/log.hpp"
-#include "gui/auxiliary/widget_definition/listbox.hpp"
-#include "gui/auxiliary/window_builder/listbox.hpp"
+#include "gui/auxiliary/find_widget.hpp"
+#include "gui/core/log.hpp"
+#include "gui/widgets/detail/register.hpp"
 #include "gui/widgets/selectable.hpp"
 #include "gui/widgets/settings.hpp"
 #include "gui/widgets/window.hpp"
 
-#include <boost/bind.hpp>
+#include "utils/functional.hpp"
 
 #define LOG_SCOPE_HEADER get_control_type() + " [" + id() + "] " + __func__
 #define LOG_HEADER LOG_SCOPE_HEADER + ':'
 
-namespace gui2 {
+namespace gui2
+{
 
 #ifdef GUI2_EXPERIMENTAL_LISTBOX
 REGISTER_WIDGET(listbox)
 #endif
 
-tlist::tlist(const bool has_minimum
-		, const bool has_maximum
-		, const tgenerator_::tplacement placement
-		, const bool select
-		, const tbuilder_grid_const_ptr list_builder)
-	: tcontainer_(2) // FIXME magic number
+list_view::list_view(const bool has_minimum,
+			 const bool has_maximum,
+			 const generator_base::tplacement placement,
+			 const bool select,
+			 const builder_grid_const_ptr list_builder)
+	: container_base(2) // FIXME magic number
 	, state_(ENABLED)
-	, generator_(NULL)
+	, generator_(nullptr)
 	, list_builder_(list_builder)
 	, need_layout_(false)
 {
 	assert(list_builder);
 
-	generator_ = tgenerator_::build(
-			has_minimum, has_maximum, placement, select);
+	generator_
+			= generator_base::build(has_minimum, has_maximum, placement, select);
 	assert(generator_);
 
 	connect_signal<event::LEFT_BUTTON_DOWN>(
-			  boost::bind(
-				    &tlist::signal_handler_left_button_down
-				  , this
-				  , _2)
-			, event::tdispatcher::back_pre_child);
+			std::bind(&list_view::signal_handler_left_button_down, this, _2),
+			event::dispatcher::back_pre_child);
+
+	connect_signal<event::SDL_KEY_DOWN>(std::bind(
+			&list_view::signal_handler_sdl_key_down, this, _2, _3, _5, _6));
 
 	connect_signal<event::SDL_KEY_DOWN>(
-			boost::bind(
-				&tlist::signal_handler_sdl_key_down
-				, this
-				, _2
-				, _3
-				, _5
-				, _6));
-
-	connect_signal<event::SDL_KEY_DOWN>(
-			  boost::bind(
-				&tlist::signal_handler_sdl_key_down
-				, this
-				, _2
-				, _3
-				, _5
-				, _6)
-			, event::tdispatcher::back_pre_child);
+			std::bind(
+					&list_view::signal_handler_sdl_key_down, this, _2, _3, _5, _6),
+			event::dispatcher::back_pre_child);
 }
 
-void tlist::add_row(const string_map& item, const int index)
+void list_view::add_row(const string_map& item, const int index)
 {
 	std::map<std::string, string_map> data;
 
@@ -90,59 +76,57 @@ void tlist::add_row(const string_map& item, const int index)
 	add_row(data, index);
 }
 
-void tlist::add_row(
-		  const std::map<std::string /* widget id */, string_map>& data
-		, const int index)
+void
+list_view::add_row(const std::map<std::string /* widget id */, string_map>& data,
+			   const int index)
 {
 	assert(generator_);
-	tgrid& grid =
-			generator_->create_item(index, list_builder_, data, NULL);
+	grid& grid = generator_->create_item(index, list_builder_, data, nullptr);
 
-	tselectable_* selectable =
-			find_widget<tselectable_>(&grid, "_toggle", false, false);
+	selectable_item* selectable
+			= find_widget<selectable_item>(&grid, "_toggle", false, false);
 
 	if(selectable) {
-		dynamic_cast<twidget&>(*selectable).
-			connect_signal<event::LEFT_BUTTON_CLICK>(
-				  boost::bind(
-						&tlist::signal_handler_pre_child_left_button_click
-					  , this
-					  , &grid
-					  , _2
-					  , _3
-					  , _4)
-				, event::tdispatcher::back_pre_child);
+		dynamic_cast<widget&>(*selectable)
+				.connect_signal<event::LEFT_BUTTON_CLICK>(
+						 std::bind(
+								 &list_view::signal_handler_pre_child_left_button_click,
+								 this,
+								 &grid,
+								 _2,
+								 _3,
+								 _4),
+						 event::dispatcher::back_pre_child);
 
 		// Post widget for panel.
-		dynamic_cast<twidget&>(*selectable).
-			connect_signal<event::LEFT_BUTTON_CLICK>(
-				  boost::bind(
-						&tlist::signal_handler_left_button_click
-					  , this
-					  , &grid
-					  , _2)
-				, event::tdispatcher::back_post_child);
+		dynamic_cast<widget&>(*selectable)
+				.connect_signal<event::LEFT_BUTTON_CLICK>(
+						 std::bind(&list_view::signal_handler_left_button_click,
+									 this,
+									 &grid,
+									 _2),
+						 event::dispatcher::back_post_child);
 
 		// Post widget for button and widgets on the panel.
-		dynamic_cast<twidget&>(*selectable).
-			connect_signal<event::LEFT_BUTTON_CLICK>(
-				  boost::bind(
-						&tlist::signal_handler_left_button_click
-					  , this
-					  , &grid
-					  , _2)
-				, event::tdispatcher::back_child);
+		dynamic_cast<widget&>(*selectable)
+				.connect_signal<event::LEFT_BUTTON_CLICK>(
+						 std::bind(&list_view::signal_handler_left_button_click,
+									 this,
+									 &grid,
+									 _2),
+						 event::dispatcher::back_child);
 	}
 }
 
-void tlist::append_rows(const std::vector<string_map>& items)
+void list_view::append_rows(const std::vector<string_map>& items)
 {
-	foreach(const string_map& item, items) {
+	for(const string_map & item : items)
+	{
 		add_row(item);
 	}
 }
 
-void tlist::remove_row(const unsigned row, unsigned count)
+void list_view::remove_row(const unsigned row, unsigned count)
 {
 	assert(generator_);
 
@@ -156,115 +140,115 @@ void tlist::remove_row(const unsigned row, unsigned count)
 
 	unsigned height_reduced = 0;
 	for(; count; --count) {
-		if(generator_->item(row).get_visible() != INVISIBLE) {
+		if(generator_->item(row).get_visible() != visibility::invisible) {
 			height_reduced += generator_->item(row).get_height();
 		}
 		generator_->delete_item(row);
 	}
 
 	if(height_reduced != 0) {
-//		resize_content(0, -height_reduced);
+		// resize_content(0, -height_reduced);
 	}
 }
 
-void tlist::clear()
+void list_view::clear()
 {
 	// Due to the removing from the linked group, don't use
 	// generator_->clear() directly.
 	remove_row(0, 0);
 }
 
-unsigned tlist::get_item_count() const
+unsigned list_view::get_item_count() const
 {
 	assert(generator_);
 	return generator_->get_item_count();
 }
 
-void tlist::set_row_active(const unsigned row, const bool active)
+void list_view::set_row_active(const unsigned row, const bool active)
 {
 	assert(generator_);
 	generator_->item(row).set_active(active);
 }
 
-void tlist::set_row_shown(const unsigned row, const bool shown)
+void list_view::set_row_shown(const unsigned row, const bool shown)
 {
 	assert(generator_);
 
-	twindow *window = get_window();
+	window* window = get_window();
 	assert(window);
 
 	const int selected_row = get_selected_row();
 
-	bool resize_needed;
+	bool resize_needed = false;
 	{
-		twindow::tinvalidate_layout_blocker invalidate_layout_blocker(*window);
+		window::invalidate_layout_blocker invalidate_layout_blocker(*window);
 
 		generator_->set_item_shown(row, shown);
-		generator_->place(generator_->get_origin()
-				, generator_->calculate_best_size());
-//		resize_needed = !content_resize_request();
+		generator_->place(generator_->get_origin(),
+						  generator_->calculate_best_size());
+		// resize_needed = !content_resize_request();
 	}
 
 	if(resize_needed) {
 		window->invalidate_layout();
 	} else {
-//		grid().set_visible_area(content_visible_area());
-		set_dirty();
+		// get_grid().set_visible_rectangle(content_visible_rectangle());
+		set_is_dirty(true);
 	}
 
 	if(selected_row != get_selected_row()) {
-		fire(event::NOTIFY_MODIFIED, *this, NULL);
+		fire(event::NOTIFY_MODIFIED, *this, nullptr);
 	}
 }
 
-void tlist::set_row_shown(const std::vector<bool>& shown)
+void list_view::set_row_shown(const boost::dynamic_bitset<>& shown)
 {
 	assert(generator_);
 	assert(shown.size() == get_item_count());
 
-	twindow *window = get_window();
+	window* window = get_window();
 	assert(window);
 
 	const int selected_row = get_selected_row();
 
-	bool resize_needed;
+	bool resize_needed = false;
 	{
-		twindow::tinvalidate_layout_blocker invalidate_layout_blocker(*window);
+		window::invalidate_layout_blocker invalidate_layout_blocker(*window);
 
 		for(size_t i = 0; i < shown.size(); ++i) {
 			generator_->set_item_shown(i, shown[i]);
 		}
-		generator_->place(generator_->get_origin()
-				, generator_->calculate_best_size());
-//		resize_needed = !content_resize_request();
+		generator_->place(generator_->get_origin(),
+						  generator_->calculate_best_size());
+		// resize_needed = !content_resize_request();
 	}
 
 	if(resize_needed) {
 		window->invalidate_layout();
 	} else {
-//		content_grid_->set_visible_area(content_visible_area());
-		set_dirty();
+		// content_grid_->set_visible_rectangle(content_visible_rectangle());
+		set_is_dirty(true);
 	}
 
 	if(selected_row != get_selected_row()) {
-		fire(event::NOTIFY_MODIFIED, *this, NULL);
+		fire(event::NOTIFY_MODIFIED, *this, nullptr);
 	}
 }
 
-const tgrid* tlist::get_row_grid(const unsigned row) const
+const grid* list_view::get_row_grid(const unsigned row) const
 {
 	assert(generator_);
 	// rename this function and can we return a reference??
 	return &generator_->item(row);
 }
 
-tgrid* tlist::get_row_grid(const unsigned row)
+grid* list_view::get_row_grid(const unsigned row)
 {
 	assert(generator_);
 	return &generator_->item(row);
 }
 
-bool tlist::select_row(const unsigned row, const bool select)
+bool list_view::select_row(const unsigned row, const bool select)
 {
 	assert(generator_);
 
@@ -273,41 +257,41 @@ bool tlist::select_row(const unsigned row, const bool select)
 	return true; // FIXME test what result should have been!!!
 }
 
-int tlist::get_selected_row() const
+int list_view::get_selected_row() const
 {
 	assert(generator_);
 
 	return generator_->get_selected_item();
 }
 
-void tlist::place(const tpoint& origin, const tpoint& size)
+void list_view::place(const point& origin, const point& size)
 {
 	// Inherited.
-	tcontainer_::place(origin, size);
+	container_base::place(origin, size);
 
 	/**
 	 * @todo Work-around to set the selected item visible again.
 	 *
-	 * At the moment the listes and dialogs in general are resized a lot as
+	 * At the moment the lists and dialogs in general are resized a lot as
 	 * work-around for sizing. So this function makes the selected item in view
 	 * again. It doesn't work great in all cases but the proper fix is to avoid
 	 * resizing dialogs a lot. Need more work later on.
 	 */
 	const int selected_item = generator_->get_selected_item();
 	if(selected_item != -1) {
-/*
-		const SDL_Rect& visible = content_visible_area();
-		SDL_Rect rect = generator_->item(selected_item).get_rect();
+		/*
+				const SDL_Rect& visible = content_visible_area();
+				SDL_Rect rect = generator_->item(selected_item).get_rectangle();
 
-		rect.x = visible.x;
-		rect.w = visible.w;
+				rect.x = visible.x;
+				rect.w = visible.w;
 
-		show_content_rect(rect);
-*/
+				show_content_rect(rect);
+		*/
 	}
 }
 #if 0
-void tlist::resize_content(
+void list_view::resize_content(
 		  const int width_modification
 		, const int height_modification)
 {
@@ -319,7 +303,7 @@ void tlist::resize_content(
 	if(content_resize_request(width_modification, height_modification)) {
 
 		// Calculate new size.
-		tpoint size = content_grid()->get_size();
+		point size = content_grid()->get_size();
 		size.x += width_modification;
 		size.y += height_modification;
 
@@ -330,7 +314,7 @@ void tlist::resize_content(
 		need_layout_ = true;
 		// If the content grows assume it "overwrites" the old content.
 		if(width_modification < 0 || height_modification < 0) {
-			set_dirty();
+			set_is_dirty(true);
 		}
 		DBG_GUI_L << LOG_HEADER << " succeeded.\n";
 	} else {
@@ -339,52 +323,69 @@ void tlist::resize_content(
 }
 #endif
 
-void tlist::init()
+void list_view::init()
 {
-	init_grid(cast<tlistbox_definition::tresolution>(config()).grid);
+	init_grid(cast<listbox_definition::resolution>(config()).grid);
 
-	set_single_child(
-			  find_widget<tgrid>(&grid(), "_list_grid", false)
-			, generator_);
+	set_single_child(find_widget<grid>(&get_grid(), "_list_grid", false),
+					 generator_);
 
 	/*
 	 * These items should be managed by the new listbox class.
 	 * So make them invisible for now.
 	 */
-	tgrid* g = find_widget<tgrid>(&grid(), "_header_grid", false, false);
-	if(g) g->set_visible(twidget::INVISIBLE);
+	grid* g = find_widget<grid>(&get_grid(), "_header_grid", false, false);
+	if(g)
+		g->set_visible(widget::visibility::invisible);
 
-	g = find_widget<tgrid>(&grid(), "_footer_grid", false, false);
-	if(g) g->set_visible(twidget::INVISIBLE);
+	g = find_widget<grid>(&get_grid(), "_footer_grid", false, false);
+	if(g)
+		g->set_visible(widget::visibility::invisible);
 
-	g = find_widget<tgrid>(&grid(), "_vertical_scrollbar_grid", false, false);
-	if(g) g->set_visible(twidget::INVISIBLE);
+	g = find_widget<grid>(&get_grid(), "_vertical_scrollbar_grid", false, false);
+	if(g)
+		g->set_visible(widget::visibility::invisible);
 
-	g = find_widget<tgrid>(&grid(), "_horizontal_scrollbar_grid", false, false);
-	if(g) g->set_visible(twidget::INVISIBLE);
-
+	g = find_widget<grid>(&get_grid(), "_horizontal_scrollbar_grid", false, false);
+	if(g)
+		g->set_visible(widget::visibility::invisible);
 }
 
-void tlist::layout_children(const bool force)
+bool list_view::get_active() const
+{
+	return state_ != DISABLED;
+}
+
+unsigned list_view::get_state() const
+{
+	return state_;
+}
+
+void list_view::layout_children(const bool force)
 {
 	if(need_layout_ || force) {
-		grid().place(grid().get_origin(), grid().get_size());
+		get_grid().place(get_grid().get_origin(), get_grid().get_size());
 
-/*
-		grid().set_visible_area(content_visible_area_);
-*/
+		/*
+				get_grid().set_visible_rectangle(content_visible_area_);
+		*/
 		need_layout_ = false;
-		set_dirty();
+		set_is_dirty(true);
 	}
 }
 
-const std::string& tlist::get_control_type() const
+void list_view::set_self_active(const bool active)
+{
+	/* DO NOTHING */
+}
+
+const std::string& list_view::get_control_type() const
 {
 	static const std::string type = "list";
 	return type;
 }
 
-void tlist::signal_handler_left_button_down(const event::tevent event)
+void list_view::signal_handler_left_button_down(const event::ui_event event)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -392,11 +393,8 @@ void tlist::signal_handler_left_button_down(const event::tevent event)
 	get_window()->keyboard_capture(this);
 }
 
-void tlist::signal_handler_pre_child_left_button_click(
-		  tgrid* grid
-		, const event::tevent event
-		, bool& handled
-		, bool& halt)
+void list_view::signal_handler_pre_child_left_button_click(
+		grid* grid, const event::ui_event event, bool& handled, bool& halt)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -428,9 +426,8 @@ void tlist::signal_handler_pre_child_left_button_click(
 	assert(false);
 }
 
-void tlist::signal_handler_left_button_click(
-		  tgrid* grid
-		, const event::tevent event)
+void list_view::signal_handler_left_button_click(grid* grid,
+											 const event::ui_event event)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 	assert(grid);
@@ -440,15 +437,15 @@ void tlist::signal_handler_left_button_click(
 	for(size_t i = 0; i < generator_->get_item_count(); ++i) {
 		if(&generator_->item(i) == grid) {
 			generator_->select_item(i);
-			fire(event::NOTIFY_MODIFIED, *this, NULL);
+			fire(event::NOTIFY_MODIFIED, *this, nullptr);
 		}
 	}
 }
 
-void tlist::signal_handler_sdl_key_down(const event::tevent event
-		, bool& handled
-		, const SDLKey key
-		, SDLMod modifier)
+void list_view::signal_handler_sdl_key_down(const event::ui_event event,
+										bool& handled,
+										const SDL_Keycode key,
+										SDL_Keymod modifier)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -457,23 +454,24 @@ void tlist::signal_handler_sdl_key_down(const event::tevent event
 	}
 
 	switch(key) {
-		case SDLK_UP :
+		case SDLK_UP:
 			generator_->handle_key_up_arrow(modifier, handled);
 			break;
-		case SDLK_DOWN :
+		case SDLK_DOWN:
 			generator_->handle_key_down_arrow(modifier, handled);
 			break;
-		case SDLK_LEFT :
+		case SDLK_LEFT:
 			generator_->handle_key_left_arrow(modifier, handled);
 			break;
-		case SDLK_RIGHT :
+		case SDLK_RIGHT:
 			generator_->handle_key_right_arrow(modifier, handled);
 			break;
-		default : ;
+		default:
+			;
 			/* Do nothing. */
 	}
 	if(handled) {
-		fire(event::NOTIFY_MODIFIED, *this, NULL);
+		fire(event::NOTIFY_MODIFIED, *this, nullptr);
 	}
 }
 

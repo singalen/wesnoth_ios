@@ -1,6 +1,5 @@
-/* $Id: scroll_label.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,13 +17,20 @@
 
 #include "gui/widgets/scrollbar_container.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
 
-class tlabel;
-class tspacer;
+namespace gui2
+{
 
-namespace implementation {
-	struct tbuilder_scroll_label;
+// ------------ WIDGET -----------{
+
+class label;
+class spacer;
+
+namespace implementation
+{
+struct builder_scroll_label;
 }
 
 /**
@@ -34,28 +40,32 @@ namespace implementation {
  * scrolling features. In general this widget is slower as the normal label so
  * the normal label should be preferred.
  */
-class tscroll_label : public tscrollbar_container
+class scroll_label : public scrollbar_container
 {
-	friend struct implementation::tbuilder_scroll_label;
+	friend struct implementation::builder_scroll_label;
+
 public:
+	scroll_label(bool wrap, const std::string& text_alignment);
 
-	tscroll_label();
+	/** See @ref styled_widget::set_label. */
+	virtual void set_label(const t_string& label) override;
 
-	/** Inherited from tcontrol. */
-	void set_label(const t_string& label);
+	/** See @ref styled_widget::set_use_markup. */
+	virtual void set_use_markup(bool use_markup) override;
 
-	/** Inherited from tcontrol. */
-	void set_use_markup(bool use_markup);
-
-	/** Inherited from tcontainer_. */
-	void set_self_active(const bool active)
-		{ state_ = active ? ENABLED : DISABLED; }
+	/** See @ref container_base::set_self_active. */
+	virtual void set_self_active(const bool active) override;
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
-	bool get_active() const { return state_ != DISABLED; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
 
-	unsigned get_state() const { return state_; }
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
+	
+	bool can_wrap() const override;
+	void set_can_wrap(bool can_wrap);
 
 private:
 	/**
@@ -63,10 +73,14 @@ private:
 	 *
 	 * Note the order of the states must be the same as defined in settings.hpp.
 	 */
-	enum tstate { ENABLED, DISABLED, COUNT };
+	enum state_t {
+		ENABLED,
+		DISABLED,
+		COUNT
+	};
 
-//  It's not needed for now so keep it disabled, no definition exists yet.
-//	void set_state(const tstate state);
+	// It's not needed for now so keep it disabled, no definition exists yet.
+	// void set_state(const state_t state);
 
 	/**
 	 * Current state of the widget.
@@ -74,21 +88,60 @@ private:
 	 * The state of the widget determines what to render and how the widget
 	 * reacts to certain 'events'.
 	 */
-	tstate state_;
+	state_t state_;
+	bool wrap_on;
 
-	void finalize_subclass();
+	const std::string text_alignment;
+
+	void finalize_subclass() override;
 
 	/***** ***** ***** inherited ****** *****/
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 
 	/***** ***** ***** signal handlers ***** ****** *****/
 
-	void signal_handler_left_button_down(const event::tevent event);
+	void signal_handler_left_button_down(const event::ui_event event);
 };
+
+// }---------- DEFINITION ---------{
+
+struct scroll_label_definition : public styled_widget_definition
+{
+	explicit scroll_label_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+
+		builder_grid_ptr grid;
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_scroll_label : public builder_styled_widget
+{
+	explicit builder_scroll_label(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	scrollbar_container::scrollbar_mode vertical_scrollbar_mode;
+	scrollbar_container::scrollbar_mode horizontal_scrollbar_mode;
+	bool wrap_on;
+	const std::string text_alignment;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-

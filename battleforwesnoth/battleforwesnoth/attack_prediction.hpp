@@ -1,6 +1,5 @@
-/* $Id: attack_prediction.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2007 - 2012
+   Copyright (C) 2007 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -31,15 +30,18 @@ struct battle_context_unit_stats;
 struct combatant
 {
 	/** Construct a combatant. */
-	combatant(const battle_context_unit_stats &u, const combatant *prev = NULL);
+	combatant(const battle_context_unit_stats &u, const combatant *prev = nullptr);
 
 	/** Copy constructor */
 	combatant(const combatant &that, const battle_context_unit_stats &u);
 
+	combatant(const combatant &that) = delete;
+	combatant& operator=(const combatant &) = delete;
+
 	/** Simulate a fight!  Can be called multiple times for cumulative calculations. */
 	void fight(combatant &opponent, bool levelup_considered=true);
 
-	/** Resulting probability distribution (may NOT be as large as max_hp) */
+	/** Resulting probability distribution (might be not as large as max_hp) */
 	std::vector<double> hp_dist;
 
 	/** Resulting chance we were not hit by this opponent (important if it poisons) */
@@ -54,34 +56,19 @@ struct combatant
 	/** What's the average hp (weighted average of hp_dist). */
 	double average_hp(unsigned int healing = 0) const;
 
+#if defined(BENCHMARK) || defined(CHECK)
+	// Functions used in the stand-alone version of attack_prediction.cpp
+	void print(const char label[], unsigned int battle, unsigned int fighter) const;
+	void reset();
+#endif
+
 private:
-	combatant(const combatant &that);
-	combatant& operator=(const combatant &);
-
-	/** Minimum hp we could possibly have. */
-	unsigned min_hp() const;
-
-	/** HP distribution we could end up with. */
-	static unsigned hp_dist_size(const battle_context_unit_stats &u, const combatant *prev);
-
-	/** Combat without chance of death, berserk, slow or drain is simple. */
-	void no_death_fight(combatant &opponent, bool levelup_considered);
-
-	/** Combat with <= 1 strike each is simple, too. */
-	void one_strike_fight(combatant &opponent, bool levelup_considered);
-
-	/** All other cases. */
-	void complex_fight(combatant &opponent, unsigned rounds, bool levelup_considered);
-
-	/** We must adjust for swarm after every combat. */
-	void adjust_hitchance();
+	static const unsigned int MONTE_CARLO_SIMULATION_THRESHOLD = 5000u;
 
 	const battle_context_unit_stats &u_;
 
-	/** Usually uniform, but if we have swarm, then can be different. */
-	std::vector<double> hit_chances_;
-
-	/** Summary of matrix used to calculate last battle (unslowed & slowed). */
+	/** Summary of matrix used to calculate last battle (unslowed & slowed).
+	 *  Invariant: summary[1].size() == summary[0].size() or summary[1].empty() */
 	std::vector<double> summary[2];
 };
 

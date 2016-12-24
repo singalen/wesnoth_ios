@@ -1,6 +1,5 @@
-/* $Id: helper.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,23 +17,29 @@
 
 #include "gui/widgets/window.hpp"
 
-namespace gui2 {
+#include "utils/functional.hpp"
+
+namespace gui2
+{
+namespace dialogs
+{
 
 /**
  * Template for dialog callbacks. Example usage:
- * widget->set_callback(dialog_callback<my_dialog_class, &my_dialog_class::member_function>);
+ * widget->set_callback(dialog_callback<my_dialog_class,
+ * &my_dialog_class::member_function>);
  */
-template <class D, void (D::*fptr)(twindow&)>
-void dialog_callback(twidget* caller)
+template <class D, void (D::*fptr)(window&)>
+void dialog_callback(widget& caller)
 {
-	D* dialog = dynamic_cast<D*>(caller->dialog());
+	D* dialog = dynamic_cast<D*>(caller.dialog());
 	assert(dialog);
-	twindow* window = dynamic_cast<twindow*>(caller->get_window());
+	window* window = caller.get_window();
 	assert(window);
 	(dialog->*fptr)(*window);
 }
 
+} // namespace dialogs
 } // namespace gui2
 
 #endif
-

@@ -1,6 +1,5 @@
-/* $Id: filesystem.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,13 +20,21 @@
 #ifndef FILESYSTEM_HPP_INCLUDED
 #define FILESYSTEM_HPP_INCLUDED
 
-#include <time.h>
+#include <ctime>
 
 #include <iosfwd>
 #include <string>
 #include <vector>
 
 #include "exceptions.hpp"
+
+class config;
+
+struct SDL_RWops;
+
+namespace filesystem {
+
+SDL_RWops* load_RWops(const std::string &path);
 
 /** An exception object used when an IO error occurs */
 struct io_exception : public game::error {
@@ -44,7 +51,7 @@ enum file_reorder_option { DONT_REORDER, DO_REORDER };
 /**
  * Populates 'files' with all the files and
  * 'dirs' with all the directories in dir.
- * If files or dirs are NULL they will not be used.
+ * If files or dirs are nullptr they will not be used.
  *
  * mode: determines whether the entire path or just the filename is retrieved.
  * filter: determines if we skip images and sounds directories
@@ -53,50 +60,50 @@ enum file_reorder_option { DONT_REORDER, DO_REORDER };
  */
 void get_files_in_dir(const std::string &dir,
                       std::vector<std::string>* files,
-                      std::vector<std::string>* dirs=NULL,
+                      std::vector<std::string>* dirs=nullptr,
                       file_name_option mode = FILE_NAME_ONLY,
                       file_filter_option filter = NO_FILTER,
                       file_reorder_option reorder = DONT_REORDER,
-                      file_tree_checksum* checksum = NULL);
+                      file_tree_checksum* checksum = nullptr);
 
 std::string get_dir(const std::string &dir);
 
 // The location of various important files:
 std::string get_prefs_file();
+std::string get_default_prefs_file();
 std::string get_save_index_file();
 std::string get_saves_dir();
 std::string get_intl_dir();
 std::string get_screenshot_dir();
-std::string get_addon_campaigns_dir();
+std::string get_addons_dir();
 
 /**
  * Get the next free filename using "name + number (3 digits) + extension"
  * maximum 1000 files then start always giving 999
  */
 std::string get_next_filename(const std::string& name, const std::string& extension);
-void set_preferences_dir(std::string path);
+void set_user_config_dir(std::string path);
+void set_user_data_dir(std::string path);
 
-const std::string &get_user_config_dir();
-const std::string &get_user_data_dir();
-const std::string &get_cache_dir();
+std::string get_user_config_dir();
+std::string get_user_data_dir();
+std::string get_cache_dir();
 
 std::string get_cwd();
 std::string get_exe_dir();
 
 bool make_directory(const std::string& dirname);
 bool delete_directory(const std::string& dirname, const bool keep_pbl = false);
+bool delete_file(const std::string &filename);
 
 bool looks_like_pbl(const std::string& file);
 
 // Basic disk I/O:
 
-/** Basic disk I/O - read file.
- * The bool relative_from_game_path determines whether relative paths should be treated as relative
- * to the game path (true) or to the current directory from which Wesnoth was run (false).
- */
+/** Basic disk I/O - read file. */
 std::string read_file(const std::string &fname);
-std::istream *istream_file(const std::string &fname);
-std::ostream *ostream_file(std::string const &fname);
+std::istream *istream_file(const std::string& fname, bool treat_failure_as_error = true);
+std::ostream *ostream_file(const std::string& fname, bool create_directory = true);
 /** Throws io_exception if an error occurs. */
 void write_file(const std::string& fname, const std::string& data);
 
@@ -125,18 +132,25 @@ bool is_directory(const std::string& fname);
 /** Returns true if a file or directory with such name already exists. */
 bool file_exists(const std::string& name);
 
-/** Get the creation time of a file. */
-time_t file_create_time(const std::string& fname);
+/** Get the modification time of a file. */
+time_t file_modified_time(const std::string& fname);
 
 /** Returns true if the file ends with '.gz'. */
 bool is_gzip_file(const std::string& filename);
 
+/** Returns true if the file ends with '.bz2'. */
+bool is_bzip2_file(const std::string& filename);
+
+inline bool is_compressed_file(const std::string& filename) {
+	return is_gzip_file(filename) || is_bzip2_file(filename);
+}
+
 struct file_tree_checksum
 {
 	file_tree_checksum();
-	explicit file_tree_checksum(const class config& cfg);
-	void write(class config& cfg) const;
-	void reset() {nfiles = 0;modified = 0;sum_size=0;};
+	explicit file_tree_checksum(const config& cfg);
+	void write(config& cfg) const;
+	void reset() {nfiles = 0;modified = 0;sum_size=0;}
 	// @todo make variables private!
 	size_t nfiles, sum_size;
 	time_t modified;
@@ -151,13 +165,16 @@ const file_tree_checksum& data_tree_checksum(bool reset = false);
 /** Returns the size of a file, or -1 if the file doesn't exist. */
 int file_size(const std::string& fname);
 
+/** Returns the sum of the sizes of the files contained in a directory. */
+int dir_size(const std::string& path);
+
 bool ends_with(const std::string& str, const std::string& suffix);
 
 /**
  * Returns the base filename of a file, with directory name stripped.
  * Equivalent to a portable basename() function.
  */
-std::string file_name(const std::string& file);
+std::string base_name(const std::string& file);
 
 /**
  * Returns the directory name of a file, with filename stripped.
@@ -166,9 +183,73 @@ std::string file_name(const std::string& file);
 std::string directory_name(const std::string& file);
 
 /**
- * Returns the absolute path of a file.
+ * Finds the nearest parent in existence for a file or directory.
+ *
+ * @note    The file's own existence is not checked.
+ *
+ * @returns An absolute path to the closest parent of the given path, or an
+ *          empty string if none could be found. While on POSIX platforms this
+ *          cannot happen (unless the original path was already empty), on
+ *          Windows it might be the case that the original path refers to a
+ *          drive letter or network share that does not exist.
  */
-std::string normalize_path(const std::string &path);
+std::string nearest_extant_parent(const std::string& file);
+
+/**
+ * Returns the absolute path of a file.
+ *
+ * @param path                 Original path.
+ * @param normalize_separators Whether to substitute path separators with the
+ *                             platform's preferred format.
+ * @param resolve_dot_entries  Whether to resolve . and .. directory entries.
+ *                             This requires @a path to refer to a valid
+ *                             existing object.
+ *
+ * @returns An absolute path -- that is, a path that is independent of the
+ *          current working directory for the process. If resolve_dot_entries
+ *          is set to true, the returned path has . and .. components resolved;
+ *          however, if resolution fails because a component does not exist, an
+ *          empty string is returned instead.
+ */
+std::string normalize_path(const std::string& path,
+						   bool normalize_separators = false,
+						   bool resolve_dot_entries = false);
+
+/**
+ * Returns whether the path is the root of the file hierarchy.
+ *
+ * @note This function is unreliable for paths that do not exist -- it will
+ *       always return @a false for those.
+ */
+bool is_root(const std::string& path);
+
+/**
+ * Returns the name of the root device if included in the given path.
+ *
+ * This only properly makes sense on Windows with paths containing a drive
+ * letter or UNC at the start -- otherwise, it will return the empty string. To
+ * ensure that a suitable root name can be found you might want to use
+ * normalize_path() first with @a resolve_dot_entries set to true.
+ */
+std::string root_name(const std::string& path);
+
+/**
+ * Returns whether the path seems to be relative.
+ */
+bool is_relative(const std::string& path);
+
+/**
+ * Returns whether @a c is a path separator.
+ *
+ * @note / is always a path separator. Additionally, on Windows \\ is a
+ *       path separator as well.
+ */
+bool is_path_sep(char c);
+
+/**
+ * Returns the standard path separator for the current platform.
+ */
+char path_separator();
 
 /**
  *  The paths manager is responsible for recording the various paths
@@ -185,10 +266,10 @@ std::string normalize_path(const std::string &path);
 struct binary_paths_manager
 {
 	binary_paths_manager();
-	binary_paths_manager(const class config& cfg);
+	binary_paths_manager(const config& cfg);
 	~binary_paths_manager();
 
-	void set_paths(const class config& cfg);
+	void set_paths(const config& cfg);
 
 private:
 	binary_paths_manager(const binary_paths_manager& o);
@@ -232,10 +313,19 @@ std::string get_wml_location(const std::string &filename,
 std::string get_short_wml_path(const std::string &filename);
 
 /**
+ * Returns an image path to @a filename for binary path-independent use in saved games.
+ *
+ * Example:
+ *   units/konrad-fighter.png ->
+ *   data/campaigns/Heir_To_The_Throne/images/units/konrad-fighter.png
+ */
+std::string get_independent_image_path(const std::string &filename);
+
+/**
  * Returns the appropriate invocation for a Wesnoth-related binary, assuming
  * that it is located in the same directory as the running wesnoth binary.
  * This is just a string-transformation based on argv[0], so the returned
- * program is not guaranteed to actaully exist.  '-debug' variants are handled
+ * program is not guaranteed to actually exist.  '-debug' variants are handled
  * correctly.
  */
 std::string get_program_invocation(const std::string &program_name);
@@ -259,5 +349,7 @@ public:
 	std::ostream *operator->() { return stream; }
 	~scoped_ostream();
 };
+
+}
 
 #endif

@@ -1,6 +1,5 @@
-/* $Id: formula_debugger.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,16 +16,21 @@
 
 #include "gui/dialogs/formula_debugger.hpp"
 
+#include "gui/auxiliary/find_widget.hpp"
 #include "gui/dialogs/helper.hpp"
 #include "gui/widgets/button.hpp"
+#include "gui/widgets/scroll_label.hpp"
 #include "gui/widgets/settings.hpp"
 #include "gui/widgets/window.hpp"
-#include "../../formula_debugger.hpp"
+#include "formula/debugger.hpp"
+#include "font/pango/escape.hpp"
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
+#include "utils/functional.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /*WIKI
  * @page = GUIWindowDefinitionWML
@@ -38,13 +42,13 @@ namespace gui2 {
  *
  * @begin{table}{dialog_widgets}
  *
- * stack & & control & m &
+ * stack & & styled_widget & m &
  *         A stack. $
  *
- * execution & & control & m &
+ * execution & & styled_widget & m &
  *         Execution trace label. $
  *
- * state & & control & m &
+ * state & & styled_widget & m &
  *         The state. $
  *
  * step & & button & m &
@@ -64,55 +68,58 @@ namespace gui2 {
 
 REGISTER_DIALOG(formula_debugger)
 
-void tformula_debugger::pre_show(CVideo& /*video*/, twindow& window)
+void formula_debugger::pre_show(window& window)
 {
 	// stack label
-	tcontrol* stack_label = find_widget<tcontrol>(
-			&window, "stack", false, true);
+	scroll_label* stack_label
+			= find_widget<scroll_label>(&window, "stack", false, true);
 
 	std::stringstream stack_text;
 	std::string indent = "  ";
 	int c = 0;
-	BOOST_FOREACH(const game_logic::debug_info &i, fdb_.get_call_stack()) {
+	for(const auto & i : fdb_.get_call_stack())
+	{
 		for(int d = 0; d < c; ++d) {
 			stack_text << indent;
 		}
 		stack_text << "#<span color=\"green\">" << i.counter()
-				<<"</span>: \"<span color=\"green\">"<< i.name()
-				<< "</span>\": '" << i.str() << "' " << std::endl;
+				   << "</span>: \"<span color=\"green\">" << font::escape_text(i.name())
+				   << "</span>\": (" << font::escape_text(i.str()) << ") " << std::endl;
 		++c;
 	}
 
 	stack_label->set_use_markup(true);
 	stack_label->set_label(stack_text.str());
+	stack_label->scroll_vertical_scrollbar(scrollbar_base::END);
 	window.keyboard_capture(stack_label);
 
 	// execution trace label
-	tcontrol* execution_label = find_widget<tcontrol>(
-			&window, "execution", false, true);
+	scroll_label* execution_label
+			= find_widget<scroll_label>(&window, "execution", false, true);
 
 	std::stringstream execution_text;
-	BOOST_FOREACH(const game_logic::debug_info &i, fdb_.get_execution_trace()) {
+	for(const auto & i : fdb_.get_execution_trace())
+	{
 		for(int d = 0; d < i.level(); ++d) {
 			execution_text << indent;
 		}
 		if(!i.evaluated()) {
 			execution_text << "#<span color=\"green\">" << i.counter()
-					<< "</span>: \"<span color=\"green\">" << i.name()
-					<< "</span>\": '" << i.str() << "' " << std::endl;
+						   << "</span>: \"<span color=\"green\">" << font::escape_text(i.name())
+						   << "</span>\": (" << font::escape_text(i.str()) << ") " << std::endl;
 		} else {
 			execution_text << "#<span color=\"yellow\">" << i.counter()
-					<< "</span>: \"<span color=\"yellow\">" << i.name()
-					<< "</span>\": '" << i.str() << "' = "
-					<< "<span color=\"red\">"
-					<< i.value().to_debug_string(NULL,false)
-					<<"</span>" << std::endl;
+						   << "</span>: \"<span color=\"yellow\">" << font::escape_text(i.name())
+						   << "</span>\": (" << font::escape_text(i.str()) << ") = "
+						   << "<span color=\"orange\">"
+						   << font::escape_text(i.value().to_debug_string(nullptr, false))
+						   << "</span>" << std::endl;
 		}
 	}
 
 	execution_label->set_use_markup(true);
 	execution_label->set_label(execution_text.str());
-
+	execution_label->scroll_vertical_scrollbar(scrollbar_base::END);
 	// state
 	std::string state_str;
 	bool is_end = false;
@@ -120,37 +127,41 @@ void tformula_debugger::pre_show(CVideo& /*video*/, twindow& window)
 		state_str = "";
 	} else {
 		state_str = fdb_.get_current_breakpoint()->name();
-	        if(state_str=="End") {
+		if(state_str == "End") {
 			is_end = true;
 		}
 	}
 
-	find_widget<tcontrol>(&window, "state", false).set_label(state_str);
+	find_widget<styled_widget>(&window, "state", false).set_label(state_str);
 
 	// callbacks
-	tbutton& step_button = find_widget<tbutton>(&window, "step", false);
-	connect_signal_mouse_left_click(step_button, boost::bind(
-			  &tformula_debugger::callback_step_button
-			, this
-			, boost::ref(window)));
+	button& step_button = find_widget<button>(&window, "step", false);
+	connect_signal_mouse_left_click(
+			step_button,
+			std::bind(&formula_debugger::callback_step_button,
+						this,
+						std::ref(window)));
 
-	tbutton& stepout_button = find_widget<tbutton>(&window, "stepout", false);
-	connect_signal_mouse_left_click(stepout_button, boost::bind(
-			  &tformula_debugger::callback_stepout_button
-			, this
-			, boost::ref(window)));
+	button& stepout_button = find_widget<button>(&window, "stepout", false);
+	connect_signal_mouse_left_click(
+			stepout_button,
+			std::bind(&formula_debugger::callback_stepout_button,
+						this,
+						std::ref(window)));
 
-	tbutton& next_button = find_widget<tbutton>(&window, "next", false);
-	connect_signal_mouse_left_click(next_button, boost::bind(
-			  &tformula_debugger::callback_next_button
-			, this
-			, boost::ref(window)));
+	button& next_button = find_widget<button>(&window, "next", false);
+	connect_signal_mouse_left_click(
+			next_button,
+			std::bind(&formula_debugger::callback_next_button,
+						this,
+						std::ref(window)));
 
-	tbutton& continue_button = find_widget<tbutton>(&window, "continue", false);
-	connect_signal_mouse_left_click(continue_button, boost::bind(
-			  &tformula_debugger::callback_continue_button
-			, this
-			, boost::ref(window)));
+	button& continue_button = find_widget<button>(&window, "continue", false);
+	connect_signal_mouse_left_click(
+			continue_button,
+			std::bind(&formula_debugger::callback_continue_button,
+						this,
+						std::ref(window)));
 
 	if(is_end) {
 		step_button.set_active(false);
@@ -160,28 +171,29 @@ void tformula_debugger::pre_show(CVideo& /*video*/, twindow& window)
 	}
 }
 
-void tformula_debugger::callback_continue_button(twindow& window)
+void formula_debugger::callback_continue_button(window& window)
 {
 	fdb_.add_breakpoint_continue_to_end();
-	window.set_retval(twindow::OK);
+	window.set_retval(window::OK);
 }
 
-void tformula_debugger::callback_next_button(twindow& window)
+void formula_debugger::callback_next_button(window& window)
 {
 	fdb_.add_breakpoint_next();
-	window.set_retval(twindow::OK);
+	window.set_retval(window::OK);
 }
 
-void tformula_debugger::callback_step_button(twindow& window)
+void formula_debugger::callback_step_button(window& window)
 {
 	fdb_.add_breakpoint_step_into();
-	window.set_retval(twindow::OK);
+	window.set_retval(window::OK);
 }
 
-void tformula_debugger::callback_stepout_button(twindow& window)
+void formula_debugger::callback_stepout_button(window& window)
 {
 	fdb_.add_breakpoint_step_out();
-	window.set_retval(twindow::OK);
+	window.set_retval(window::OK);
 }
 
-} //end of namespace gui2
+} // namespace dialogs
+} // namespace gui2

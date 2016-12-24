@@ -1,6 +1,5 @@
-/* $Id: utility.hpp 55508 2012-10-07 02:34:19Z gabba $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -21,10 +20,14 @@
 #define WB_UTILITY_HPP_
 
 #include <vector>
+#include <deque>
+
+#include "utils/functional.hpp"
 
 #include "typedefs.hpp"
 
 class unit;
+class team;
 
 namespace wb {
 
@@ -42,22 +45,22 @@ side_actions_ptr current_side_actions();
 
 /**
  * For a given leader on a keep, find another leader on another keep in the same castle.
- * @retval NULL if no such leader has been found
+ * @retval nullptr if no such leader has been found
  */
-unit const* find_backup_leader(unit const& leader);
+unit_const_ptr find_backup_leader(unit const& leader);
 
 /**
  * @return a leader from the specified team who can recruit on the specified hex
- * @retval NULL if no such leader has been found
+ * @retval nullptr if no such leader has been found
  */
 unit* find_recruiter(size_t team_index, map_location const&);
 
 /// Applies the future unit map and @return a pointer to the unit at hex
-/// @retval NULL if none is visible to the specified viewer side
+/// @retval nullptr if none is visible to the specified viewer side
 unit* future_visible_unit(map_location hex, int viewer_side = wb::viewer_side());
 
 /// Applies the future unit map and @return a pointer to the unit at hex
-/// @retval NULL if none is visible to the specified viewer side
+/// @retval nullptr if none is visible to the specified viewer side
 /// @param on_side Only search for units of this side.
 unit* future_visible_unit(int on_side, map_location hex, int viewer_side = wb::viewer_side());
 
@@ -84,14 +87,14 @@ public:
 	{}
 	~variable_finalizer()
 	{
-		if(variable_ != NULL) {
+		if(variable_ != nullptr) {
 			*variable_ = value_;
 		}
 	}
 	/** Stop tracking the variable, i.e. this object won't do anything on destruction. */
 	void clear()
 	{
-		variable_ = NULL;
+		variable_ = nullptr;
 	}
 private:
 	T * variable_;
@@ -103,6 +106,47 @@ void unghost_owner_unit(unit* unit);
 
 /** Return whether the whiteboard has actions. */
 bool has_actions();
+
+/**
+ * Callable object class to filter teams.
+ *
+ * The argument is the team to consider.
+ */
+typedef std::function<bool(team&)> team_filter;
+
+/** Returns whether a given team's plan is visible. */
+bool team_has_visible_plan(team&);
+
+/**
+ * Apply a function to all the actions of the whiteboard.
+ *
+ * The actions are processed chronologically.
+ * The second parameter is a @ref team_filter, it is called for each team, if it returns false, the actions of this team won't be processed.
+ *
+ * @param function the function to execute.
+ * @param team_filter select whether a team is visited (default to @ref team_has_visible_plan).
+ */
+void for_each_action(std::function<void(action*)> function,
+                     team_filter team_filter = team_has_visible_plan);
+
+/**
+ * Find the first action occuring on a given hex.
+ *
+ * The actions are processed chronologically.
+ * The second parameter is a @ref team_filter, it is called for each team, if it returns false, the actions of this team won't be considered.
+ *
+ * @param hex where to search for an action.
+ * @param team_filter select whether a team is visited (default to @ref team_has_visible_plan).
+ * @retval action_ptr() when no action verifying the team_filter are present on the given hex.
+ */
+action_ptr find_action_at(map_location hex, team_filter team_filter = team_has_visible_plan);
+
+/**
+ * Find the actions of an unit.
+ *
+ * @param target the unit owning the actions.
+ */
+std::deque<action_ptr> find_actions_of(unit const &target);
 
 } //end namespace wb
 

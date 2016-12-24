@@ -1,6 +1,5 @@
-/* $Id: attack.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -28,9 +27,6 @@ namespace wb
 class attack: public move
 {
 public:
-	friend class validate_visitor;
-	friend class highlight_visitor;
-
 	attack(size_t team_index, bool hidden, unit& mover, const map_location& target_hex, int weapon_choice, const pathfind::marked_route& route,
 			arrow_ptr arrow, fake_unit_ptr fake_unit);
 	attack(config const&, bool hidden); // For deserialization
@@ -42,6 +38,14 @@ public:
 
 	virtual void execute(bool& success, bool& complete);
 
+	/**
+	 * Check the validity of the action.
+	 *
+	 * @return the error preventing the action from being executed.
+	 * @retval OK if there isn't any error (the action can be executed.)
+	 */
+	virtual error check_validity() const;
+
 	/** Applies temporarily the result of this action to the specified unit map. */
 	virtual void apply_temp_modifier(unit_map& unit_map);
 	/** Removes the result of this action from the specified unit map. */
@@ -49,6 +53,8 @@ public:
 
 	/** Gets called by display when drawing a hex, to allow actions to draw to the screen. */
 	virtual void draw_hex(const map_location& hex);
+	/** Redrawing function, called each time the action situation might have changed. */
+	virtual void redraw();
 
 	map_location const& get_target_hex() const {return target_hex_; }
 
@@ -56,8 +62,8 @@ public:
 
 protected:
 
-	boost::shared_ptr<attack> shared_from_this() {
-		return boost::static_pointer_cast<attack>(move::shared_from_this());
+	std::shared_ptr<attack> shared_from_this() {
+		return std::static_pointer_cast<attack>(move::shared_from_this());
 	}
 
 private:

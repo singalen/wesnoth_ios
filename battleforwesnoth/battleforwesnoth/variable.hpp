@@ -1,7 +1,6 @@
-/* $Id: variable.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
    Copyright (C) 2003 by David White <dave@whitevine.net>
-   Copyright (C) 2005 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2005 - 2016 by Philippe Plantier <ayin@anathas.org>
 
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -18,16 +17,20 @@
 #define VARIABLE_H_INCLUDED
 
 #include "config.hpp"
+#include "map/location.hpp"
 
 #include <utility>
 
-class game_state;
 class unit_map;
 
 /**
  * A variable-expanding proxy for the config class. This class roughly behaves
  * as a constant config object, but automatically expands variables.
  *
+ * When dealing with a vconfig, keep in mind its lifetime. By default, vconfigs
+ * do not maintain a copy their data; if you need a vconfig to stick around,
+ * either construct it with manage_memory=true or call make_safe(). This will
+ * cause the vconfig to make a copy of the underlying config object.
  */
 class vconfig
 {
@@ -44,24 +47,29 @@ private:
 #endif
 
 	vconfig();
-	vconfig(const config* cfg, const config* cache_key);
+	vconfig(const config & cfg, const std::shared_ptr<const config> & cache);
 public:
-	vconfig(const vconfig& v);
-	explicit vconfig(const config &cfg, bool is_volatile=false);
+	/// Constructor from a config.
+	/// Equivalent to vconfig(cfg, false).
+	/// Do not use if the vconfig will persist after @a cfg is destroyed!
+	explicit vconfig(const config &cfg) : cache_(), cfg_(&cfg) {}
+	vconfig(const config &cfg, bool manage_memory);
 	~vconfig();
 
 	static vconfig empty_vconfig(); // Valid to dereference. Contains nothing
 	static vconfig unconstructed_vconfig(); // Must not be dereferenced
 
-	vconfig& operator=(const vconfig& cfg);
+	/// A vconfig evaluates to true iff it can be dereferenced.
+	explicit operator bool() const	{ return !null(); }
 
-	bool null() const { return cfg_ == NULL; }
-	bool is_volatile() const { return cache_key_ != NULL; }
+	bool null() const { assert(cfg_); return cfg_ == &default_empty_config; }
+	void make_safe() const; //!< instruct the vconfig to make a private copy of its underlying data.
 	const config& get_config() const { return *cfg_; }
-	const config get_parsed_config() const;
+	config get_parsed_config() const;
 
 	typedef std::vector<vconfig> child_list;
 	child_list get_children(const std::string& key) const;
+	size_t count_children(const std::string& key) const;
 	vconfig child(const std::string& key) const;
 	bool has_child(const std::string& key) const;
 
@@ -70,9 +78,9 @@ public:
 	 * because vconfig is often used as a drop-in replacement for config, and
 	 * this const will properly warn you if you try to assign vcfg["key"]=val;
 	 *
-	 * Note: The following construction is unsave:
+	 * Note: The following construction is unsafe:
 	 * const std::string& temp = vcfg["foo"];
-	 * This bind temp to a member of a temporary t_string. The lifetime of the
+	 * This binds temp to a member of a temporary t_string. The lifetime of the
 	 * temporary is not extended by this reference binding and the temporary's
 	 * lifetime ends which causes UB. Instead use:
 	 * const std::string temp = vcfg["foo"];
@@ -83,20 +91,56 @@ public:
 	bool has_attribute(const std::string& key) const { return cfg_->has_attribute(key); }
 	bool empty() const { return (null() || cfg_->empty()); }
 
+	struct attribute_iterator
+	{
+		struct pointer_proxy;
+
+		typedef const config::attribute value_type;
+		typedef std::bidirectional_iterator_tag iterator_category;
+		typedef int difference_type;
+		typedef const pointer_proxy pointer;
+		typedef const config::attribute reference;
+		typedef config::const_attribute_iterator Itor;
+		explicit attribute_iterator(const Itor &i): i_(i) {}
+
+		attribute_iterator &operator++() { ++i_; return *this; }
+		attribute_iterator operator++(int) { return attribute_iterator(i_++); }
+
+		attribute_iterator &operator--() { --i_; return *this; }
+		attribute_iterator operator--(int) { return attribute_iterator(i_--); }
+
+		reference operator*() const;
+		pointer operator->() const;
+
+		bool operator==(const attribute_iterator &i) const { return i_ == i.i_; }
+		bool operator!=(const attribute_iterator &i) const { return i_ != i.i_; }
+
+	private:
+		Itor i_;
+	};
+
+	boost::iterator_range<attribute_iterator> attribute_range() {
+		config::const_attr_itors range = cfg_->attribute_range();
+		return boost::make_iterator_range(attribute_iterator(range.begin()), attribute_iterator(range.end()));
+	}
+
 	struct all_children_iterator
 	{
 		struct pointer_proxy;
 
-		typedef std::pair<std::string, vconfig> value_type;
-		typedef std::forward_iterator_tag iterator_category;
+		typedef const std::pair<std::string, vconfig> value_type;
+		typedef std::bidirectional_iterator_tag iterator_category;
 		typedef int difference_type;
 		typedef const pointer_proxy pointer;
 		typedef const value_type reference;
-		typedef config::all_children_iterator Itor;
-		explicit all_children_iterator(const Itor &i, const config *cache_key = NULL);
+		typedef config::const_all_children_iterator Itor;
+		explicit all_children_iterator(const Itor &i);
+		all_children_iterator(const Itor &i, const std::shared_ptr<const config> & cache);
 
 		all_children_iterator& operator++();
 		all_children_iterator  operator++(int);
+		all_children_iterator& operator--();
+		all_children_iterator  operator--(int);
 
 		reference operator*() const;
 		pointer operator->() const;
@@ -111,8 +155,19 @@ public:
 
 	private:
 		Itor i_;
+		/*
+			if wa have game variables
+				[a] b = 1 [/a]
+				[a] b = 4 [/a]
+				[a] b = 6 [/a]
+			we want to expand [insert_tag] variable = a name  = "u" [/insert_tag] to
+			   [u] b = 1 [/u]
+			   [u] b = 4 [/u]
+			   [u] b = 6 [/u]
+			in this case inner_index_ points to the index in 'a' we are currently processing.
+		*/
 		int inner_index_;
-		const config* cache_key_;
+		std::shared_ptr<const config> cache_;
 	};
 
 	struct recursion_error : public config::error {
@@ -122,32 +177,35 @@ public:
 	/** In-order iteration over all children. */
 	all_children_iterator ordered_begin() const;
 	all_children_iterator ordered_end() const;
+	boost::iterator_range<all_children_iterator> all_ordered() const {
+		return boost::make_iterator_range(ordered_begin(), ordered_end());
+	}
 
 private:
-	const config* cfg_;
-	const config* cache_key_;
+	/// Returns true if *this has made a copy of its config.
+	bool memory_managed() const { return static_cast<bool>(cache_); }
+
+	/// Keeps a copy of our config alive when we manage our own memory.
+	/// If this is not null, then cfg_ points to *cache_ or a child of *cache_.
+	mutable std::shared_ptr<const config> cache_;
+	/// Used to access our config (original or copy, as appropriate).
+	mutable const config* cfg_;
+	static const config default_empty_config;
+};
+
+struct vconfig::attribute_iterator::pointer_proxy
+{
+	value_type p;
+	pointer_proxy(value_type p) : p(p) {}
+	value_type *operator->() const { return &p; }
 };
 
 struct vconfig::all_children_iterator::pointer_proxy
 {
 	value_type p;
-	const value_type *operator->() const { return &p; }
+	pointer_proxy(value_type p) : p(p) {}
+	value_type *operator->() const { return &p; }
 };
-
-namespace variable
-{
-
-/**
- * Used to clear the cache for variables.
- */
-class manager
-{
-public:
-	~manager();
-};
-
-}
-
 
 
 class scoped_wml_variable
@@ -178,11 +236,11 @@ private:
 class scoped_xy_unit : public scoped_wml_variable
 {
 public:
-	scoped_xy_unit(const std::string& var_name, const int x, const int y, const unit_map& umap)
-		: scoped_wml_variable(var_name), x_(x), y_(y), umap_(umap) {}
+	scoped_xy_unit(const std::string& var_name, map_location loc, const unit_map& umap)
+		: scoped_wml_variable(var_name), loc_(loc), umap_(umap) {}
 	void activate();
 private:
-	const int x_, y_;
+	const map_location loc_;
 	const unit_map& umap_;
 };
 
@@ -196,39 +254,6 @@ public:
 private:
 	const std::string player_;
 	unsigned int recall_index_;
-};
-
-/** Information on a WML variable. */
-struct variable_info
-{
-	typedef config::child_itors array_range;
-
-	/**
-	 * TYPE: the correct variable type should be decided by the user of the info structure
-	 * Note: an Array can also be considered a Container, since index 0 will be used by default
-	 */
-	enum TYPE { TYPE_SCALAR,    //a Scalar variable resolves to a t_string attribute of *vars
-	            TYPE_ARRAY,     //an Array variable is a series of Containers
-	            TYPE_CONTAINER, //a Container is a specific index of an Array (contains Scalars)
-	            TYPE_UNSPECIFIED };
-
-	variable_info(const std::string& varname, bool force_valid=true,
-		TYPE validation_type=TYPE_UNSPECIFIED);
-
-	TYPE vartype; //default is TYPE_UNSPECIFIED
-	bool is_valid;
-	std::string key; //the name of the internal attribute or child
-	bool explicit_index; //true if query ended in [...] specifier
-	size_t index; //the index of the child
-	config *vars; //the containing node in game_state::variables
-
-	/**
-	 * Results: after deciding the desired type, these methods can retrieve the result
-	 * Note: first you should force_valid or check is_valid, otherwise these may fail
-	 */
-	config::attribute_value &as_scalar();
-	config& as_container();
-	array_range as_array(); //range may be empty
 };
 
 #endif

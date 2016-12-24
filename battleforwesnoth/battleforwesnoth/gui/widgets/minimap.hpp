@@ -1,6 +1,5 @@
-/* $Id: minimap.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,11 +15,17 @@
 #ifndef GUI_WIDGETS_MINIMAP_HPP_INCLUDED
 #define GUI_WIDGETS_MINIMAP_HPP_INCLUDED
 
-#include "gui/widgets/control.hpp"
+#include "gui/widgets/styled_widget.hpp"
+
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
 
 class config;
 
-namespace gui2 {
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 /**
  * The basic minimap class.
@@ -28,43 +33,53 @@ namespace gui2 {
  * This minimap can only show a minimap, but it can't be interacted with. For
  * that the tminimap_interactive class will be created.
  */
-class tminimap : public tcontrol
+class minimap : public styled_widget
 {
 public:
-	tminimap() :
-		tcontrol(1),
-		map_data_(),
-		terrain_(NULL)
+	minimap() : styled_widget(1), map_data_(), terrain_(nullptr)
 	{
 	}
 
 	/***** ***** ***** ***** Inherited ***** ***** ***** *****/
 
-	/** Inherited from tcontrol. */
-	void set_active(const bool /*active*/) {}
+	/** See @ref styled_widget::set_active. */
+	virtual void set_active(const bool active) override;
 
-	/** Inherited from tcontrol. */
-	bool get_active() const { return true; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
 
-	/** Inherited from tcontrol. */
-	unsigned get_state() const { return 0; }
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
 
-	/** Inherited from tcontrol. */
-	bool disable_click_dismiss() const { return false; }
+	/** See @ref widget::disable_click_dismiss. */
+	bool disable_click_dismiss() const override;
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
 	void set_map_data(const std::string& map_data)
-		{ if(map_data != map_data_) { map_data_ = map_data; set_dirty(); } }
+	{
+		if(map_data != map_data_) {
+			map_data_ = map_data;
+			set_is_dirty(true);
+		}
+	}
 
-	std::string get_map_data() const { return map_data_; }
+	std::string get_map_data() const
+	{
+		return map_data_;
+	}
 
-	const std::string& map_data() const { return map_data_; }
+	const std::string& map_data() const
+	{
+		return map_data_;
+	}
 
-	void set_config(const ::config* terrain) { terrain_ = terrain; }
+	void set_config(const ::config* terrain)
+	{
+		terrain_ = terrain;
+	}
 
 private:
-
 	/** The map data to be used to generate the map. */
 	std::string map_data_;
 
@@ -81,18 +96,49 @@ private:
 	 * @param w                   The wanted width of the image.
 	 * @param h                   The wanted height of the image.
 	 *
-	 * @returns                   The image, NULL upon error.
+	 * @returns                   The image, nullptr upon error.
 	 */
 	const surface get_image(const int w, const int h) const;
 
-	/** Inherited from tcontrol. */
-	void impl_draw_background(surface& frame_buffer);
+	/** See @ref widget::impl_draw_background. */
+	virtual void impl_draw_background(surface& frame_buffer,
+									  int x_offset,
+									  int y_offset) override;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 };
+
+// }---------- DEFINITION ---------{
+
+struct minimap_definition : public styled_widget_definition
+{
+	explicit minimap_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_minimap : public builder_styled_widget
+{
+	explicit builder_minimap(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-

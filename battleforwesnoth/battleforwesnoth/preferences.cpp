@@ -1,6 +1,5 @@
-/* $Id: preferences.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -24,88 +23,155 @@
 
 #include "config.hpp"
 #include "filesystem.hpp"
-#include "gui/widgets/settings.hpp"
-#include "hotkeys.hpp"
+#include "game_config.hpp"
+#include "hotkey/hotkey_item.hpp"
+#include "lexical_cast.hpp"
 #include "log.hpp"
 #include "preferences.hpp"
 #include "sound.hpp"
 #include "video.hpp" // non_interactive()
 #include "serialization/parser.hpp"
+#include "utils/general.hpp"
 
 #include <sys/stat.h> // for setting the permissions of the preferences file
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
+static lg::log_domain log_config("config");
+#define ERR_CFG LOG_STREAM(err , log_config)
 
 static lg::log_domain log_filesystem("filesystem");
 #define ERR_FS LOG_STREAM(err, log_filesystem)
 
-#ifdef __IPHONEOS__
-extern int IOS_SCREEN_WIDTH;
-extern int IOS_SCREEN_HEIGHT;
-#endif
-
 namespace {
-
-bool color_cursors = false;
 
 bool no_preferences_save = false;
 
 bool fps = false;
 
-#ifndef __IPHONEOS__
 int draw_delay_ = 20;
-#else
-int draw_delay_ = 20;
-#endif
 
 config prefs;
 }
 
 namespace preferences {
 
+/*
+ * Stores all the static, default values for certain game preferences. The values
+ * are kept here for easy modification without a lnegthy rebuild.
+ *
+ * Add any variables of similar type here.
+ */
+const int min_window_width  = 800;
+const int min_window_height = 600;
+
+const int def_window_width  = 1024;
+const int def_window_height = 768;
+
+const int min_font_scaling  = 80;
+const int max_font_scaling  = 150;
+
+
+class prefs_event_handler : public events::sdl_handler {
+public:
+	virtual void handle_event(const SDL_Event &) {}
+	virtual void handle_window_event(const SDL_Event &event);
+	prefs_event_handler() :	sdl_handler(false) {}
+};
+
+prefs_event_handler event_handler_;
+
 base_manager::base_manager()
 {
-	scoped_istream stream = istream_file(get_prefs_file());
-	read(prefs, *stream);
+	event_handler_.join_global();
+
+	try{
+#ifdef DEFAULT_PREFS_PATH
+		filesystem::scoped_istream stream = filesystem::istream_file(filesystem::get_default_prefs_file(),false);
+		read(prefs, *stream);
+
+		config user_prefs;
+		stream = filesystem::istream_file(filesystem::get_prefs_file());
+		read(user_prefs, *stream);
+
+		prefs.merge_with(user_prefs);
+#else
+		filesystem::scoped_istream stream = filesystem::istream_file(filesystem::get_prefs_file(),false);
+		read(prefs, *stream);
+#endif
+	} catch(const config::error& e) {
+		ERR_CFG << "Error loading preference, message: "
+				<< e.what()
+				<< std::endl;
+	}
 }
 
 base_manager::~base_manager()
 {
-	if (no_preferences_save) return;
+	event_handler_.leave_global();
 
-	// Set the 'hidden' preferences.
-	prefs["scroll_threshold"] = mouse_scroll_threshold();
+	try {
+		if (no_preferences_save) return;
 
-	write_preferences();
+		// Set the 'hidden' preferences.
+		prefs["scroll_threshold"] = mouse_scroll_threshold();
+
+		write_preferences();
+	} catch (...) {}
+}
+
+/*
+ * Hook for setting window state variables on window resize and maximize
+ * events. Since there is no fullscreen window event, that setter is called
+ * from the CVideo function instead.
+ */
+void prefs_event_handler::handle_window_event(const SDL_Event& event)
+{
+
+	// Saftey check to make sure this is a window event
+	if (event.type != SDL_WINDOWEVENT) return;
+
+	switch(event.window.event) {
+	case SDL_WINDOWEVENT_RESIZED:
+		_set_resolution(std::make_pair(event.window.data1,event.window.data2));
+
+		break;
+
+	case SDL_WINDOWEVENT_MAXIMIZED:
+		_set_maximized(true);
+
+		break;
+
+	case SDL_WINDOWEVENT_RESTORED:
+		_set_maximized(fullscreen() || false);
+
+		break;
+	}
 }
 
 void write_preferences()
 {
-    #ifndef _WIN32
-
-    bool prefs_file_existed = access(get_prefs_file().c_str(), F_OK) == 0;
-
-    #endif
+#ifndef _WIN32
+    bool prefs_file_existed = access(filesystem::get_prefs_file().c_str(), F_OK) == 0;
+#endif
 
 	try {
-		scoped_ostream prefs_file = ostream_file(get_prefs_file());
+		filesystem::scoped_ostream prefs_file = filesystem::ostream_file(filesystem::get_prefs_file());
 		write(*prefs_file, prefs);
-	} catch(io_exception&) {
-		ERR_FS << "error writing to preferences file '" << get_prefs_file() << "'\n";
+	} catch(filesystem::io_exception&) {
+		ERR_FS << "error writing to preferences file '" << filesystem::get_prefs_file() << "'" << std::endl;
 	}
 
-
-    #ifndef _WIN32
-
+#ifndef _WIN32
     if(!prefs_file_existed) {
 
-        if(chmod(get_prefs_file().c_str(), 0600) == -1) {
-			ERR_FS << "error setting permissions of preferences file '" << get_prefs_file() << "'\n";
+        if(chmod(filesystem::get_prefs_file().c_str(), 0600) == -1) {
+			ERR_FS << "error setting permissions of preferences file '" << filesystem::get_prefs_file() << "'" << std::endl;
         }
 
     }
-
-    #endif
-
-
+#endif
 }
 
 void set(const std::string &key, bool value)
@@ -124,6 +190,11 @@ void set(const std::string &key, char const *value)
 }
 
 void set(const std::string &key, const std::string &value)
+{
+	prefs[key] = value;
+}
+
+void set(const std::string &key, const config::attribute_value &value)
 {
 	prefs[key] = value;
 }
@@ -155,9 +226,18 @@ std::string get(const std::string& key) {
 	return prefs[key];
 }
 
+std::string get(const std::string& key, const std::string& def) {
+	return prefs[key].empty() ? def : prefs[key];
+}
+
 bool get(const std::string &key, bool def)
 {
 	return prefs[key].to_bool(def);
+}
+
+config::attribute_value get_as_attribute(const std::string &key)
+{
+	return prefs[key];
 }
 
 void disable_preferences_save() {
@@ -169,18 +249,112 @@ config* get_prefs(){
 	return pointer;
 }
 
-bool fullscreen()
-{
-#ifdef __IPHONEOS__
-    return false;
-#else
-	return get("fullscreen", false);
-#endif
+
+bool show_allied_orb() {
+	return get("show_ally_orb", game_config::show_ally_orb);
+}
+void set_show_allied_orb(bool show_orb) {
+	prefs["show_ally_orb"] = show_orb;
 }
 
-void _set_fullscreen(bool ison)
-{
-	prefs["fullscreen"] = ison;
+bool show_enemy_orb() {
+	return get("show_enemy_orb", game_config::show_enemy_orb);
+}
+void set_show_enemy_orb(bool show_orb) {
+	prefs["show_enemy_orb"] = show_orb;
+}
+
+bool show_moved_orb() {
+	return get("show_moved_orb", game_config::show_moved_orb);
+}
+void set_show_moved_orb(bool show_orb) {
+	prefs["show_moved_orb"] = show_orb;
+}
+
+bool show_unmoved_orb() {
+	return get("show_unmoved_orb", game_config::show_unmoved_orb);
+}
+void set_show_unmoved_orb(bool show_orb) {
+	prefs["show_unmoved_orb"] = show_orb;
+}
+
+bool show_partial_orb() {
+	return get("show_partial_orb", game_config::show_partial_orb);
+}
+void set_show_partial_orb(bool show_orb) {
+	prefs["show_partial_orb"] = show_orb;
+}
+
+
+static std::string fix_orb_color_name(const std::string& color) {
+	if (color.substr(0,4) == "orb_") {
+		if(color[4] >= '0' && color[4] <= '9') {
+			return color.substr(5);
+		} else {
+			return color.substr(4);
+		}
+	}
+	return color;
+}
+
+std::string allied_color() {
+	std::string ally_color = get("ally_orb_color");
+	if (ally_color.empty())
+		return game_config::colors::ally_orb_color;
+	return fix_orb_color_name(ally_color);
+}
+void set_allied_color(const std::string& color_id) {
+	prefs["ally_orb_color"] = color_id;
+}
+
+std::string core_id() {
+	std::string core_id = get("core");
+	if (core_id.empty())
+		return "default";
+	return core_id;
+}
+void set_core_id(const std::string& core_id) {
+	prefs["core"] = core_id;
+}
+
+std::string enemy_color() {
+	std::string enemy_color = get("enemy_orb_color");
+	if (enemy_color.empty())
+		return game_config::colors::enemy_orb_color;
+	return fix_orb_color_name(enemy_color);
+}
+void set_enemy_color(const std::string& color_id) {
+	prefs["enemy_orb_color"] = color_id;
+}
+
+std::string moved_color() {
+	std::string moved_color = get("moved_orb_color");
+	if (moved_color.empty())
+		return game_config::colors::moved_orb_color;
+	return fix_orb_color_name(moved_color);
+}
+void set_moved_color(const std::string& color_id) {
+	prefs["moved_orb_color"] = color_id;
+}
+
+std::string unmoved_color() {
+	std::string unmoved_color = get("unmoved_orb_color");
+	if (unmoved_color.empty())
+		return game_config::colors::unmoved_orb_color;
+	return fix_orb_color_name(unmoved_color);
+}
+void set_unmoved_color(const std::string& color_id) {
+	prefs["unmoved_orb_color"] = color_id;
+}
+
+std::string partial_color() {
+	std::string partmoved_color = get("partial_orb_color");
+	if (partmoved_color.empty())
+		return game_config::colors::partial_orb_color;
+	return fix_orb_color_name(partmoved_color);
+}
+void set_partial_color(const std::string& color_id) {
+	prefs["partial_orb_color"] = color_id;
 }
 
 bool scroll_to_action()
@@ -188,45 +362,55 @@ bool scroll_to_action()
 	return get("scroll_to_action", true);
 }
 
-void _set_scroll_to_action(bool ison)
+void set_scroll_to_action(bool ison)
 {
 	prefs["scroll_to_action"] = ison;
 }
 
-int min_allowed_width()
-{
-	return 480;
-}
-
-int min_allowed_height()
-{
-	return 320;
-}
-
 std::pair<int,int> resolution()
 {
-	const std::string postfix = fullscreen() ? "resolution" : "windowsize";
-	std::string x = prefs['x' + postfix], y = prefs['y' + postfix];
-	if (!x.empty() && !y.empty()) {
-		std::pair<int,int> res(std::max(atoi(x.c_str()), min_allowed_width()),
-		                       std::max(atoi(y.c_str()), min_allowed_height()));
+	const std::string& x = prefs["xresolution"], y = prefs["yresolution"];
 
-		// Make sure resolutions are always divisible by 4
-		//res.first &= ~3;
-		//res.second &= ~3;
-		return res;
-	} else {
-#ifndef __IPHONEOS__
-		return std::pair<int,int>(1024,768);
-#else
-        return std::pair<int,int>(IOS_SCREEN_WIDTH,IOS_SCREEN_HEIGHT);
-#endif
+	if (!x.empty() && !y.empty()) {
+		try {
+			return std::make_pair(
+				std::max(std::stoi(x), min_window_width),
+				std::max(std::stoi(y), min_window_height));
+		} catch(std::invalid_argument) {}
 	}
+
+	return std::pair<int,int>(def_window_width, def_window_height);
+}
+
+bool maximized()
+{
+	return get("maximized", !fullscreen());
+}
+
+bool fullscreen()
+{
+	return get("fullscreen", false);
+}
+
+void _set_resolution(const std::pair<int, int>& res)
+{
+	preferences::set("xresolution", std::to_string(res.first));
+	preferences::set("yresolution", std::to_string(res.second));
+}
+
+void _set_maximized(bool ison)
+{
+	prefs["maximized"] = ison;
+}
+
+void _set_fullscreen(bool ison)
+{
+	prefs["fullscreen"] = ison;
 }
 
 bool turbo()
 {
-	if(non_interactive()) {
+	if(CVideo::get_singleton().non_interactive()) {
 		return true;
 	}
 
@@ -246,6 +430,22 @@ double turbo_speed()
 void save_turbo_speed(const double speed)
 {
 	prefs["turbo_speed"] = speed;
+}
+
+int font_scaling()
+{
+	// Clip at 80 because if it's too low it'll cause crashes
+	return std::max<int>(std::min<int>(prefs["font_scale"].to_int(100), max_font_scaling), min_font_scaling);
+}
+
+void set_font_scaling(int scale)
+{
+	prefs["font_scale"] = util::clamp(scale, min_font_scaling, max_font_scaling);
+}
+
+int font_scaled(int size)
+{
+	return (size * font_scaling()) / 100;
 }
 
 bool idle_anim()
@@ -278,12 +478,22 @@ void set_language(const std::string& s)
 	preferences::set("locale", s);
 }
 
+std::string gui_theme()
+{
+	return prefs["gui2_theme"];
+}
+
+void set_gui_theme(const std::string& s)
+{
+	preferences::set("gui2_theme", s);
+}
+
 bool ellipses()
 {
 	return get("show_side_colors", false);
 }
 
-void _set_ellipses(bool ison)
+void set_ellipses(bool ison)
 {
 	preferences::set("show_side_colors",  ison);
 }
@@ -490,6 +700,16 @@ bool set_music(bool ison) {
 	return true;
 }
 
+bool stop_music_in_background()
+{
+	return get("stop_music_in_background", false);
+}
+
+void set_stop_music_in_background(bool ison)
+{
+	preferences::set("stop_music_in_background", ison);
+}
+
 namespace {
 	double scroll = 0.2;
 }
@@ -501,140 +721,140 @@ bool joystick_support_enabled()
 
 int joystick_mouse_deadzone()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_scroll_deadzone"), 1500, 0, 16000);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_scroll_deadzone"), 1500), 0, 16000);
 	return value;
 }
 
 int joystick_num_mouse_xaxis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_scroll_xaxis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_scroll_xaxis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_mouse_xaxis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_scroll_xaxis_num"), 0, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_scroll_xaxis_num"), 0), 0, 7);
 	return value;
 }
 
 int joystick_num_mouse_yaxis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_scroll_yaxis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_scroll_yaxis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_mouse_yaxis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_scroll_yaxis_num"), 1, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_scroll_yaxis_num"), 1), 0, 7);
 	return value;
 }
 
 int joystick_scroll_deadzone()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_scroll_deadzone"), 1500, 0, 16000);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_scroll_deadzone"), 1500), 0, 16000);
 	return value;
 }
 
 int joystick_cursor_deadzone()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_cursor_deadzone"), 1500, 0, 16000);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_cursor_deadzone"), 1500), 0, 16000);
 	return value;
 }
 
 int joystick_thrusta_deadzone()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_thrusta_deadzone"), 1500, 0, 16000);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_thrusta_deadzone"), 1500), 0, 16000);
 	return value;
 }
 
 int joystick_thrustb_deadzone()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_thrustb_deadzone"), 1500, 0, 16000);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_thrustb_deadzone"), 1500), 0, 16000);
 	return value;
 }
 
 int joystick_cursor_threshold()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_cursor_threshold"), 10000, 0, 16000);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_cursor_threshold"), 10000), 0, 16000);
 	return value;
 }
 
 int joystick_num_scroll_xaxis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_scroll_xaxis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_scroll_xaxis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_scroll_xaxis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_scroll_xaxis_num"), 0, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_scroll_xaxis_num"), 0), 0, 7);
 	return value;
 }
 
 int joystick_num_scroll_yaxis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_scroll_yaxis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_scroll_yaxis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_scroll_yaxis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_scroll_yaxis_num"), 1, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_scroll_yaxis_num"), 1), 0, 7);
 	return value;
 }
 
 int joystick_num_cursor_xaxis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_cursor_xaxis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_cursor_xaxis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_cursor_xaxis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_cursor_xaxis_num"), 3, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_cursor_xaxis_num"), 3), 0, 7);
 	return value;
 }
 
 int joystick_num_cursor_yaxis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_cursor_yaxis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_cursor_yaxis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_cursor_yaxis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_cursor_yaxis_num"), 4, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_cursor_yaxis_num"), 4), 0, 7);
 	return value;
 }
 
 int joystick_num_thrusta_axis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_thrusta_axis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_thrusta_axis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_thrusta_axis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_thrusta_axis_num"), 2, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_thrusta_axis_num"), 2), 0, 7);
 	return value;
 }
 
 int joystick_num_thrustb_axis()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_num_thrustb_axis"), 0, -1, 3);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_num_thrustb_axis"), 0), -1, 3);
 	return value;
 }
 
 int joystick_thrustb_axis_num()
 {
-	const int value = lexical_cast_in_range<int>(get("joystick_thrustb_axis_num"), 2, 0, 7);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("joystick_thrustb_axis_num"), 2), 0, 7);
 	return value;
 }
 
 
 int scroll_speed()
 {
-	const int value = lexical_cast_in_range<int>(get("scroll"), 50, 1, 100);
+	const int value = util::clamp<int>(lexical_cast_default<int>(get("scroll"), 50), 1, 100);
 	scroll = value/100.0;
 
 	return value;
@@ -668,16 +888,72 @@ int mouse_scroll_threshold()
 
 bool animate_map()
 {
-	return preferences::get("animate_map", true)
-#ifdef __IPHONEOS__
-    && false
-#endif
-    ;
+	return preferences::get("animate_map", true);
+}
+
+bool animate_water()
+{
+	return preferences::get("animate_water", true);
+}
+
+bool minimap_movement_coding()
+{
+	return preferences::get("minimap_movement_coding", true);
+}
+
+void toggle_minimap_movement_coding()
+{
+	set("minimap_movement_coding", !minimap_movement_coding());
+}
+
+bool minimap_terrain_coding()
+{
+	return preferences::get("minimap_terrain_coding", true);
+}
+
+void toggle_minimap_terrain_coding()
+{
+	set("minimap_terrain_coding", !minimap_terrain_coding());
+}
+
+bool minimap_draw_units()
+{
+	return preferences::get("minimap_draw_units", true);
+}
+
+void toggle_minimap_draw_units()
+{
+	set("minimap_draw_units", !minimap_draw_units());
+}
+
+bool minimap_draw_villages()
+{
+	return preferences::get("minimap_draw_villages", true);
+}
+
+void toggle_minimap_draw_villages()
+{
+	set("minimap_draw_villages", !minimap_draw_villages());
+}
+
+bool minimap_draw_terrain()
+{
+	return preferences::get("minimap_draw_terrain", true);
+}
+
+void toggle_minimap_draw_terrain()
+{
+	set("minimap_draw_terrain", !minimap_draw_terrain());
 }
 
 void set_animate_map(bool value)
 {
 	set("animate_map", value);
+}
+
+void set_animate_water(bool value)
+{
+	set("animate_water", value);
 }
 
 bool show_standing_animations()
@@ -712,20 +988,28 @@ void set_draw_delay(int value)
 
 bool use_color_cursors()
 {
-	return color_cursors;
+	return get("color_cursors", true);
 }
 
 void _set_color_cursors(bool value)
 {
 	preferences::set("color_cursors", value);
-	color_cursors = value;
 }
 
-void load_hotkeys() {
-	hotkey::load_hotkeys(prefs);
+void load_hotkeys()
+{
+	hotkey::load_hotkeys(prefs, false);
 }
-void save_hotkeys() {
+
+void save_hotkeys()
+{
 	hotkey::save_hotkeys(prefs);
+}
+
+void clear_hotkeys()
+{
+	hotkey::reset_default_hotkeys();
+	prefs.clear_children("hotkey");
 }
 
 void add_alias(const std::string &alias, const std::string &command)
@@ -764,6 +1048,36 @@ bool confirm_load_save_from_different_version()
 bool use_twelve_hour_clock_format()
 {
 	return get("use_twelve_hour_clock_format", false);
+}
+
+bool disable_auto_moves()
+{
+	return get("disable_auto_moves", false);
+}
+
+void set_disable_auto_moves(bool value)
+{
+	preferences::set("disable_auto_moves", value);
+}
+
+bool disable_loadingscreen_animation()
+{
+	return get("disable_loadingscreen_animation", false);
+}
+
+void set_disable_loadingscreen_animation(bool value)
+{
+	set("disable_loadingscreen_animation", value);
+}
+
+bool damage_prediction_allow_monte_carlo_simulation()
+{
+	return get("damage_prediction_allow_monte_carlo_simulation", true);
+}
+
+void set_damage_prediction_allow_monte_carlo_simulation(bool value)
+{
+	set("damage_prediction_allow_monte_carlo_simulation", value);
 }
 
 } // end namespace preferences

@@ -1,6 +1,5 @@
-/* $Id: arrow.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+   Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -23,8 +22,6 @@
 #include "game_display.hpp"
 #include "log.hpp"
 #include "resources.hpp"
-
-#include <boost/foreach.hpp>
 
 static lg::log_domain log_arrows("arrows");
 #define ERR_ARR LOG_STREAM(err, log_arrows)
@@ -100,7 +97,7 @@ void arrow::reset()
 	notify_arrow_changed();
 }
 
-void arrow::set_color(std::string const& color)
+void arrow::set_color(const std::string& color)
 {
 	color_ = color;
 	if (valid_path(path_))
@@ -109,10 +106,10 @@ void arrow::set_color(std::string const& color)
 	}
 }
 
-std::string const arrow::STYLE_STANDARD = "standard";
-std::string const arrow::STYLE_HIGHLIGHTED = "highlighted";
-std::string const arrow::STYLE_FOCUS = "focus";
-std::string const arrow::STYLE_FOCUS_INVALID = "focus_invalid";
+const std::string arrow::STYLE_STANDARD = "standard";
+const std::string arrow::STYLE_HIGHLIGHTED = "highlighted";
+const std::string arrow::STYLE_FOCUS = "focus";
+const std::string arrow::STYLE_FOCUS_INVALID = "focus_invalid";
 
 void arrow::set_style(const std::string& style)
 {
@@ -160,29 +157,23 @@ void arrow::update_symbols()
 {
 	if (!valid_path(path_))
 	{
-		WRN_ARR << "arrow::update_symbols called with invalid path\n";
+		WRN_ARR << "arrow::update_symbols called with invalid path" << std::endl;
 		return;
 	}
 
 	symbols_map_.clear();
 	invalidate_arrow_path(path_);
 
-	std::string const mods = "~RC(FF00FF>"+ color_ + ")"; //magenta to current color
+	const std::string mods = "~RC(FF00FF>"+ color_ + ")"; //magenta to current color
 
-	std::string const dirname = "arrows/";
-	map_location::DIRECTION exit_dir = map_location::NDIRECTIONS;
-	map_location::DIRECTION enter_dir = map_location::NDIRECTIONS;
+	const std::string dirname = "arrows/";
 	std::string prefix = "";
 	std::string suffix = "";
 	std::string image_filename = "";
 	arrow_path_t::const_iterator const arrow_start_hex = path_.begin();
 	arrow_path_t::const_iterator const arrow_pre_end_hex = path_.end() - 2;
 	arrow_path_t::const_iterator const arrow_end_hex = path_.end() - 1;
-	bool start = false;
-	bool pre_end = false;
-	bool end = false;
 	bool teleport_out = false;
-	bool teleport_in = false;
 
 	arrow_path_t::iterator hex;
 	for (hex = path_.begin(); hex != path_.end(); ++hex)
@@ -190,10 +181,12 @@ void arrow::update_symbols()
 		prefix = "";
 		suffix = "";
 		image_filename = "";
-		start = pre_end = end = false;
+		bool start = false;
+		bool pre_end = false;
+		bool end = false;
 
 		// teleport in if we teleported out last hex
-		teleport_in = teleport_out;
+		bool teleport_in = teleport_out;
 		teleport_out = false;
 
 		// Determine some special cases
@@ -207,12 +200,12 @@ void arrow::update_symbols()
 			teleport_out = true;
 
 		// calculate enter and exit directions, if available
-		enter_dir = map_location::NDIRECTIONS;
+		map_location::DIRECTION enter_dir = map_location::NDIRECTIONS;
 		if (!start && !teleport_in)
 		{
 			enter_dir = hex->get_relative_dir(*(hex-1));
 		}
-		exit_dir = map_location::NDIRECTIONS;
+		map_location::DIRECTION exit_dir = map_location::NDIRECTIONS;
 		if (!end && !teleport_out)
 		{
 			exit_dir = hex->get_relative_dir(*(hex+1));
@@ -259,7 +252,7 @@ void arrow::update_symbols()
 				exit = exit + "_ending";
 			}
 
-			assert(abs(enter_dir - exit_dir) > 1); //impossible turn?
+			assert(std::abs(enter_dir - exit_dir) > 1); //impossible turn?
 			if (enter_dir < exit_dir)
 			{
 				prefix = enter;
@@ -283,7 +276,7 @@ void arrow::update_symbols()
 		image::locator image = image::locator(image_filename, mods);
 		if (!image.file_exists())
 		{
-			ERR_ARR << "Image " << image_filename << " not found.\n";
+			ERR_ARR << "Image " << image_filename << " not found." << std::endl;
 			image = image::locator(game_config::images::missing);
 		}
 		symbols_map_[*hex] = image;
@@ -294,7 +287,7 @@ void arrow::invalidate_arrow_path(arrow_path_t const& path)
 {
 	if(!SCREEN) return;
 
-	BOOST_FOREACH(map_location const& loc, path)
+	for (map_location const& loc : path)
 	{
 		SCREEN->invalidate(loc);
 	}

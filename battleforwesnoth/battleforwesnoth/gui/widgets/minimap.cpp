@@ -1,6 +1,5 @@
-/* $Id: minimap.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,15 +16,18 @@
 
 #include "gui/widgets/minimap.hpp"
 
-#include "gui/auxiliary/log.hpp"
-#include "gui/auxiliary/widget_definition/minimap.hpp"
-#include "gui/auxiliary/window_builder/minimap.hpp"
+#include "gui/core/log.hpp"
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
+#include "gui/core/register_widget.hpp"
 #include "gui/widgets/settings.hpp"
-#include "map.hpp"
-#include "map_exception.hpp"
-#include "../../minimap.hpp"
+#include "map/map.hpp"
+#include "map/exception.hpp"
+#include "sdl/rect.hpp"
+#include "terrain/type_data.hpp"
+#include "../../minimap.hpp" // We want the file in src/
 
-#include <boost/bind.hpp>
+#include "utils/functional.hpp"
 
 #include <algorithm>
 
@@ -38,17 +40,33 @@ static lg::log_domain log_config("config");
 // Define this to enable debug output for the minimap cache.
 //#define DEBUG_MINIMAP_CACHE
 
-namespace gui2 {
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 REGISTER_WIDGET(minimap)
 
-/** Key type for the cache. */
-struct tkey
+void minimap::set_active(const bool /*active*/)
 {
-	tkey(const int w, const int h, const std::string& map_data)
-		: w(w)
-		, h(h)
-		, map_data(map_data)
+	/* DO NOTHING */
+}
+
+bool minimap::get_active() const
+{
+	return true;
+}
+
+unsigned minimap::get_state() const
+{
+	return 0;
+}
+
+/** Key type for the cache. */
+struct key_type
+{
+	key_type(const int w, const int h, const std::string& map_data)
+		: w(w), h(h), map_data(map_data)
 	{
 	}
 
@@ -62,19 +80,18 @@ struct tkey
 	const std::string map_data;
 };
 
-static bool operator<(const tkey& lhs, const tkey& rhs)
+static bool operator<(const key_type& lhs, const key_type& rhs)
 {
-	return lhs.w < rhs.w || (lhs.w == rhs.w
-			&& (lhs.h < rhs.h || (lhs.h == rhs.h
-				&& lhs.map_data < rhs.map_data)));
+	return lhs.w < rhs.w
+		   || (lhs.w == rhs.w
+			   && (lhs.h < rhs.h
+				   || (lhs.h == rhs.h && lhs.map_data < rhs.map_data)));
 }
 
 /** Value type for the cache. */
-struct tvalue
+struct value_type
 {
-	tvalue(const surface& surf)
-		: surf(surf)
-		, age(1)
+	value_type(const surface& surf) : surf(surf), age(1)
 	{
 	}
 
@@ -92,37 +109,28 @@ struct tvalue
 	unsigned age;
 };
 
-#ifdef LOW_MEM
-	/**
-	 * Maximum number of items in the cache (multiple of 4).
-	 *
-	 * As small as possible for low mem.
-	 */
-	static const size_t cache_max_size = 4;
-#else
-	/**
-	 * Maximum number of items in the cache (multiple of 4).
-	 *
-	 * No testing on the optimal number is done, just seems a nice number.
-	 */
-	static const size_t cache_max_size = 100;
-#endif
+/**
+ * Maximum number of items in the cache (multiple of 4).
+ *
+ * No testing on the optimal number is done, just seems a nice number.
+ */
+static const size_t cache_max_size = 100;
 
-	/**
-	 * The terrain used to create the cache.
-	 *
-	 * If another terrain config is used the cache needs to be cleared, this
-	 * normally doesn't happen a lot so the clearing of the cache is rather
-	 * unusual.
-	 */
-	static const ::config* terrain = NULL;
+/**
+ * The terrain used to create the cache.
+ *
+ * If another terrain config is used the cache needs to be cleared, this
+ * normally doesn't happen a lot so the clearing of the cache is rather
+ * unusual.
+ */
+static const ::config* terrain = nullptr;
 
-	/** The cache. */
-	typedef std::map<tkey, tvalue> tcache;
-	static tcache cache;
+/** The cache. */
+typedef std::map<key_type, value_type> tcache;
+static tcache cache;
 
-static bool compare(const std::pair<unsigned, tcache::iterator>& lhs
-		, const std::pair<unsigned, tcache::iterator>& rhs)
+static bool compare(const std::pair<unsigned, tcache::iterator>& lhs,
+					const std::pair<unsigned, tcache::iterator>& rhs)
 {
 	return lhs.first < rhs.first;
 }
@@ -142,15 +150,15 @@ static void shrink_cache()
 		items.push_back(std::make_pair(itor->second.age, itor));
 	}
 
-	std::partial_sort(items.begin()
-			, items.begin() + cache_max_size / 4
-			, items.end()
-			, compare);
+	std::partial_sort(items.begin(),
+					  items.begin() + cache_max_size / 4,
+					  items.end(),
+					  compare);
 
-	for(std::vector<std::pair<unsigned, tcache::iterator> >::iterator
-			  vitor = items.begin()
-			; vitor < items.begin() + cache_max_size / 4
-			; ++vitor) {
+	for(std::vector<std::pair<unsigned, tcache::iterator> >::iterator vitor
+		= items.begin();
+		vitor < items.begin() + cache_max_size / 4;
+		++vitor) {
 
 		cache.erase(vitor->second);
 	}
@@ -160,10 +168,15 @@ static void shrink_cache()
 #endif
 }
 
-const surface tminimap::get_image(const int w, const int h) const
+bool minimap::disable_click_dismiss() const
+{
+	return false;
+}
+
+const surface minimap::get_image(const int w, const int h) const
 {
 	if(!terrain_) {
-		return NULL;
+		return nullptr;
 	}
 
 	if(terrain_ != terrain) {
@@ -174,10 +187,9 @@ const surface tminimap::get_image(const int w, const int h) const
 #endif
 		terrain = terrain_;
 		cache.clear();
-
 	}
 
-	const tkey key(w, h, map_data_);
+	const key_type key(w, h, map_data_);
 	tcache::iterator itor = cache.find(key);
 
 	if(itor != cache.end()) {
@@ -192,51 +204,139 @@ const surface tminimap::get_image(const int w, const int h) const
 		shrink_cache();
 	}
 
-	try {
-		const gamemap map(*terrain_, map_data_);
-		const surface surf = image::getMinimap(w, h, map, NULL);
-		cache.insert(std::make_pair(key, tvalue(surf)));
+	try
+	{
+		const gamemap map(std::make_shared<terrain_type_data>(*terrain_), map_data_);
+		const surface surf = image::getMinimap(w, h, map, nullptr);
+		cache.insert(std::make_pair(key, value_type(surf)));
 #ifdef DEBUG_MINIMAP_CACHE
 		std::cerr << '-';
 #endif
 		return surf;
-
-	} catch (incorrect_map_format_error& e) {
+	}
+	catch(incorrect_map_format_error& e)
+	{
 		ERR_CF << "Error while loading the map: " << e.message << '\n';
 #ifdef DEBUG_MINIMAP_CACHE
 		std::cerr << 'X';
 #endif
 	}
-	return NULL;
+	return nullptr;
 }
 
-void tminimap::impl_draw_background(surface& frame_buffer)
+void minimap::impl_draw_background(surface& frame_buffer,
+									int x_offset,
+									int y_offset)
 {
-	if (!terrain_) return;
+	if(!terrain_)
+		return;
 	assert(terrain_);
 
-	DBG_GUI_D << LOG_HEADER
-			<< " size " << get_rect()
-			<< ".\n";
+	DBG_GUI_D << LOG_HEADER << " size "
+			  << calculate_blitting_rectangle(x_offset, y_offset) << ".\n";
 
 	if(map_data_.empty()) {
 		return;
 	}
 
-	SDL_Rect rect = get_rect();
+	SDL_Rect rect = calculate_blitting_rectangle(x_offset, y_offset);
 	assert(rect.w > 0 && rect.h > 0);
 
 	const ::surface surf = get_image(rect.w, rect.h);
 	if(surf) {
-		sdl_blit(surf, NULL, frame_buffer, &rect);
+		sdl_blit(surf, nullptr, frame_buffer, &rect);
 	}
 }
 
-const std::string& tminimap::get_control_type() const
+const std::string& minimap::get_control_type() const
 {
 	static const std::string type = "minimap";
 	return type;
 }
 
-} // namespace gui2
+// }---------- DEFINITION ---------{
 
+minimap_definition::minimap_definition(const config& cfg)
+	: styled_widget_definition(cfg)
+{
+	DBG_GUI_P << "Parsing minimap " << id << '\n';
+
+	load_resolutions<resolution>(cfg);
+}
+
+/*WIKI
+ * @page = GUIWidgetDefinitionWML
+ * @order = 1_minimap
+ *
+ * == Minimap ==
+ *
+ * @macro = minimap_description
+ *
+ * The following states exist:
+ * * state_enabled, the minimap is enabled.
+ * @begin{parent}{name="gui/"}
+ * @begin{tag}{name="minimap_definition"}{min=0}{max=-1}{super="generic/widget_definition"}
+ * @begin{tag}{name="resolution"}{min=0}{max=-1}{super="generic/widget_definition/resolution"}
+ * @begin{tag}{name="state_enabled"}{min=0}{max=1}{super="generic/state"}
+ * @end{tag}{name="state_enabled"}
+ * @end{tag}{name="resolution"}
+ * @end{tag}{name="minimap_definition"}
+ * @end{parent}{name="gui/"}
+ */
+minimap_definition::resolution::resolution(const config& cfg)
+	: resolution_definition(cfg)
+{
+	// Note the order should be the same as the enum state_t in minimap.hpp.
+	state.push_back(state_definition(cfg.child("state_enabled")));
+}
+
+// }---------- BUILDER -----------{
+
+/*WIKI_MACRO
+ * @begin{macro}{minimap_description}
+ *
+ *        A minimap to show the gamemap, this only shows the map and has no
+ *        interaction options. This version is used for map previews, there
+ *        will be a another version which allows interaction.
+ * @end{macro}
+ */
+
+/*WIKI
+ * @page = GUIWidgetInstanceWML
+ * @order = 2_minimap
+ *
+ * == Minimap ==
+ *
+ * @macro = minimap_description
+ *
+ * A minimap has no extra fields.
+ * @begin{parent}{name="gui/window/resolution/grid/row/column/"}
+ * @begin{tag}{name="minimap"}{min=0}{max=-1}{super="generic/widget_instance"}
+ * @end{tag}{name="minimap"}
+ * @end{parent}{name="gui/window/resolution/grid/row/column/"}
+ */
+
+namespace implementation
+{
+
+builder_minimap::builder_minimap(const config& cfg) : builder_styled_widget(cfg)
+{
+}
+
+widget* builder_minimap::build() const
+{
+	minimap* widget = new minimap();
+
+	init_control(widget);
+
+	DBG_GUI_G << "Window builder: placed minimap '" << id
+			  << "' with definition '" << definition << "'.\n";
+
+	return widget;
+}
+
+} // namespace implementation
+
+// }------------ END --------------
+
+} // namespace gui2

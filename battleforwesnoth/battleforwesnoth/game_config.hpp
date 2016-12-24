@@ -1,6 +1,5 @@
-/* $Id: game_config.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,26 +18,30 @@ class config;
 class version_info;
 class color_range;
 
+#include "color.hpp"
 #include "tstring.hpp"
-
-#include <SDL_types.h>
 
 #include <vector>
 #include <map>
+#include <cstdint>
 
 //basic game configuration information is here.
 namespace game_config
 {
 	extern int base_income;
 	extern int village_income;
+	extern int village_support;
 	extern int poison_amount;
 	extern int rest_heal_amount;
 	extern int recall_cost;
 	extern int kill_experience;
+	extern int tile_size;
 	extern unsigned lobby_network_timer;
 	extern unsigned lobby_refresh;
 	extern const std::string version;
 	extern const std::string revision;
+	extern const std::string default_title_string;
+	extern std::string default_terrain;
 
 	inline int kill_xp(int level)
 	{
@@ -50,12 +53,13 @@ namespace game_config
 	/** Default percentage gold carried over to the next scenario. */
 	extern const int gold_carryover_percentage;
 
-	extern bool debug, editor, ignore_replay_errors, mp_debug, exit_at_end, new_syntax, no_delay, small_gui, disable_autosave;
+	extern bool debug, debug_lua, editor, ignore_replay_errors, mp_debug,
+		exit_at_end, no_delay, disable_autosave, no_addons;
 
 	extern int cache_compression_level;
 
 	extern std::string path;
-	extern std::string preferences_dir;
+	extern std::string default_preferences_path;
 
 	struct server_info {
 		server_info() : name(""), address("") { }
@@ -69,14 +73,24 @@ namespace game_config
 			default_victory_music,
 			default_defeat_music;
 
+	namespace colors {
+	extern std::string unmoved_orb_color,
+			partial_orb_color,
+			enemy_orb_color,
+			ally_orb_color,
+			moved_orb_color,
+			default_color_list;
+	} // colors
+
+	extern bool show_ally_orb, show_enemy_orb, show_moved_orb, show_partial_orb, show_unmoved_orb;
+
 	namespace images {
 	extern std::string game_title,
+			game_title_background,
+			game_logo,
+			game_logo_background,
 			// orbs and hp/xp bar
-			moved_orb,
-			unmoved_orb,
-			partmoved_orb,
-			enemy_orb,
-			ally_orb,
+			orb,
 			energy,
 			// flags
 			flag,
@@ -94,12 +108,16 @@ namespace game_config
 			observer,
 			tod_bright,
 			tod_dark,
+			selected_menu,
+			deselected_menu,
 			checked_menu,
 			unchecked_menu,
 			wml_menu,
 			level,
 			ellipsis,
-			missing;
+			missing,
+			// notifications icon
+			app_icon;
 	} //images
 
 
@@ -109,16 +127,18 @@ namespace game_config
 	extern double hex_brightening;
 	extern double hex_semi_brightening;
 
-	extern std::string flag_rgb;
-	extern std::vector<Uint32> red_green_scale;
-	extern std::vector<Uint32> red_green_scale_text;
+	extern std::string flag_rgb, unit_rgb;
+	extern std::vector<color_t> red_green_scale;
+	extern std::vector<color_t> red_green_scale_text;
 
 	extern std::vector<std::string> foot_speed_prefix;
 	extern std::string foot_teleport_enter, foot_teleport_exit;
 
 	extern std::map<std::string, color_range> team_rgb_range;
 	extern std::map<std::string, t_string> team_rgb_name;
-	extern std::map<std::string, std::vector<Uint32> > team_rgb_colors;
+	extern std::map<std::string, std::vector<color_t>> team_rgb_colors;
+
+	extern std::vector<std::string> default_colors;
 
 	/** observer team name used for observer team chat */
 	extern const std::string observer_team_name;
@@ -126,22 +146,27 @@ namespace game_config
 	/**
 	 * The maximum number of hexes on a map and items in an array and also used
 	 * as maximum in wml loops.
+	 * WARNING : This should not be set to less than the max map area
 	 */
 	extern const size_t max_loop;
 
 	namespace sounds {
-		extern const std::string turn_bell, timer_bell, receive_message,
-				receive_message_highlight, receive_message_friend,
-				receive_message_server, user_arrive, user_leave,
-				game_user_arrive, game_user_leave;
+		extern std::string turn_bell, timer_bell, public_message,
+				private_message, friend_message,
+				server_message, player_joins, player_leaves,
+				game_user_arrive, game_user_leave, ready_for_start,
+				game_has_begun;
 		extern const std::string button_press, checkbox_release, slider_adjust,
 				menu_expand, menu_contract, menu_select;
+		namespace status {
+			extern std::string poisoned, slowed, petrified;
+		}
 	}
 
 	void load_config(const config &cfg);
 
 	void add_color_info(const config& v);
-	const std::vector<Uint32>& tc_info(const std::string& name);
+	const std::vector<color_t>& tc_info(const std::string& name);
 	const color_range& color_info(const std::string& name);
 
 	/**
@@ -151,12 +176,14 @@ namespace game_config
 	 * red_green_scale and red_green_scale_text
 	 */
 
-	Uint32 red_to_green(int val, bool for_text = true);
-	Uint32 blue_to_white(int val, bool for_text = true);
+	color_t red_to_green(int val, bool for_text = true);
+	color_t blue_to_white(int val, bool for_text = true);
 
 	extern const version_info wesnoth_version;
 	extern const version_info min_savegame_version;
-	extern const std::string  test_version;
+	extern const version_info test_version;
+
+	std::string get_default_title_string();
 }
 
 #endif

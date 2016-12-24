@@ -1,6 +1,5 @@
-/* $Id: title_screen.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,11 +15,16 @@
 #ifndef GUI_DIALOGS_TITLE_SCREEN_HPP_INCLUDED
 #define GUI_DIALOGS_TITLE_SCREEN_HPP_INCLUDED
 
-#include "gui/dialogs/dialog.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
 
-namespace gui2 {
+class game_launcher;
 
-class tpopup;
+namespace gui2
+{
+namespace dialogs
+{
+
+class modeless_dialog;
 
 /** Do we wish to show the button for the debug clock. */
 extern bool show_debug_clock_button;
@@ -30,77 +34,71 @@ extern bool show_debug_clock_button;
  *
  * The menu buttons return a result back to the caller with the button pressed.
  * So at the moment it only handles the tips itself.
- *
- * @todo Evaluate whether we can handle more buttons in this class.
  */
-class ttitle_screen : public tdialog
+class title_screen : public modal_dialog
 {
 public:
-	ttitle_screen();
+	title_screen(game_launcher& game);
 
-	~ttitle_screen();
+	~title_screen();
 
 	/**
-	 * Values for the menu-items of the main menu.
-	 *
-	 * @todo Evaluate the best place for these items.
+	 * Values for actions which leave the title screen.
+	 * Actions that merely show a dialog are not included here.
 	 */
-	enum tresult {
-			  TUTORIAL = 1        /**< Start special campaign 'tutorial' */
-			, NEW_CAMPAIGN        /**< Let user select a campaign to play */
-			, MULTIPLAYER         /**<
-			                       * Play single scenario against humans or AI
-			                       */
-			, LOAD_GAME
-			, GET_ADDONS
-			, START_MAP_EDITOR
-			, CHANGE_LANGUAGE
-			, EDIT_PREFERENCES
-			, SHOW_ABOUT          /**< Show credits */
-			, QUIT_GAME
-			, TIP_PREVIOUS        /**< Show previous tip-of-the-day */
-			, TIP_NEXT            /**< Show next tip-of-the-day */
-			, SHOW_HELP
-			, REDRAW_BACKGROUND   /**<
-			                       * Used after an action needing a redraw (ex:
-			                       * fullscreen)
-			                       */
-			, RELOAD_GAME_DATA    /**< Used to reload all game data */
-			, NOTHING             /**<
-			                       * Default, nothing done, no redraw needed
-			                       */
-			};
+	enum result {
+		// Start playing a single-player game, such as the tutorial or a campaign
+		LAUNCH_GAME,
+		// Connect to an MP server
+		MP_CONNECT,
+		// Host an MP game
+		MP_HOST,
+		// Start a local MP game
+		MP_LOCAL,
+		// Start the map/scenario editor
+		MAP_EDITOR,
+		// Show credits
+		SHOW_ABOUT,
+		// Exit to desktop
+		QUIT_GAME,
+		// Used to reload all game data
+		RELOAD_GAME_DATA,
+	};
+
+	bool redraw_background() const
+	{
+		return redraw_background_;
+	}
 
 private:
+	game_launcher& game_;
 
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	bool redraw_background_;
+
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
 
-	/** Inherited from tdialog. */
-	virtual void post_build(CVideo& video, twindow& window);
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 
-	/** Inherited from tdialog. */
-	void pre_show(CVideo& video, twindow& window);
-
-	/** The progress bar time for the logo. */
-	unsigned long logo_timer_id_;
+	void on_resize(window& window);
 
 	/** Holds the debug clock dialog. */
-	tpopup* debug_clock_;
+	modeless_dialog* debug_clock_;
 
 	/**
 	 * Updates the tip of day widget.
 	 *
 	 * @param window              The window being shown.
-	 * @param previous            Show the previous tip, else shows the next
-	 *                            one.
+	 * @param previous            Show the previous tip, else shows the next one.
 	 */
-	void update_tip(twindow& window, const bool previous);
+	void update_tip(window& window, const bool previous);
 
 	/** Shows the debug clock. */
 	void show_debug_clock_window(CVideo& video);
 };
 
+} // namespace dialogs
 } // namespace gui2
 
 #endif

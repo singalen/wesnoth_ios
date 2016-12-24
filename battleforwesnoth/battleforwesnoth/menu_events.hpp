@@ -1,6 +1,5 @@
-/* $Id: menu_events.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2006 - 2016 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
    wesnoth playturn Copyright (C) 2003 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -19,13 +18,19 @@
 
 #include "global.hpp"
 #include "chat_events.hpp"
-#include "show_dialog.hpp"
 #include "floating_textbox.hpp"
-#include "unit_map.hpp"
+#include "units/map.hpp"
+
+#include <vector>
 
 class game_state;
 class gamemap;
-class tod_manager;
+class game_data;
+class game_board;
+class gamemap;
+class play_controller;
+class team;
+class unit_map;
 
 namespace events {
 	class mouse_handler;
@@ -37,19 +42,17 @@ namespace events {
 
 class menu_handler : private chat_handler {
 public:
-	menu_handler(game_display* gui, unit_map& units, std::vector<team>& teams,
-		const config& level, const gamemap& map,
-		const config& game_config, const tod_manager& tod_mng, game_state& gamestate);
+	menu_handler(game_display* gui, play_controller & pc,
+		const config& game_config);
 	virtual ~menu_handler();
 
 	gui::floating_textbox& get_textbox();
 	void set_gui(game_display* gui) { gui_ = gui; }
 
-	std::string get_title_suffix(int side_num);
-	void objectives(int side_num);
+	void objectives();
 	void show_statistics(int side_num);
 	void unit_list();
-	void status_table(int selected=0);
+	void status_table();
 	void save_map();
 	void preferences();
 	void show_chat_log();
@@ -60,20 +63,20 @@ public:
 	void recruit(int side_num, const map_location &last_hex);
 	void repeat_recruit(int side_num, const map_location &last_hex);
 	void recall(int side_num, const map_location& last_hex);
-	void undo(int side_num);
-	void redo(int side_num);
 	void show_enemy_moves(bool ignore_units, int side_num);
 	void toggle_shroud_updates(int side_num);
 	void update_shroud_now(int side_num);
 	bool end_turn(int side_num);
 	void goto_leader(int side_num);
 	void unit_description();
+	void terrain_description(mouse_handler& mousehandler);
 	void rename_unit();
 	void create_unit(mouse_handler& mousehandler);
-	void create_unit_2(mouse_handler& mousehandler); // TODO: replace create_unit when complete
 	void change_side(mouse_handler& mousehandler);
+	void kill_unit(mouse_handler& mousehandler);
 	void label_terrain(mouse_handler& mousehandler, bool team_only);
 	void clear_labels();
+	void label_settings();
 	void continue_move(mouse_handler &mousehandler, int side_num);
 	void execute_gotos(mouse_handler &mousehandler, int side_num);
 	void toggle_ellipses();
@@ -95,18 +98,16 @@ public:
 		bool continue_move, int side_num, mouse_handler &mousehandler);
 	///@return Whether or not the recruit was successful
 	bool do_recruit(const std::string& name, int side_num, const map_location& last_hex);
-	///@return Whether or not the recall was successful
-	bool do_recall(const unit& un, int side_num, const map_location& recall_location, const map_location& recall_from);
 	void do_speak();
 	void do_search(const std::string& new_search);
 	void do_command(const std::string &str);
 	void do_ai_formula(const std::string &str, int side_num, mouse_handler &mousehandler);
-	void clear_undo_stack(int side_num);
+	void send_to_server(const config& cfg) override;
 protected:
 	void add_chat_message(const time_t& time, const std::string& speaker,
 			int side, const std::string& message,
-			events::chat_handler::MESSAGE_TYPE type=events::chat_handler::MESSAGE_PRIVATE);
-	void send_chat_message(const std::string& message, bool allies_only=false);
+			events::chat_handler::MESSAGE_TYPE type=events::chat_handler::MESSAGE_PRIVATE) override;
+	void send_chat_message(const std::string& message, bool allies_only=false) override;
 private:
 	//console_handler is basically a sliced out part of menu_handler
 	//and as such needs access to menu_handler's privates
@@ -115,25 +116,22 @@ private:
 	//void do_speak(const std::string& message, bool allies_only);
 //	std::vector<std::string> create_unit_table(const statistics::stats::str_int_map& m,unsigned int team);
 	bool has_friends() const;
-	bool clear_shroud(int side_num);
-	static void change_controller(const std::string& side, const std::string& controller);
-	static void change_side_controller(const std::string& side, const std::string& player);
-	void scenario_settings_table(int selected=0);
 
 	game_display* gui_;
-	unit_map& units_;
-	std::vector<team>& teams_;
-	const config& level_;
-	const gamemap& map_;
+	play_controller & pc_;
+
+	game_state & gamestate() const;
+	game_data & gamedata();
+	game_board & board() const;
+	unit_map& units();
+	std::vector<team>& teams() const;
+	const gamemap& map();
+
 	const config& game_config_;
-	const tod_manager& tod_manager_;
-	game_state& gamestate_;
 
 	gui::floating_textbox textbox_info_;
 	std::string last_search_;
 	map_location last_search_hit_;
-
-	std::string last_recruit_;
 };
 
 }

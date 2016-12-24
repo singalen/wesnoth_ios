@@ -1,6 +1,5 @@
-/* $Id: contexts.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,7 +18,7 @@
  * @file
  */
 
-#include "contexts.hpp"
+#include "ai/composite/contexts.hpp"
 
 // =======================================================================
 namespace ai {
@@ -35,6 +34,9 @@ ai_context_proxy::~ai_context_proxy()
 }
 
 
+bool rca_context::is_offense_ = false;
+bool rca_context::is_defense_ = false;
+bool rca_context::strategy_set_ = false;
 rca_context::rca_context()
 {
 }

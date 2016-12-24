@@ -1,6 +1,5 @@
-/* $Id: construct_dialog.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Patrick Parker <patrick_x99@hotmail.com>
+   Copyright (C) 2006 - 2016 by Patrick Parker <patrick_x99@hotmail.com>
    wesnoth widget Copyright (C) 2003-5 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -81,8 +80,8 @@ public:
 	label *caption() const { return caption_; }
 	void draw_contents();
 
-	handler_vector handler_members() {
-		handler_vector h;
+	sdl_handler_vector handler_members() {
+		sdl_handler_vector h;
 		if(caption_) h.push_back(caption_);
 		return h;
 	}
@@ -94,16 +93,16 @@ private:
 
 class dialog_textbox : public textbox {
 public:
-	dialog_textbox(label *const label_widget, CVideo &video, int width, const std::string& text="", bool editable=true, size_t max_size = 256, double alpha = 0.4, double alpha_focus = 0.2)
-		: textbox(video, width, text, editable, max_size, alpha, alpha_focus, false),
+	dialog_textbox(label *const label_widget, CVideo &video, int width, const std::string& text="", bool editable=true, size_t max_size = 256, int font_size = font::SIZE_PLUS, double alpha = 0.4, double alpha_focus = 0.2)
+		: textbox(video, width, text, editable, max_size, font_size, alpha, alpha_focus, false),
 		label_(label_widget)
 	{}
 	virtual ~dialog_textbox();
 
 	label *get_label() const { return label_; }
 
-	handler_vector handler_members() {
-		handler_vector h = textbox::handler_members();
+	sdl_handler_vector handler_members() {
+		sdl_handler_vector h = textbox::handler_members();
 		if(label_) h.push_back(label_);
 		return h;
 	}
@@ -146,15 +145,15 @@ private:
 	std::vector<std::string> last_words;
 	size_t header_row_;
 	gui::dialog& dialog_;
-	virtual void handle_text_changed(const wide_string& text);
+	virtual void handle_text_changed(const ucs4::string& text);
 };
 
 class dialog_button : public button {
 public:
 	dialog_button(CVideo& video, const std::string& label, TYPE type=TYPE_PRESS,
-		int simple_result=CONTINUE_DIALOG, dialog_button_action *handler=NULL)
+		int simple_result=CONTINUE_DIALOG, dialog_button_action *handler=nullptr)
 		: button(video,label,type,"",DEFAULT_SPACE,false), simple_result_(simple_result),
-		parent_(NULL), handler_(handler)
+		parent_(nullptr), handler_(handler)
 	{}
 	void set_parent(class dialog *parent) {
 		parent_ = parent;
@@ -184,17 +183,17 @@ private:
 
 class dialog {
 public:
-	enum BUTTON_LOCATION { BUTTON_STANDARD, BUTTON_EXTRA, BUTTON_EXTRA_LEFT, BUTTON_CHECKBOX, BUTTON_CHECKBOX_LEFT, BUTTON_HELP };
+	enum BUTTON_LOCATION { BUTTON_STANDARD, BUTTON_EXTRA, BUTTON_EXTRA_LEFT, BUTTON_CHECKBOX, BUTTON_CHECKBOX_LEFT, BUTTON_HELP, BUTTON_TOP };
 	struct dimension_measurements {
 		dimension_measurements();
 		int x, y;
 		SDL_Rect interior, message, textbox;
 		unsigned int menu_width;
-		std::map<preview_pane *const, SDL_Rect > panes;
+		std::map<preview_pane *, SDL_Rect > panes;
 		int label_x, label_y;
 		int menu_x, menu_y, menu_height;
 		int image_x, image_y, caption_x, caption_y;
-		std::map<dialog_button *const, std::pair<int,int> > buttons;
+		std::map<dialog_button *, std::pair<int,int> > buttons;
 		//use get_frame().get_layout() to check frame dimensions
 	};
 	typedef dialog_frame::style style;
@@ -224,8 +223,8 @@ public:
 
 	//Constructor & destructor
 	//dialog - throws button::error() if standard buttons fail to initialize
-	//         throws utils::invalid_utf8_exception() if message is invalid
-	dialog(display &disp,
+	//         throws utf8::invalid_utf8_exception() if message is invalid
+	dialog(CVideo& video,
 	       const std::string& title="",
 	       const std::string& message="",
 	       const DIALOG_TYPE type=MESSAGE,
@@ -237,12 +236,10 @@ public:
 	//widgets after destroying it
 	void set_image(dialog_image *const img) { delete image_; image_ = img; }
 	void set_image(surface surf, const std::string &caption="");
-	void set_menu(menu *const m) { if(menu_ != empty_menu) delete menu_; menu_ = m; }
-	void set_menu(const std::vector<std::string> & menu_items, menu::sorter* sorter=NULL);
-#ifdef USE_TINY_GUI
-    void set_menu_bigger(const std::vector<std::string> & menu_items, menu::sorter* sorter=NULL);
-#endif
-	void set_menu_items(const std::vector<std::string> &menu_items);
+	void set_menu(menu *const m) { if ( menu_ != empty_menu ) delete menu_;
+	                               menu_ =  m == nullptr ? empty_menu : m; }
+	void set_menu(const std::vector<std::string> & menu_items, menu::sorter* sorter=nullptr);
+	void set_menu_items(const std::vector<std::string> &menu_items, bool keep_selection=false);
 
 	//add_pane - preview panes are not currently memory managed
 	//(for backwards compatibility)
@@ -258,7 +255,7 @@ public:
 				const unsigned int text_box_width = font::relative_size(350));
 	void add_button(dialog_button *const btn, BUTTON_LOCATION loc);
 	void add_button(dialog_button_info btn_info, BUTTON_LOCATION loc=BUTTON_EXTRA);
-	void add_option(const std::string& label, bool checked=false, BUTTON_LOCATION loc=BUTTON_CHECKBOX);
+	void add_option(const std::string& label, bool checked=false, BUTTON_LOCATION loc=BUTTON_CHECKBOX, const std::string& help_string = "");
 
 	//Specific preparations
 	//layout - determines dialog measurements based on all components
@@ -275,12 +272,18 @@ public:
 
 	//Results
 	int result() const { return result_; }
-	menu &get_menu();
+	menu &get_menu() { return *menu_; }
 	bool done() const { return (result_ != CONTINUE_DIALOG); }
 	std::string textbox_text() const { return text_widget_->text();}
 	dialog_textbox& get_textbox() const { return *text_widget_; }
 	bool option_checked(unsigned int option_index=0);
-	display& get_display() { return disp_; }
+	CVideo& get_video() { return video_; }
+
+	/// Explicit freeing of class static resources.
+	/// Must not be called if any instances of this class exist.
+	/// Should be called if the display goes out of scope.
+	/// (Currently called by ~game_launcher.)
+	static void delete_empty_menu()  { delete empty_menu; empty_menu = nullptr; }
 
 protected:
 	void set_result(const int result) { result_ = result; }
@@ -301,18 +304,24 @@ private:
 	//process - execute a single dialog processing loop and return the result
 	int process(dialog_process_info &info);
 
+	/// A pointer to this empty menu is used instead of nullptr (for menu_).
+	static menu * empty_menu;
+	/// Provides create-on-use semantics for empty_menu.
+	static menu * get_empty_menu(CVideo& video);
+
 	//Members
-	display &disp_;
+	CVideo& video_;
 	dialog_image *image_;
 	std::string title_;
 	const style& style_;
 	label *title_widget_, *message_;
 	DIALOG_TYPE type_;
-	gui::menu *menu_;
+	gui::menu *menu_; // Never nullptr; it equals empty_menu if there is currently no menu.
 	std::vector<preview_pane*> preview_panes_;
 	std::vector< std::pair<dialog_button*,BUTTON_LOCATION> > button_pool_;
 	std::vector<dialog_button*> standard_buttons_;
 	std::vector<dialog_button*> extra_buttons_;
+	std::vector<dialog_button*> top_buttons_;
 	std::vector<button*> frame_buttons_;
 	std::string topic_;
 	dialog_button *help_button_;

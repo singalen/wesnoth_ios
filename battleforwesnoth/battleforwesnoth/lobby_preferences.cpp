@@ -1,6 +1,5 @@
-/* $Id: lobby_preferences.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2009 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,14 +15,8 @@
 #include "lobby_preferences.hpp"
 #include "game_preferences.hpp"
 #include "serialization/string_utils.hpp"
-#include "util.hpp"
 
 namespace preferences {
-
-bool lobby_sounds()
-{
-	return preferences::get("lobby_sounds", true);
-}
 
 bool sort_list()
 {
@@ -45,10 +38,14 @@ void _set_iconize_list(bool sort)
 	preferences::set("iconize_list", sort);
 }
 
-
 bool whisper_friends_only()
 {
 	return preferences::get("lobby_whisper_friends_only", false);
+}
+
+void set_whisper_friends_only(bool v)
+{
+	preferences::set("lobby_whisper_friends_only", v);
 }
 
 bool auto_open_whisper_windows()

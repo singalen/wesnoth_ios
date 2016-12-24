@@ -1,6 +1,5 @@
-/* $Id: configuration.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,8 +20,8 @@
 #ifndef AI_CONFIGURATION_HPP_INCLUDED
 #define AI_CONFIGURATION_HPP_INCLUDED
 
-#include "../config.hpp"
-#include "game_info.hpp"
+#include "config.hpp"
+#include "ai/game_info.hpp"
 
 namespace ai {
 
@@ -52,7 +51,7 @@ public:
 	{
 	}
 
-	std::string text;
+	t_string text;
 	std::string id;
 	config cfg;
 };
@@ -62,10 +61,11 @@ public:
 
 	/**
 	 * Init the parameters of ai configuration parser
-	 * @param game_config_ game config
+	 * @param game_config game config
 	 */
 	static void init(const config &game_config);
 	static void add_era_ai_from_config(const config &game_config);
+	static void add_mod_ai_from_config(config::const_child_itors configs);
 
 
 	/**
@@ -99,15 +99,6 @@ public:
 	static bool get_side_config_from_file( const std::string& file, config& cfg );
 
 
-
-	/**
-	 * change a bunch of old aspect configs into a new-style [ai] snippet
-	 * @param[in] ai_parameters - old [ai] snippets
-	 * @param[out cfg - new-style [ai] snippet
-	 */
-	static void upgrade_aspect_configs_from_1_07_02_to_1_07_03(side_number side, const config::const_child_itors &ai_parameters, config &parsed_cfg);
-
-
 	/**
 	 * @param[in] cfg the config to be read
 	 * @param[out] parsed_cfg parsed config
@@ -118,42 +109,17 @@ public:
 	static bool parse_side_config(side_number side, const config& cfg, config &parsed_cfg);
 
 
+	/**
+	 * Expand simplified aspects, similar to the change from 1.7.2 to 1.7.3
+	 * but with some additional syntax options.
+	 */
+	static void expand_simplified_aspects(side_number side, config &cfg);
 private:
-	/**
-	 * Upgrade aspect config from version 1.7.2 to version 1.7.3
-	 * @param[in] cfg the config to be read
-	 * @param[out] parsed_cfg parsed config
-	 * @param[in] id id of the aspect to work on
-	 * @param aspect_was_attribute aspect was an attribute, not a [child]
-	 * @return was all ok?
-	 * @retval true success
-	 * @retval false failure
-	 */
-	static bool upgrade_aspect_config_from_1_07_02_to_1_07_03(side_number side, const config& cfg, config& parsed_cfg, const std::string &id, bool aspect_was_attribute = true);
-
-
-	/**
-	 * Upgrade protect goal config from version 1.7.2 to version 1.7.3
-	 * @param side side number
-	 * @param[in] protect_cfg the config to be read
-	 * @param[out] parsed_cfg parsed config, to which a new goal is to be added
-	 * @param[in] add_filter should [filter] be added to criteria or not
-	 */
-	static void upgrade_protect_goal_config_from_1_07_02_to_1_07_03(side_number side, const config &protect_cfg, config &parsed_cfg, bool add_filter);
-
-	/**
-	 * Upgrade side config from version 1.7.2 to version 1.7.3
-	 * @param[in] cfg the config to be read
-	 * @param[out] parsed_cfg parsed config
-	 * @return was all ok?
-	 * @retval true success, cfg is guaranteed to be valid
-	 * @retval false failure
-	 */
-	static bool upgrade_side_config_from_1_07_02_to_1_07_03(side_number side, config &cfg);
 
 	typedef std::map<std::string, description> description_map;
 	static description_map ai_configurations_;
 	static description_map era_ai_configurations_;
+	static description_map mod_ai_configurations_;
 	static config default_config_;
 
 };

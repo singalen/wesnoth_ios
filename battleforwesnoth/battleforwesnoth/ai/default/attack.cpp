@@ -1,6 +1,5 @@
-/* $Id: attack.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,17 +17,19 @@
  * Calculate & analyze attacks of the default ai
  */
 
-#include "../../global.hpp"
+#include "global.hpp"
 
-#include "ai.hpp"
-#include "../actions.hpp"
-#include "../manager.hpp"
+#include "ai/manager.hpp"
+#include "ai/default/contexts.hpp"
 
-#include "../../attack_prediction.hpp"
-#include "../../game_config.hpp"
-#include "../../log.hpp"
-#include "../../map.hpp"
-#include "../../team.hpp"
+#include "actions/attack.hpp"
+#include "attack_prediction.hpp"
+#include "game_config.hpp"
+#include "log.hpp"
+#include "map/map.hpp"
+#include "team.hpp"
+#include "units/unit.hpp"
+#include "formula/callable_objects.hpp" // for location_callable
 
 static lg::log_domain log_ai("ai/attack");
 #define LOG_AI LOG_STREAM(info, log_ai)
@@ -37,9 +38,9 @@ static lg::log_domain log_ai("ai/attack");
 namespace ai {
 
 void attack_analysis::analyze(const gamemap& map, unit_map& units,
-				  const readonly_context& ai_obj,
-                                  const move_map& dstsrc, const move_map& srcdst,
-                                  const move_map& enemy_dstsrc, double aggression)
+                              const readonly_context& ai_obj,
+                              const move_map& dstsrc, const move_map& srcdst,
+                              const move_map& enemy_dstsrc, double aggression)
 {
 	const unit_map::const_iterator defend_it = units.find(target);
 	assert(defend_it != units.end());
@@ -92,12 +93,12 @@ void attack_analysis::analyze(const gamemap& map, unit_map& units,
 	assert(!movements.empty());
 	std::vector<std::pair<map_location,map_location> >::const_iterator m;
 
-	battle_context *prev_bc = NULL;
-	const combatant *prev_def = NULL;
+	battle_context *prev_bc = nullptr;
+	const combatant *prev_def = nullptr;
 
 	for (m = movements.begin(); m != movements.end(); ++m) {
 		// We fix up units map to reflect what this would look like.
-		unit *up = units.extract(m->first);
+		unit_ptr up = units.extract(m->first);
 		up->set_location(m->second);
 		units.insert(up);
 		double m_aggression = aggression;
@@ -114,13 +115,8 @@ void attack_analysis::analyze(const gamemap& map, unit_map& units,
 
 		// This cache is only about 99% correct, but speeds up evaluation by about 1000 times.
 		// We recalculate when we actually attack.
-		std::map<std::pair<map_location, const unit_type *>,std::pair<battle_context_unit_stats,battle_context_unit_stats> >::iterator usc;
-		const unit_type *up_type = up->type();
-		if(up_type) {
-			usc = ai_obj.unit_stats_cache().find(std::pair<map_location, const unit_type *>(target, up_type));
-		} else {
-			usc = ai_obj.unit_stats_cache().end();
-		}
+		const readonly_context::unit_stats_cache_t::key_type cache_key = std::make_pair(target, &up->type());
+		const readonly_context::unit_stats_cache_t::iterator usc = ai_obj.unit_stats_cache().find(cache_key);
 		// Just check this attack is valid for this attacking unit (may be modified)
 		if (usc != ai_obj.unit_stats_cache().end() &&
 				usc->second.first.attack_num <
@@ -138,11 +134,10 @@ void attack_analysis::analyze(const gamemap& map, unit_map& units,
 		prev_bc = bc;
 		prev_def = &bc->get_defender_combatant(prev_def);
 
-		if (!from_cache && up_type) {
-			ai_obj.unit_stats_cache().insert(std::pair<std::pair<map_location, const unit_type *>,std::pair<battle_context_unit_stats,battle_context_unit_stats> >
-											(std::pair<map_location, const unit_type *>(target, up_type),
-											 std::pair<battle_context_unit_stats,battle_context_unit_stats>(bc->get_attacker_stats(),
-																											  bc->get_defender_stats())));
+		if ( !from_cache ) {
+			ai_obj.unit_stats_cache().insert(
+				std::make_pair(cache_key, std::make_pair(bc->get_attacker_stats(),
+				                                         bc->get_defender_stats())));
 		}
 
 		// Note we didn't fight at all if defender is already dead.
@@ -164,6 +159,10 @@ void attack_analysis::analyze(const gamemap& map, unit_map& units,
 
 		// add half of cost for poisoned unit so it might get chance to heal
 		avg_losses += cost * up->get_state(unit::STATE_POISONED) /2;
+
+		if (!bc->get_defender_stats().is_poisoned) {
+			avg_damage_inflicted += game_config::poison_amount * 2 * bc->get_defender_combatant().poisoned * (1 - prob_killed);
+		}
 
 		// Double reward to emphasize getting onto villages if they survive.
 		if (on_village) {
@@ -234,10 +233,10 @@ void attack_analysis::analyze(const gamemap& map, unit_map& units,
 		// It's likely to advance: only if we can kill with first blow.
 		chance_to_kill = first_chance_kill;
 		// Negative average damage (it will advance).
-		avg_damage_inflicted = defend_it->hitpoints() - defend_it->max_hitpoints();
+		avg_damage_inflicted += defend_it->hitpoints() - defend_it->max_hitpoints();
 	} else {
 		chance_to_kill = prev_def->hp_dist[0];
-		avg_damage_inflicted = defend_it->hitpoints() - prev_def->average_hp(map.gives_healing(defend_it->get_location()));
+		avg_damage_inflicted += defend_it->hitpoints() - prev_def->average_hp(map.gives_healing(defend_it->get_location()));
 	}
 
 	delete prev_bc;
@@ -280,14 +279,8 @@ double attack_analysis::rating(double aggression, const readonly_context& ai_obj
 		// into sub-optimal terrain.
 		// Calculate the 'exposure' of our units to risk.
 
-#ifdef SUOKKO
-		//FIXME: this code was in sukko's r29531  Correct?
-		const double exposure_mod = uses_leader ? ai_obj.current_team().caution()* 8.0 : ai_obj.current_team().caution() * 4.0;
-		const double exposure = exposure_mod*resources_used*((terrain_quality - alternative_terrain_quality)/10)*vulnerability/std::max<double>(0.01,support);
-#else
 		const double exposure_mod = uses_leader ? 2.0 : ai_obj.get_caution();
 		const double exposure = exposure_mod*resources_used*(terrain_quality - alternative_terrain_quality)*vulnerability/std::max<double>(0.01,support);
-#endif
 		LOG_AI << "attack option has base value " << value << " with exposure " << exposure << ": "
 			<< vulnerability << "/" << support << " = " << (vulnerability/std::max<double>(support,0.1)) << "\n";
 		value -= exposure*(1.0-aggression);
@@ -311,7 +304,7 @@ double attack_analysis::rating(double aggression, const readonly_context& ai_obj
                }
         }
 
-	if(!leader_threat && vulnerability*terrain_quality > 0.0) {
+	if(!leader_threat && vulnerability*terrain_quality > 0.0 && support != 0) {
 		value *= support/(vulnerability*terrain_quality);
 	}
 
@@ -331,6 +324,83 @@ double attack_analysis::rating(double aggression, const readonly_context& ai_obj
 		<< " alternative quality: " << alternative_terrain_quality << "\n";
 
 	return value;
+}
+
+variant attack_analysis::get_value(const std::string& key) const
+{
+	using namespace game_logic;
+	if(key == "target") {
+		return variant(new location_callable(target));
+	} else if(key == "movements") {
+		std::vector<variant> res;
+		for(size_t n = 0; n != movements.size(); ++n) {
+			map_formula_callable* item = new map_formula_callable(nullptr);
+			item->add("src", variant(new location_callable(movements[n].first)));
+			item->add("dst", variant(new location_callable(movements[n].second)));
+			res.push_back(variant(item));
+		}
+
+		return variant(&res);
+	} else if(key == "units") {
+		std::vector<variant> res;
+		for(size_t n = 0; n != movements.size(); ++n) {
+			res.push_back(variant(new location_callable(movements[n].first)));
+		}
+
+		return variant(&res);
+	} else if(key == "target_value") {
+		return variant(static_cast<int>(target_value*1000));
+	} else if(key == "avg_losses") {
+		return variant(static_cast<int>(avg_losses*1000));
+	} else if(key == "chance_to_kill") {
+		return variant(static_cast<int>(chance_to_kill*100));
+	} else if(key == "avg_damage_inflicted") {
+		return variant(static_cast<int>(avg_damage_inflicted));
+	} else if(key == "target_starting_damage") {
+		return variant(target_starting_damage);
+	} else if(key == "avg_damage_taken") {
+		return variant(static_cast<int>(avg_damage_taken));
+	} else if(key == "resources_used") {
+		return variant(static_cast<int>(resources_used));
+	} else if(key == "terrain_quality") {
+		return variant(static_cast<int>(terrain_quality));
+	} else if(key == "alternative_terrain_quality") {
+		return variant(static_cast<int>(alternative_terrain_quality));
+	} else if(key == "vulnerability") {
+		return variant(static_cast<int>(vulnerability));
+	} else if(key == "support") {
+		return variant(static_cast<int>(support));
+	} else if(key == "leader_threat") {
+		return variant(leader_threat);
+	} else if(key == "uses_leader") {
+		return variant(uses_leader);
+	} else if(key == "is_surrounded") {
+		return variant(is_surrounded);
+	} else {
+		return variant();
+	}
+}
+
+void attack_analysis::get_inputs(std::vector<game_logic::formula_input>* inputs) const
+{
+	using namespace game_logic;
+	inputs->push_back(formula_input("target", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("movements", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("units", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("target_value", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("avg_losses", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("chance_to_kill", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("avg_damage_inflicted", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("target_starting_damage", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("avg_damage_taken", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("resources_used", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("terrain_quality", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("alternative_terrain_quality", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("vulnerability", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("support", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("leader_threat", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("uses_leader", FORMULA_READ_ONLY));
+	inputs->push_back(formula_input("is_surrounded", FORMULA_READ_ONLY));
 }
 
 } //end of namespace ai

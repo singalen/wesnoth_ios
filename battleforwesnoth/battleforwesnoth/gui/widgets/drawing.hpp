@@ -1,6 +1,5 @@
-/* $Id: drawing.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,9 +15,15 @@
 #ifndef GUI_WIDGETS_DRAWING_HPP_INCLUDED
 #define GUI_WIDGETS_DRAWING_HPP_INCLUDED
 
-#include "gui/widgets/control.hpp"
+#include "gui/widgets/styled_widget.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
+
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 /**
  * A widget to draw upon.
@@ -26,65 +31,99 @@ namespace gui2 {
  * This widget has a fixed size like the spacer, but allows the user to
  * manual draw items. The widget is display only.
  */
-class tdrawing
-	: public tcontrol
+class drawing : public styled_widget
 {
 public:
-	tdrawing()
-		: tcontrol(COUNT)
-		, best_size_(0, 0)
+	drawing() : styled_widget(COUNT), best_size_(0, 0)
 	{
 	}
 
 	/***** ***** ***** ***** layout functions ***** ***** ***** *****/
 
 private:
-	/** Inherited from tcontrol. */
-	tpoint calculate_best_size() const
-	{
-		return best_size_ != tpoint(0, 0)
-			? best_size_ : tcontrol::calculate_best_size();
-	}
-public:
+	/** See @ref widget::calculate_best_size. */
+	virtual point calculate_best_size() const override;
 
+public:
 	/***** ***** ***** ***** Inherited ***** ***** ***** *****/
 
-	/** Inherited from tcontrol. */
-	void set_active(const bool) {}
+	/** See @ref styled_widget::set_active. */
+	virtual void set_active(const bool active) override;
 
-	/** Inherited from tcontrol. */
-	bool get_active() const { return true; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
 
-	/** Inherited from tcontrol. */
-	unsigned get_state() const { return 0; }
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
 
-	/** Inherited from tcontrol. */
-	bool disable_click_dismiss() const { return false; }
+	/** See @ref widget::disable_click_dismiss. */
+	bool disable_click_dismiss() const override;
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
-	void set_best_size(const tpoint& best_size) { best_size_ = best_size; }
+	void set_best_size(const point& best_size)
+	{
+		best_size_ = best_size;
+	}
 
 private:
-
 	/**
 	 * Possible states of the widget.
 	 *
 	 * Note the order of the states must be the same as defined in
 	 * settings.hpp.
 	 */
-	enum tstate { ENABLED, COUNT };
+	enum state_t {
+		ENABLED,
+		COUNT
+	};
 
 	/** When we're used as a fixed size item, this holds the best size. */
-	tpoint best_size_;
+	point best_size_;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 };
 
+// }---------- DEFINITION ---------{
+
+struct drawing_definition : public styled_widget_definition
+{
+	explicit drawing_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_drawing : public builder_styled_widget
+{
+	explicit builder_drawing(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	/** The width of the widget. */
+	typed_formula<unsigned> width;
+
+	/** The height of the widget. */
+	typed_formula<unsigned> height;
+
+	/** Config containing what to draw on the widgets canvas. */
+	config draw;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-
-

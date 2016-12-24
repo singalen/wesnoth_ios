@@ -1,6 +1,5 @@
-/* $Id: tag.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2011 - 2012 by Sytyi Nick <nsytyi@gmail.com>
+   Copyright (C) 2011 - 2016 by Sytyi Nick <nsytyi@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -212,19 +211,19 @@ public:
 	void set_max(int o){
 		max_ = o;
 	}
-	void set_min( std::string const& s){
+	void set_min(const std::string& s){
 		std::istringstream i(s);
 		if (!(i >> min_)){
 			min_ = 0;
 		}
 	}
-	void set_max( std::string const & s){
+	void set_max(const std::string& s){
 		std::istringstream i(s);
 		if (!(i >> max_)){
 			max_ = 0;
 		}
 	}
-	void set_super(std::string const & s){
+	void set_super(const std::string& s){
 		super_= s;
 	}
 	void add_key(const class_key& new_key){

@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2009 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+   Copyright (C) 2009 - 2016 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 
 #include <cassert>
 
-#include "debug_lua.hpp"
+#include "scripting/debug_lua.hpp"
 
 #include "log.hpp"
 
@@ -100,7 +100,7 @@ void ds(lua_State *L, const bool verbose_table) {
 	std::stringstream output;
 	output << "\n";
 	int top = lua_gettop(L);
-	for (int i = 1; i <= top; i++) {
+	for (int i = 1; i <= top; ++i) {
 		output << "INDEX: " << i << "; TYPE: ";
 		value_to_stringstream(output, i, L, "", verbose_table);
 		output << "\n";

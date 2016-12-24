@@ -1,6 +1,5 @@
-/* $Id: network_transmission.hpp 50647 2011-08-07 20:17:29Z loonycyborg $ */
 /*
-   Copyright (C) 2011 by Sergey Popov <loonycyborg@gmail.com>
+   Copyright (C) 2011 - 2016 by Sergey Popov <loonycyborg@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,14 +15,19 @@
 #ifndef GUI_DIALOGS_NETWORK_RECEIVE_HPP_INCLUDED
 #define GUI_DIALOGS_NETWORK_RECEIVE_HPP_INCLUDED
 
-#include "gui/dialogs/dialog.hpp"
-#include "gui/widgets/control.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
+#include "gui/widgets/styled_widget.hpp"
 #include "network_asio.hpp"
 #include <boost/optional.hpp>
+#include "events.hpp"
 
-namespace gui2 {
+class wesnothd_connection;
 
-class tnetwork_transmission;
+namespace gui2
+{
+namespace dialogs
+{
+
 
 /**
  * Dialog that tracks network transmissions
@@ -31,56 +35,74 @@ class tnetwork_transmission;
  * It shows upload/download progress and allows the user
  * to cancel the transmission.
  */
-class tnetwork_transmission : public tdialog
+class network_transmission : public modal_dialog
 {
-	network_asio::connection& connection_;
+public:
+	//A wrapper of either a wesnothd_connection or a network_asio::connection
+	class connection_data 
+	{
+	public:
+		virtual size_t total() { return 0; }
+		virtual size_t current() { return 0; }
+		virtual bool finished() = 0;
+		virtual void cancel() = 0;
+		virtual void poll() = 0;
+		virtual ~connection_data() {}
+	};
+
+	static bool wesnothd_receive_dialog(CVideo& video, const std::string& msg, config& cfg, wesnothd_connection& connection);
+	static std::unique_ptr<wesnothd_connection> wesnothd_connect_dialog(CVideo& video, const std::string& msg, const std::string& hostname, int port);
+
+private:
+	static void wesnothd_dialog(CVideo& video, connection_data& conn, const std::string& msg);
+	connection_data* connection_;
 
 	class pump_monitor : public events::pump_monitor
 	{
-		network_asio::connection& connection_;
-		bool track_upload_;
+	public:
+		connection_data*& connection_;
 		virtual void process(events::pump_info&);
-		public:
-		pump_monitor(network_asio::connection& connection, bool track_upload)
-			: connection_(connection)
-			, track_upload_(track_upload)
-			, window_()
+
+		pump_monitor(connection_data*& connection)
+			: connection_(connection), window_()
 		{
 		}
 
-		boost::optional<twindow&> window_;
-	} pump_monitor;
-public:
+		boost::optional<window&> window_;
+	} pump_monitor_;
 
-	tnetwork_transmission(
-		  network_asio::connection& connection
-		, const std::string& title
-		, const std::string& subtitle
-		, bool track_upload = false);
+public:
+	network_transmission(connection_data& connection,
+						  const std::string& title,
+						  const std::string& subtitle);
 
 	void set_subtitle(const std::string&);
+	void set_connection_data(connection_data& connection)
+	{
+		connection_ = &connection;
+	}
 
 protected:
-	/** Inherited from tdialog. */
-	void pre_show(CVideo& video, twindow& window);
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 
-	/** Inherited from tdialog. */
-	void post_show(twindow& window);
+	/** Inherited from modal_dialog. */
+	void post_show(window& window);
 
 private:
 	/**
 	 * The subtitle for the dialog.
 	 *
-	 * This field commenly shows the action in progress eg connecting,
+	 * This field commonly shows the action in progress eg connecting,
 	 * uploading, downloading etc..
 	 */
 	std::string subtitle_;
 
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
 };
 
+} // namespace dialogs
 } // namespace gui2
 
 #endif
-

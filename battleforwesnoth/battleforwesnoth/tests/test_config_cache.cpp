@@ -1,6 +1,5 @@
-/* $Id: test_config_cache.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Pauli Nieminen <paniemin@cc.hut.fi>
+   Copyright (C) 2008 - 2016 by Pauli Nieminen <paniemin@cc.hut.fi>
    Part of thie Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -26,15 +25,12 @@
 
 #include "tests/utils/game_config_manager.hpp"
 
-#include <boost/bind.hpp>
+#include "utils/functional.hpp"
 
 
 static preproc_map setup_test_preproc_map()
 {
 	preproc_map defines_map;
-
-	if (game_config::small_gui)
-		defines_map["SMALL_GUI"] = preproc_define();
 
 #if defined(__APPLE__)
 	defines_map["APPLE"] = preproc_define();

@@ -1,6 +1,5 @@
-/* $Id: game_preferences.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -15,16 +14,22 @@
 #ifndef GAME_PREFERENCES_HPP_INCLUDED
 #define GAME_PREFERENCES_HPP_INCLUDED
 
+class game_board;
 class gamemap;
-class game_state;
 class team;
 class unit_map;
 
 #include "preferences.hpp"
+#include "game_config.hpp"
+
+#include "serialization/compression.hpp"
 
 #include <set>
+#include <vector>
 
 namespace preferences {
+
+class acquaintance;
 
 	struct manager
 	{
@@ -37,24 +42,36 @@ namespace preferences {
 	bool is_authenticated();
 	void parse_admin_authentication(const std::string& sender, const std::string& message);
 
+	/**
+	 * Used to reset is_authenticated flag after disconnecting.
+	 *
+	 * @todo FIXME: is_authenticated shouldn't be a preferences function. Also,
+	 *              the name is misleading.
+	 */
+	struct admin_authentication_reset
+	{
+		/**
+		 * Default constructor, defined out of line to work around a warning in
+		 * gcc 4.5.2
+		 */
+		admin_authentication_reset();
+		~admin_authentication_reset();
+	};
+
 	bool parse_should_show_lobby_join(const std::string& sender, const std::string& message);
 	int lobby_joins();
 	void _set_lobby_joins(int show);
-	enum { SHOW_NONE, SHOW_FRIENDS, SHOW_ALL };
+	enum LOBBY_JOINS { SHOW_NONE, SHOW_FRIENDS, SHOW_ALL };
 
-	bool new_lobby();
-	void set_new_lobby(bool value);
-
-	const std::set<std::string> & get_friends();
-	const std::set<std::string> & get_ignores();
-	bool add_friend(const std::string& nick);
-	bool add_ignore(const std::string& nick);
-	void add_completed_campaign(const std::string& campaign_id);
-	void remove_friend(const std::string& nick);
-	void remove_ignore(const std::string& nick);
+	const std::map<std::string, acquaintance> & get_acquaintances();
+	std::map<std::string, std::string> get_acquaintances_nice(const std::string& filter);
+	preferences::acquaintance* add_acquaintance(const std::string& nick, const std::string& mode, const std::string& notes);
+	void add_completed_campaign(const std::string &campaign_id, const std::string &difficulty_level);
+	bool remove_acquaintance(const std::string& nick);
 	bool is_friend(const std::string& nick);
 	bool is_ignored(const std::string& nick);
 	bool is_campaign_completed(const std::string& campaign_id);
+	bool is_campaign_completed(const std::string& campaign_id, const std::string &difficulty_level);
 
 	const std::vector<game_config::server_info>& server_list();
 
@@ -119,8 +136,14 @@ namespace preferences {
 	bool allow_observers();
 	void set_allow_observers(bool value);
 
+	bool registered_users_only();
+	void set_registered_users_only(bool value);
+
 	bool shuffle_sides();
 	void set_shuffle_sides(bool value);
+
+	std::string random_faction_mode();
+	void set_random_faction_mode(const std::string & value);
 
 	bool use_map_settings();
 	void set_use_map_settings(bool value);
@@ -143,8 +166,14 @@ namespace preferences {
 	int turns();
 	void set_turns(int value);
 
+	const config& options();
+	void set_options(const config& values);
+
 	bool skip_mp_replay();
 	void set_skip_mp_replay(bool value);
+
+	bool blindfold_replay();
+	void set_blindfold_replay(bool value);
 
 	bool countdown();
 	void set_countdown(bool value);
@@ -160,17 +189,25 @@ namespace preferences {
 	int village_gold();
 	void set_village_gold(int value);
 
+	int village_support();
+	void set_village_support(int value);
+
 	int xp_modifier();
 	void set_xp_modifier(int value);
 
-	int era();
-	void set_era(int value);
+	std::string era();
+	void set_era(const std::string& value);
 
-	int map();
-	void set_map(int value);
+	std::string level();
+	void set_level(const std::string& value);
+	int level_type();
+	void set_level_type(int value);
 
-	bool show_ai_moves();
-	void set_show_ai_moves(bool value);
+	const std::vector<std::string>& modifications(bool mp=true);
+	void set_modifications(const std::vector<std::string>& value, bool mp=true);
+
+	bool skip_ai_moves();
+	void set_skip_ai_moves(bool value);
 
 	void set_show_side_colors(bool value);
 	bool show_side_colors();
@@ -202,9 +239,6 @@ namespace preferences {
 	void set_show_haloes(bool value);
 
 
-	bool flip_time();
-	void set_flip_time(bool value);
-
 	// Multiplayer functions
 	std::string get_chat_timestamp(const time_t& t);
 	bool chat_timestamping();
@@ -219,24 +253,18 @@ namespace preferences {
 	bool show_all_units_in_help();
 	void set_show_all_units_in_help(bool value);
 
-	bool compress_saves();
-
-	bool startup_effect();
+	compression::format save_compression_format();
 
 	std::set<std::string> &encountered_units();
-	std::set<t_translation::t_terrain> &encountered_terrains();
+	std::set<t_translation::terrain_code> &encountered_terrains();
 
 	std::string custom_command();
 	void set_custom_command(const std::string& command);
 
 	std::vector<std::string>* get_history(const std::string& id);
 
-	std::string client_type();
-
 	void set_theme(const std::string& theme);
 	std::string theme();
-
-	bool compare_resolutions(const std::pair<int,int>& lhs, const std::pair<int,int>& rhs);
 
 	// Ask for end turn confirmation
 	bool yellow_confirm();
@@ -245,15 +273,62 @@ namespace preferences {
 
 	// Add all recruitable units as encountered so that information
 	// about them are displayed to the user in the help system.
-	void encounter_recruitable_units(std::vector<team>& teams);
+	void encounter_recruitable_units(const std::vector<team>& teams);
 	// Add all units that exist at the start to the encountered units so
 	// that information about them are displayed to the user in the help
 	// system.
-	void encounter_start_units(unit_map& units);
-	// Add all units that are recallable as encountred units.
+	void encounter_start_units(const unit_map& units);
+	// Add all units that are recallable as encountered units.
 	void encounter_recallable_units(std::vector<team>& teams);
 	// Add all terrains on the map as encountered terrains.
-	void encounter_map_terrain(gamemap& map);
+	void encounter_map_terrain(const gamemap& map);
+
+	// Calls all of the above functions on the current game board
+	void encounter_all_content(const game_board & gb);
+
+class acquaintance {
+public:
+
+	acquaintance()
+	{
+	}
+
+	explicit acquaintance(const config& cfg)
+	{
+		load_from_config(cfg);
+	}
+
+	acquaintance(
+			  const std::string& nick
+			, const std::string& status
+			, const std::string& notes)
+		: nick_(nick)
+		, status_(status)
+		, notes_(notes)
+	{
+
+	}
+
+	void load_from_config(const config& cfg);
+
+	const std::string& get_nick() const { return nick_; }
+	const std::string& get_status() const { return status_; }
+	const std::string& get_notes() const { return notes_; }
+
+	void save(config& cfg);
+
+private:
+
+	/** acquaintance's MP nick */
+	std::string nick_;
+
+	/**status (e.g., "friend", "ignore") */
+	std::string status_;
+
+	/** notes on the acquaintance */
+	std::string notes_;
+
+};
 
 }
 

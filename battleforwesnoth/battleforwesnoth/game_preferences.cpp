@@ -1,6 +1,5 @@
-/* $Id: game_preferences.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,23 +16,39 @@
 
 #define GETTEXT_DOMAIN "wesnoth-lib"
 
+#include "game_board.hpp"
 #include "game_display.hpp"
 #include "game_preferences.hpp"
-#include "gamestatus.hpp"
 #include "gettext.hpp"
 #include "log.hpp"
-#include "map.hpp"
-#include "network.hpp" // ping_timeout
+#include "map/map.hpp"
 #include "serialization/string_utils.hpp"
+#include "serialization/unicode_cast.hpp"
 #include "settings.hpp"
-#include "unit.hpp"
-#include "unit_map.hpp"
+#include "units/unit.hpp"
+#include "units/map.hpp"
 #include "wml_exception.hpp"
 
-#include <boost/foreach.hpp>
+#include <cassert>
+#ifdef _WIN32
+#include <boost/range/iterator_range.hpp>
+#ifdef INADDR_ANY
+	#undef INADDR_ANY
+#endif
+#ifdef INADDR_BROADCAST
+	#undef INADDR_BROADCAST
+#endif
+#ifdef INADDR_NONE
+	#undef INADDR_NONE
+#endif
+#include <windows.h> //GetUserName
+#endif
+
 
 static lg::log_domain log_config("config");
 #define ERR_CFG LOG_STREAM(err , log_config)
+
+using acquaintances_map = std::map<std::string, preferences::acquaintance>;
 
 namespace {
 
@@ -41,17 +56,21 @@ bool message_private_on = false;
 
 bool haloes = true;
 
+std::map<std::string, std::set<std::string> > completed_campaigns;
 std::set<std::string> encountered_units_set;
-std::set<t_translation::t_terrain> encountered_terrains_set;
+std::set<t_translation::terrain_code> encountered_terrains_set;
 
 std::map<std::string, std::vector<std::string> > history_map;
-const unsigned max_history_saved = 50;
 
-std::set<std::string> friends;
-std::set<std::string> ignores;
+acquaintances_map acquaintances;
 
-bool friends_initialized = false;
-bool ignores_initialized = false;
+std::vector<std::string> mp_modifications;
+bool mp_modifications_initialized = false;
+std::vector<std::string> sp_modifications;
+bool sp_modifications_initialized = false;
+
+config option_values;
+bool options_initialized = false;
 
 bool authenticated = false;
 
@@ -70,16 +89,28 @@ std::string parse_wrapped_credentials_field(const std::string& raw)
 		return raw;
 	} else if(raw.length() < 2 || raw[0] != WRAP_CHAR || raw[raw.length() - 1] != WRAP_CHAR ) {
 		// malformed/not wrapped (shouldn't happen)
-		ERR_CFG << "malformed user credentials (did you manually edit the preferences file?)\n";
+		ERR_CFG << "malformed user credentials (did you manually edit the preferences file?)" << std::endl;
 		return raw;
 	}
 
 	return raw.substr(1, raw.length() - 2);
 }
 
+void initialize_modifications(bool mp = true)
+{
+	if (mp) {
+		mp_modifications = utils::split(preferences::get("mp_modifications"), ',');
+		mp_modifications_initialized = true;
+	} else {
+		sp_modifications = utils::split(preferences::get("sp_modifications"), ',');
+		sp_modifications_initialized = true;
+	}
+}
+
 } // anon namespace
 
 namespace preferences {
+
 
 manager::manager() :
 	base()
@@ -95,14 +126,31 @@ manager::manager() :
 		preferences::erase("mp_countdown_action_bonus");
 	}
 
-	const std::vector<std::string> v = utils::split(preferences::get("encountered_units"));
-	std::copy(v.begin(), v.end(),
-			std::inserter(encountered_units_set, encountered_units_set.begin()));
+	/*
+	completed_campaigns = "A,B,C"
+	[completed_campaigns]
+		[campaign]
+			name = "A"
+			difficulty_levels = "EASY,MEDIUM"
+		[/campaign]
+	[/completed_campaigns]
+	*/
+	for (const std::string &c : utils::split(preferences::get("completed_campaigns"))) {
+		completed_campaigns[c]; // create the elements
+	}
+	if (const config &ccc = preferences::get_child("completed_campaigns")) {
+		for (const config &cc : ccc.child_range("campaign")) {
+			std::set<std::string> &d = completed_campaigns[cc["name"]];
+			std::vector<std::string> nd = utils::split(cc["difficulty_levels"]);
+			std::copy(nd.begin(), nd.end(), std::inserter(d, d.begin()));
+		}
+	}
 
-	const t_translation::t_list terrain =
-			t_translation::read_list(preferences::get("encountered_terrain_list"));
-	std::copy(terrain.begin(), terrain.end(),
-			std::inserter(encountered_terrains_set, encountered_terrains_set.begin()));
+	const std::vector<std::string> v (utils::split(preferences::get("encountered_units")));
+	encountered_units_set.insert(v.begin(), v.end());
+
+	const t_translation::ter_list terrain (t_translation::read_list(preferences::get("encountered_terrain_list")));
+	encountered_terrains_set.insert(terrain.begin(), terrain.end());
 
 	if (const config &history = preferences::get_child("history"))
 	{
@@ -113,25 +161,31 @@ manager::manager() :
 				message = foobar
 			[/line]
 */
-		BOOST_FOREACH(const config::any_child &h, history.all_children_range())
+		for (const config::any_child &h : history.all_children_range())
 		{
-			BOOST_FOREACH(const config &l, h.cfg.child_range("line")) {
+			for (const config &l : h.cfg.child_range("line")) {
 				history_map[h.key].push_back(l["message"]);
 			}
 		}
 	}
 
-	network::ping_timeout = get_ping_timeout();
+	//network::ping_timeout = get_ping_timeout();
 }
 
 manager::~manager()
 {
-	std::vector<std::string> v;
-	std::copy(encountered_units_set.begin(), encountered_units_set.end(), std::back_inserter(v));
+	config campaigns;
+	typedef const std::pair<std::string, std::set<std::string> > cc_elem;
+	for (cc_elem &elem : completed_campaigns) {
+		config cmp;
+		cmp["name"] = elem.first;
+		cmp["difficulty_levels"] = utils::join(elem.second);
+		campaigns.add_child("campaign", cmp);
+	}
+	preferences::set_child("completed_campaigns", campaigns);
+	std::vector<std::string> v (encountered_units_set.begin(), encountered_units_set.end());
 	preferences::set("encountered_units", utils::join(v));
-	t_translation::t_list terrain;
-	std::copy(encountered_terrains_set.begin(), encountered_terrains_set.end(),
-			  std::back_inserter(terrain));
+	t_translation::ter_list terrain (encountered_terrains_set.begin(), encountered_terrains_set.end());
 	preferences::set("encountered_terrain_list", t_translation::write_list(terrain));
 
 /* Structure of the history
@@ -143,10 +197,10 @@ manager::~manager()
 */
 	config history;
 	typedef std::pair<std::string, std::vector<std::string> > hack;
-	BOOST_FOREACH(const hack& history_id, history_map) {
+	for (const hack& history_id : history_map) {
 
 		config history_id_cfg; // [history_id]
-		BOOST_FOREACH(const std::string& line, history_id.second) {
+		for (const std::string& line : history_id.second) {
 			config cfg; // [line]
 
 			cfg["message"] = line;
@@ -175,97 +229,149 @@ void parse_admin_authentication(const std::string& sender, const std::string& me
 	}
 }
 
-static void initialize_friends() {
-	if(!friends_initialized) {
-		std::vector<std::string> names = utils::split(preferences::get("friends"));
-		std::set<std::string> tmp(names.begin(), names.end());
-		friends.swap(tmp);
+admin_authentication_reset::admin_authentication_reset()
+{
+}
 
-		friends_initialized = true;
+admin_authentication_reset::~admin_authentication_reset()
+{
+	authenticated = false;
+}
+
+static void load_acquaintances() {
+	if(acquaintances.empty()) {
+		for (const config &acfg : preferences::get_prefs()->child_range("acquaintance")) {
+			acquaintance ac = acquaintance(acfg);
+			acquaintances[ac.get_nick()] = ac;
+		}
 	}
 }
 
-const std::set<std::string> & get_friends() {
-	initialize_friends();
-	return friends;
-}
+static void save_acquaintances()
+{
+	config *cfg = preferences::get_prefs();
+	cfg->clear_children("acquaintance");
 
-static void initialize_ignores() {
-	if(!ignores_initialized) {
-		std::vector<std::string> names = utils::split(preferences::get("ignores"));
-		std::set<std::string> tmp(names.begin(), names.end());
-		ignores.swap(tmp);
-
-		ignores_initialized = true;
+	for(std::map<std::string, acquaintance>::iterator i = acquaintances.begin();
+			i != acquaintances.end(); ++i)
+	{
+		config& item = cfg->add_child("acquaintance");
+		i->second.save(item);
 	}
 }
 
-const std::set<std::string> & get_ignores() {
-	return ignores;
+const std::map<std::string, acquaintance> & get_acquaintances() {
+	load_acquaintances();
+	return acquaintances;
 }
 
-bool add_friend(const std::string& nick) {
-	if (!utils::isvalid_wildcard(nick)) return false;
-	friends.insert(nick);
-	preferences::set("friends", utils::join(friends));
+//returns acquaintances in the form nick => notes where the status = filter
+std::map<std::string, std::string> get_acquaintances_nice(const std::string& filter) {
+	load_acquaintances();
+	std::map<std::string, std::string> ac_nice;
+
+	for(std::map<std::string, acquaintance>::iterator i = acquaintances.begin(); i != acquaintances.end(); ++i)
+	{
+		if(i->second.get_status() == filter) {
+			ac_nice[i->second.get_nick()] = i->second.get_notes();
+		}
+	}
+
+	return ac_nice;
+}
+
+preferences::acquaintance* add_acquaintance(const std::string& nick, const std::string& mode, const std::string& notes)
+{
+	if(!utils::isvalid_wildcard(nick)) {
+		return nullptr;
+	}
+
+	preferences::acquaintance new_entry(nick, mode, notes);
+
+	acquaintances_map::iterator iter;
+	bool success;
+
+	std::tie(iter, success) = acquaintances.emplace(nick, new_entry);
+
+	if(!success) {
+		iter->second = new_entry;
+	}
+
+	save_acquaintances();
+
+	return &iter->second;
+}
+
+bool remove_acquaintance(const std::string& nick) {
+	std::map<std::string, acquaintance>::iterator i = acquaintances.find(nick);
+
+	//nick might include the notes, depending on how we're removing
+	if(i == acquaintances.end()) {
+		size_t pos = nick.find_first_of(' ');
+
+		if(pos != std::string::npos) {
+			i = acquaintances.find(nick.substr(0, pos));
+		}
+	}
+
+	if(i == acquaintances.end()) {
+		return false;
+	}
+
+	acquaintances.erase(i);
+	save_acquaintances();
+
 	return true;
 }
 
-bool add_ignore(const std::string& nick) {
-	if (!utils::isvalid_wildcard(nick)) return false;
-	ignores.insert(nick);
-	preferences::set("ignores", utils::join(ignores));
-	return true;
-}
+bool is_friend(const std::string& nick)
+{
+	load_acquaintances();
+	const std::map<std::string, acquaintance
+			>::const_iterator it = acquaintances.find(nick);
 
-void remove_friend(const std::string& nick) {
-	std::set<std::string>::iterator i = friends.find(nick);
-	if(i != friends.end()) {
-		friends.erase(i);
-		preferences::set("friends", utils::join(friends));
+	if(it == acquaintances.end()) {
+		return false;
+	} else {
+		return it->second.get_status() == "friend";
 	}
 }
 
-void remove_ignore(const std::string& nick) {
-	std::set<std::string>::iterator i = ignores.find(nick);
-	if(i != ignores.end()) {
-		ignores.erase(i);
-		preferences::set("ignores", utils::join(ignores));
+bool is_ignored(const std::string& nick)
+{
+	load_acquaintances();
+	const std::map<std::string, acquaintance
+			>::const_iterator it = acquaintances.find(nick);
+
+	if(it == acquaintances.end()) {
+		return false;
+	} else {
+		return it->second.get_status() == "ignore";
 	}
 }
 
-bool is_friend(const std::string& nick) {
-	initialize_friends();
-	return friends.find(nick) != friends.end();
-}
-
-bool is_ignored(const std::string& nick) {
-	initialize_ignores();
-	return ignores.find(nick) != ignores.end();
-}
-
-void add_completed_campaign(const std::string& campaign_id) {
-	std::vector<std::string> completed = utils::split(preferences::get("completed_campaigns"));
-
-	if(std::find(completed.begin(), completed.end(), campaign_id) != completed.end())
-		return;
-
-	completed.push_back(campaign_id);
-	preferences::set("completed_campaigns", utils::join(completed));
+void add_completed_campaign(const std::string &campaign_id, const std::string &difficulty_level) {
+	completed_campaigns[campaign_id].insert(difficulty_level);
 }
 
 bool is_campaign_completed(const std::string& campaign_id) {
-	std::vector<std::string> completed = utils::split(preferences::get("completed_campaigns"));
+	return completed_campaigns.count(campaign_id) != 0;
+}
 
-	return std::find(completed.begin(), completed.end(), campaign_id) != completed.end();
+bool is_campaign_completed(const std::string& campaign_id, const std::string &difficulty_level) {
+	std::map<std::string, std::set<std::string> >::iterator it = completed_campaigns.find(campaign_id);
+	return it == completed_campaigns.end() ? false : it->second.count(difficulty_level) != 0;
 }
 
 bool parse_should_show_lobby_join(const std::string &sender, const std::string &message)
 {
-	// If it's actually not a lobby join message return true (show it).
+	// If it's actually not a lobby join or leave message return true (show it).
 	if (sender != "server") return true;
 	std::string::size_type pos = message.find(" has logged into the lobby");
-	if (pos == std::string::npos) return true;
+	if (pos == std::string::npos){
+		pos = message.find(" has disconnected");
+		if (pos == std::string::npos) return true;
+	}
 	int lj = lobby_joins();
 	if (lj == SHOW_NONE) return false;
 	if (lj == SHOW_ALL) return true;
@@ -298,16 +404,6 @@ void _set_lobby_joins(int show)
 	}
 }
 
-bool new_lobby()
-{
-	return get("new_lobby", false);
-}
-
-void set_new_lobby(bool value)
-{
-	preferences::set("new_lobby", value);
-}
-
 const std::vector<game_config::server_info>& server_list()
 {
 	static std::vector<game_config::server_info> pref_servers;
@@ -315,7 +411,7 @@ const std::vector<game_config::server_info>& server_list()
 		std::vector<game_config::server_info> &game_servers = game_config::server_list;
 		VALIDATE(!game_servers.empty(), _("No server has been defined."));
 		pref_servers.insert(pref_servers.begin(), game_servers.begin(), game_servers.end());
-		BOOST_FOREACH(const config &server, get_prefs()->child_range("server")) {
+		for(const config &server : get_prefs()->child_range("server")) {
 			game_config::server_info sinf;
 			sinf.name = server["name"].str();
 			sinf.address = server["address"].str();
@@ -383,12 +479,31 @@ void set_wrap_login(bool wrap)
 	preferences::set("login_is_wrapped", wrap);
 }
 
+static std::string get_system_username()
+{
+	std::string res;
+#ifdef _WIN32
+	wchar_t buffer[300];
+	DWORD size = 300;
+	if(GetUserNameW(buffer,&size)) {
+		//size includes a terminating null character.
+		assert(size > 0);
+		res = unicode_cast<utf8::string>(boost::iterator_range<wchar_t*>(buffer, buffer + size - 1));
+	}
+#else
+	if(char* const login = getenv("USER")) {
+		res = login;
+	}
+#endif
+	return res;
+}
+
 std::string login()
 {
 	const std::string res = preferences::get("login");
-	if(res.empty()) {
-		char* const login = getenv("USER");
-		if(login != NULL) {
+	if(res.empty() || res == EMPTY_WRAPPED_STRING) {
+		const std::string& login = get_system_username();
+		if(!login.empty()) {
 			return login;
 		}
 
@@ -445,7 +560,10 @@ bool remember_password()
 void set_remember_password(bool remember)
 {
 	preferences::set("remember_password", remember);
-	preferences::set("password", remember ? prv::password : "");
+
+	if(!remember) {
+		preferences::set("password", "");
+	}
 }
 
 bool turn_dialog()
@@ -493,6 +611,16 @@ void set_allow_observers(bool value)
 	preferences::set("allow_observers", value);
 }
 
+bool registered_users_only()
+{
+	return preferences::get("registered_users_only", false);
+}
+
+void set_registered_users_only(bool value)
+{
+	preferences::set("registered_users_only", value);
+}
+
 bool shuffle_sides()
 {
 	return preferences::get("shuffle_sides", false);
@@ -501,6 +629,14 @@ bool shuffle_sides()
 void set_shuffle_sides(bool value)
 {
 	preferences::set("shuffle_sides", value);
+}
+
+std::string random_faction_mode(){
+	return preferences::get("random_faction_mode");
+}
+
+void set_random_faction_mode(const std::string & value) {
+	preferences::set("random_faction_mode", value);
 }
 
 bool use_map_settings()
@@ -580,6 +716,32 @@ void set_turns(int value)
 	preferences::set("mp_turns", value);
 }
 
+const config& options()
+{
+	if (options_initialized) {
+		return option_values;
+	}
+
+	if (!preferences::get_child("options")) {
+		// It may be an invalid config, which would cause problems in
+		// multiplayer_create, so let's replace it with an empty but valid
+		// config
+		option_values = config();
+	} else {
+		option_values = preferences::get_child("options");
+	}
+
+	options_initialized = true;
+
+	return option_values;
+}
+
+void set_options(const config& values)
+{
+	preferences::set_child("options", values);
+	options_initialized = false;
+}
+
 bool skip_mp_replay()
 {
 	return preferences::get("skip_mp_replay", false);
@@ -588,6 +750,16 @@ bool skip_mp_replay()
 void set_skip_mp_replay(bool value)
 {
 	preferences::set("skip_mp_replay", value);
+}
+
+bool blindfold_replay()
+{
+	return preferences::get("blindfold_replay", false);
+}
+
+void set_blindfold_replay(bool value)
+{
+	preferences::set("blindfold_replay", value);
 }
 
 bool countdown()
@@ -602,8 +774,8 @@ void set_countdown(bool value)
 
 int countdown_init_time()
 {
-	return lexical_cast_in_range<int>
-		(preferences::get("mp_countdown_init_time"), 270, 0, 1500);
+	return util::clamp<int>(
+		lexical_cast_default<int>(preferences::get("mp_countdown_init_time"), 270), 0, 1500);
 }
 
 void set_countdown_init_time(int value)
@@ -613,8 +785,8 @@ void set_countdown_init_time(int value)
 
 int countdown_reservoir_time()
 {
-	return lexical_cast_in_range<int>(
-		preferences::get("mp_countdown_reservoir_time"), 330, 30, 1500);
+	return util::clamp<int>(
+		lexical_cast_default<int>(preferences::get("mp_countdown_reservoir_time"), 330), 30, 1500);
 }
 
 void set_countdown_reservoir_time(int value)
@@ -624,8 +796,8 @@ void set_countdown_reservoir_time(int value)
 
 int countdown_turn_bonus()
 {
-	return lexical_cast_in_range<int>(
-		preferences::get("mp_countdown_turn_bonus"), 60, 0, 300);
+	return util::clamp<int>(
+		lexical_cast_default<int>(preferences::get("mp_countdown_turn_bonus"), 60), 0, 300);
 }
 
 void set_countdown_turn_bonus(int value)
@@ -635,8 +807,8 @@ void set_countdown_turn_bonus(int value)
 
 int countdown_action_bonus()
 {
-	return lexical_cast_in_range<int>(
-		preferences::get("mp_countdown_action_bonus"), 13, 0, 30);
+	return util::clamp<int>(
+		lexical_cast_default<int>(preferences::get("mp_countdown_action_bonus"), 13), 0, 30);
 }
 
 void set_countdown_action_bonus(int value)
@@ -654,6 +826,16 @@ void set_village_gold(int value)
 	preferences::set("mp_village_gold", value);
 }
 
+int village_support()
+{
+	return settings::get_village_support(preferences::get("mp_village_support"));
+}
+
+void set_village_support(int value)
+{
+	preferences::set("mp_village_support", std::to_string(value));
+}
+
 int xp_modifier()
 {
 	return settings::get_xp_modifier(preferences::get("mp_xp_modifier"));
@@ -664,34 +846,64 @@ void set_xp_modifier(int value)
 	preferences::set("mp_xp_modifier", value);
 }
 
-int era()
+std::string era()
 {
-	return lexical_cast_default<int>(preferences::get("mp_era"), 0);
+	return preferences::get("mp_era");
 }
 
-void set_era(int value)
+void set_era(const std::string& value)
 {
 	preferences::set("mp_era", value);
 }
 
-int map()
+std::string level()
 {
-	return lexical_cast_default<int>(preferences::get("mp_map"), 0);
+	return preferences::get("mp_level");
 }
 
-void set_map(int value)
+void set_level(const std::string& value)
 {
-	preferences::set("mp_map", value);
+	preferences::set("mp_level", value);
 }
 
-bool show_ai_moves()
+int level_type()
 {
-	return preferences::get("show_ai_moves", true);
+	return lexical_cast_default<int>(preferences::get("mp_level_type"), 0);
 }
 
-void set_show_ai_moves(bool value)
+void set_level_type(int value)
 {
-	preferences::set("show_ai_moves", value);
+	preferences::set("mp_level_type", value);
+}
+
+const std::vector<std::string>& modifications(bool mp)
+{
+	if ((!mp_modifications_initialized && mp) || (!sp_modifications_initialized && !mp))
+		initialize_modifications(mp);
+
+	return mp ? mp_modifications : sp_modifications;
+}
+
+void set_modifications(const std::vector<std::string>& value, bool mp)
+{
+	if (mp) {
+		preferences::set("mp_modifications", utils::join(value, ","));
+		mp_modifications_initialized = false;
+	} else {
+		preferences::set("sp_modifications", utils::join(value, ","));
+		sp_modifications_initialized = false;
+	}
+
+}
+
+bool skip_ai_moves()
+{
+	return preferences::get("skip_ai_moves", false);
+}
+
+void set_skip_ai_moves(bool value)
+{
+	preferences::set("skip_ai_moves", value);
 }
 
 void set_show_side_colors(bool value)
@@ -754,14 +966,9 @@ void set_autosavemax(int value)
 	preferences::set("auto_save_max", value);
 }
 
-std::string client_type()
-{
-	return preferences::get("client_type") == "ai" ? "ai" : "human";
-}
-
 std::string theme()
 {
-	if(non_interactive()) {
+	if(CVideo::get_singleton().non_interactive()) {
 		static const std::string null_theme = "null";
 		return null_theme;
 	}
@@ -812,33 +1019,34 @@ void set_show_haloes(bool value)
 	preferences::set("show_haloes", value);
 }
 
-bool flip_time()
+compression::format save_compression_format()
 {
-	return preferences::get("flip_time", false);
-}
+	const std::string& choice =
+		preferences::get("compress_saves");
 
-void set_flip_time(bool value)
-{
-	preferences::set("flip_time", value);
-}
+	// "yes" was used in 1.11.7 and earlier; the compress_saves
+	// option used to be a toggle for gzip in those versions.
+	if(choice.empty() || choice == "gzip" || choice == "yes") {
+		return compression::GZIP;
+	} else if(choice == "bzip2") {
+		return compression::BZIP2;
+	} else if(choice == "none" || choice == "no") { // see above
+		return compression::NONE;
+	} /*else*/
 
-bool compress_saves()
-{
-	return preferences::get("compress_saves", true);
-}
-
-bool startup_effect()
-{
-	return preferences::get("startup_effect", false);
+	// In case the preferences file was created by a later version
+	// supporting some algorithm we don't; although why would anyone
+	// playing a game need more algorithms, really...
+	return compression::GZIP;
 }
 
 std::string get_chat_timestamp(const time_t& t) {
 	if (chat_timestamping()) {
 		if(preferences::use_twelve_hour_clock_format() == false) {
-			return lg::get_timestamp(t, _("%H:%M")) + " ";
+			return lg::get_timestamp(t, _("[%H:%M]")) + " ";
 		}
 		else {
-			return lg::get_timestamp(t, _("%I:%M %p")) + " ";
+			return lg::get_timestamp(t, _("[%I:%M %p]")) + " ";
 		}
 	}
 	return "";
@@ -884,7 +1092,7 @@ std::set<std::string> &encountered_units() {
 	return encountered_units_set;
 }
 
-std::set<t_translation::t_terrain> &encountered_terrains() {
+std::set<t_translation::terrain_code> &encountered_terrains() {
 	return encountered_terrains_set;
 }
 
@@ -928,42 +1136,59 @@ bool confirm_no_moves()
 }
 
 
-void encounter_recruitable_units(std::vector<team>& teams){
-	for (std::vector<team>::iterator help_team_it = teams.begin();
+void encounter_recruitable_units(const std::vector<team>& teams){
+	for (std::vector<team>::const_iterator help_team_it = teams.begin();
 		help_team_it != teams.end(); ++help_team_it) {
 		help_team_it->log_recruitable();
-		std::copy(help_team_it->recruits().begin(), help_team_it->recruits().end(),
-				  std::inserter(encountered_units_set, encountered_units_set.begin()));
+		encountered_units_set.insert(help_team_it->recruits().begin(), help_team_it->recruits().end());
 	}
 }
 
-void encounter_start_units(unit_map& units){
+void encounter_start_units(const unit_map& units){
 	for (unit_map::const_iterator help_unit_it = units.begin();
 		 help_unit_it != units.end(); ++help_unit_it) {
-		const std::string name = help_unit_it->type_id();
-		encountered_units_set.insert(name);
+		encountered_units_set.insert(help_unit_it->type_id());
 	}
 }
 
-void encounter_recallable_units(std::vector<team>& teams){
-	BOOST_FOREACH(const team& t, teams) {
-		BOOST_FOREACH(const unit& u, t.recall_list()) {
-			encountered_units_set.insert(u.type_id());
+static void encounter_recallable_units(const std::vector<team>& teams){
+	for (const team& t : teams) {
+		for (const unit_const_ptr & u : t.recall_list()) {
+			encountered_units_set.insert(u->type_id());
 		}
 	}
 }
 
-void encounter_map_terrain(gamemap& map){
-	for (int map_x = 0; map_x < map.w(); ++map_x) {
-		for (int map_y = 0; map_y < map.h(); ++map_y) {
-			const t_translation::t_terrain t = map.get_terrain(map_location(map_x, map_y));
+void encounter_map_terrain(const gamemap& map)
+{
+	map.for_each_loc([&](const map_location& loc) {
+		const t_translation::terrain_code terrain = map.get_terrain(loc);
+		preferences::encountered_terrains().insert(terrain);
+		for (t_translation::terrain_code t : map.underlying_union_terrain(loc)) {
 			preferences::encountered_terrains().insert(t);
-			const t_translation::t_list& underlaying_list = map.underlying_union_terrain(map_location(map_x, map_y));
-			for (std::vector<t_translation::t_terrain>::const_iterator ut = underlaying_list.begin(); ut != underlaying_list.end(); ++ut) {
-				preferences::encountered_terrains().insert(*ut);
-			};
 		}
-	}
+	});
+}
+
+void encounter_all_content(const game_board & gameboard_) {
+	preferences::encounter_recruitable_units(gameboard_.teams());
+	preferences::encounter_start_units(gameboard_.units());
+	preferences::encounter_recallable_units(gameboard_.teams());
+	preferences::encounter_map_terrain(gameboard_.map());
+}
+
+void acquaintance::load_from_config(const config& cfg)
+{
+	nick_ = cfg["nick"].str();
+	status_ = cfg["status"].str();
+	notes_ = cfg["notes"].str();
+}
+
+void acquaintance::save(config& item)
+{
+	item["nick"] = nick_;
+	item["status"] = status_;
+	item["notes"] = notes_;
 }
 
 } // preferences namespace

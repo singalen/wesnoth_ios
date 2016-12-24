@@ -1,6 +1,5 @@
-/* $Id: editor_main.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2008 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -14,11 +13,11 @@
 */
 #define GETTEXT_DOMAIN "wesnoth-editor"
 
-#include "editor_controller.hpp"
+#include "editor/controller/editor_controller.hpp"
 
-#include "../construct_dialog.hpp"
-#include "../gettext.hpp"
-#include "../filesystem.hpp"
+#include "gettext.hpp"
+#include "filesystem.hpp"
+#include "editor/action/action_base.hpp"
 
 #include <boost/algorithm/string/replace.hpp>
 
@@ -31,32 +30,35 @@ EXIT_STATUS start(const config& game_conf, CVideo& video, const std::string& fil
 {
 	EXIT_STATUS e = EXIT_ERROR;
 	try {
-		hotkey::scope_changer h_(game_conf, "hotkey_editor");
+		hotkey::scope_changer h_;
 		hotkey::deactivate_all_scopes();
-		hotkey::set_scope_active(hotkey::SCOPE_GENERAL);
 		hotkey::set_scope_active(hotkey::SCOPE_EDITOR);
 		editor_controller editor(game_conf, video);
-		if (!filename.empty()) {
-			if (is_directory(filename)) {
-				editor.set_default_dir(filename);
-				editor.load_map_dialog(true);
+		if (!filename.empty() && filesystem::file_exists (filename)) {
+			if (filesystem::is_directory(filename)) {
+				editor.context_manager_->set_default_dir(filename);
+				editor.context_manager_->load_map_dialog(true);
 			} else {
-				editor.load_map(filename, false);
+				editor.context_manager_->load_map(filename, false);
+			}
+
+			if (take_screenshot) {
+				editor.do_screenshot(screenshot_filename);
+				e = EXIT_NORMAL;
 			}
 		}
-		if(take_screenshot) {
-			editor.do_screenshot(screenshot_filename);
-			e = EXIT_NORMAL;
-		} else {
+
+		if (!take_screenshot)
 			e = editor.main_loop();
-		}
+
 	} catch (editor_exception& e) {
-		ERR_ED << "Editor exception in editor::start: " << e.what() << "\n";
+		ERR_ED << "Editor exception in editor::start: " << e.what() << std::endl;
 		throw;
 	}
 	if (editor_action::get_instance_count() != 0) {
-		ERR_ED << "Possibly leaked " << editor_action::get_instance_count() << " action objects\n";
+		ERR_ED << "Possibly leaked " << editor_action::get_instance_count() << " action objects" << std::endl;
 	}
+
 	return e;
 }
 

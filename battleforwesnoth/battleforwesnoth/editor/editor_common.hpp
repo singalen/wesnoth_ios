@@ -1,6 +1,5 @@
-/* $Id: editor_common.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2008 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,8 +21,8 @@
 #ifndef EDITOR_EDITOR_COMMON_HPP_INCLUDED
 #define EDITOR_EDITOR_COMMON_HPP_INCLUDED
 
-#include "../exceptions.hpp"
-#include "../log.hpp"
+#include "exceptions.hpp"
+#include "log.hpp"
 
 extern lg::log_domain log_editor;
 #define DBG_ED LOG_STREAM_INDENT(debug, log_editor)

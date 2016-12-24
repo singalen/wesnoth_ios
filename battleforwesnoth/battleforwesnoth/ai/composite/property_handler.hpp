@@ -1,6 +1,5 @@
-/* $Id: property_handler.hpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,11 +21,11 @@
 #ifndef AI_COMPOSITE_PROPERTY_HANDLER_HPP_INCLUDED
 #define AI_COMPOSITE_PROPERTY_HANDLER_HPP_INCLUDED
 
-#include <boost/function.hpp>
-#include <boost/foreach.hpp>
-
+#include "utils/functional.hpp"
 #include "config.hpp"
 #include "ai/composite/component.hpp"
+
+#include <algorithm>
 
 namespace ai{
 
@@ -65,36 +64,39 @@ public:
 	virtual ~base_property_handler() {}
 
 	virtual component* handle_get(const path_element &child) = 0;
-	virtual bool handle_change(const path_element &child, const config &cfg) = 0;
+	virtual bool handle_change(const path_element &child, config cfg) = 0;
 	virtual bool handle_add(const path_element &child, const config &cfg) = 0;
 	virtual bool handle_delete(const path_element &child) = 0;
 	virtual std::vector< component* > handle_get_children() = 0;
 };
 
-typedef boost::shared_ptr< base_property_handler > property_handler_ptr;
+typedef std::shared_ptr< base_property_handler > property_handler_ptr;
 
 template<typename T>
 class vector_property_handler : public base_property_handler {
 public:
-	typedef boost::shared_ptr<T> t_ptr;
-	typedef std::vector< boost::shared_ptr<T> > t_ptr_vector;
+	typedef std::shared_ptr<T> ptr;
+	typedef std::vector< std::shared_ptr<T> > ptr_vector;
 
-	vector_property_handler(const std::string &property, t_ptr_vector &values, boost::function2<void, t_ptr_vector&, const config&> &construction_factory)
+	vector_property_handler(const std::string &property, ptr_vector &values, std::function<void(ptr_vector&, const config&)> &construction_factory)
 		: factory_(construction_factory), property_(property), values_(values){}
 
 
         component* handle_get(const path_element &child)
 	{
-	      	typename t_ptr_vector::iterator i = std::find_if(values_.begin(),values_.end(),path_element_matches<t_ptr>(child));
+			typename ptr_vector::iterator i = std::find_if(values_.begin(),values_.end(),path_element_matches<ptr>(child));
 		if (i!=values_.end()){
 			return &*(*i);
 		}
-		return NULL;
+		return nullptr;
 	}
-	bool handle_change(const path_element &child, const config &cfg)
+	bool handle_change(const path_element &child, config cfg)
 	{
 		if (!handle_delete(child)) {
 			return false;
+		}
+		if (!cfg.has_attribute("id")) {
+			cfg["id"] = child.id;
 		}
 
 		return handle_add(child,cfg);
@@ -110,7 +112,7 @@ public:
 			handle_delete(with_same_id);
 		}
 
-	      	typename t_ptr_vector::iterator i = std::find_if(values_.begin(),values_.end(),path_element_matches<t_ptr>(child));
+			typename ptr_vector::iterator i = std::find_if(values_.begin(),values_.end(),path_element_matches<ptr>(child));
 		return do_add(i-values_.begin(),cfg);
 	}
 
@@ -122,7 +124,7 @@ public:
 			return true;
 		}
 
-		typename t_ptr_vector::iterator i = std::find_if(values_.begin(),values_.end(),path_element_matches<t_ptr>(child));
+		typename ptr_vector::iterator i = std::find_if(values_.begin(),values_.end(),path_element_matches<ptr>(child));
 		if (i!=values_.end()){
 			values_.erase(i);
 			return true;
@@ -134,32 +136,83 @@ public:
 	std::vector<component*> handle_get_children()
 	{
 		std::vector<component*> children;
-		BOOST_FOREACH(t_ptr v, values_) {
+		for (ptr v : values_) {
 			children.push_back(&*v);
 		}
 		return children;
 	}
 
+protected:
+	void call_factory(ptr_vector& vec, const config& cfg)
+	{
+		factory_(vec, cfg);
+	}
 private:
 	bool do_add(int pos, const config &cfg)
 	{
 		if (pos<0) {
 			pos = values_.size();
 		}
-		t_ptr_vector values;
-		factory_(values,cfg);
+		ptr_vector values;
+		call_factory(values,cfg);
 		int j=0;
-		BOOST_FOREACH(t_ptr b, values ){
+		for (ptr b : values ) {
 			values_.insert(values_.begin()+pos+j,b);
 			j++;
 		}
 		return (j>0);
 	}
 
-	boost::function2<void, t_ptr_vector&, const config&> factory_;
+	std::function<void(ptr_vector&, const config&)> factory_;
 	const std::string property_;
-	t_ptr_vector &values_;
+	ptr_vector &values_;
 
+};
+
+
+
+template<typename T>
+class facets_property_handler : public vector_property_handler<T> {
+	typedef typename vector_property_handler<T>::ptr ptr;
+	typedef typename vector_property_handler<T>::ptr_vector ptr_vector;
+public:
+
+	facets_property_handler(const std::string &property, ptr_vector &values, ptr& def, std::function<void(ptr_vector&, const config&)> &construction_factory)
+		: vector_property_handler<T>(property, values, construction_factory)
+		, default_(def)
+	{
+	}
+
+	component* handle_get(const path_element &child)
+	{
+		// special case - 'get the default facet'
+		if (child.id == "default_facet") {
+			return default_.get();
+		}
+		return vector_property_handler<T>::handle_get(child);
+	}
+
+	bool handle_change(const path_element &child, config cfg)
+	{
+		// special case - 'replace the default facet'
+		if (child.id == "default_facet") {
+			ptr_vector values;
+			this->call_factory(values,cfg);
+			default_ = values.back();
+			return true;
+		}
+		return vector_property_handler<T>::handle_change(child, cfg);
+	}
+
+	std::vector<component*> handle_get_children()
+	{
+		std::vector<component*> children = vector_property_handler<T>::handle_get_children();
+		children.push_back(default_.get());
+		return children;
+	}
+
+private:
+	ptr& default_;
 };
 
 
@@ -167,11 +220,11 @@ private:
 template<typename T>
 class aspect_property_handler : public base_property_handler {
 public:
-	typedef boost::shared_ptr<T> t_ptr;
-	typedef std::map< std::string, t_ptr > aspect_map;
+	typedef std::shared_ptr<T> ptr;
+	typedef std::map< std::string, ptr > aspect_map;
 
-	aspect_property_handler(const std::string &property, aspect_map &aspects)
-		: property_(property), aspects_(aspects)
+	aspect_property_handler(const std::string &property, aspect_map &aspects, std::function<void(aspect_map&, const config&, std::string)> &construction_factory)
+		: property_(property), aspects_(aspects), factory_(construction_factory)
 	{
 	}
 
@@ -182,12 +235,20 @@ public:
 		if (a!=aspects_.end()){
 			return &*a->second;
 		}
-		return NULL;
+		return nullptr;
 	}
 
-	bool handle_change(const path_element &/*child*/, const config &/*cfg*/)
+	bool handle_change(const path_element &child, config cfg)
 	{
-		return false;
+		if (aspects_.find(child.id) == aspects_.end()) {
+			return false;
+		}
+		if (!cfg.has_attribute("name")) {
+			cfg["name"] = "composite_aspect";
+		}
+		cfg["id"] = child.id;
+		factory_(aspects_, cfg, child.id);
+		return true;
 	}
 
 	bool handle_add(const path_element &/*child*/, const config &/*cfg*/)
@@ -200,9 +261,9 @@ public:
 		//* is a special case - 'delete all facets'
 		if (child.id == "*") {
 			bool b = false;
-				BOOST_FOREACH(typename aspect_map::value_type a, aspects_) {
-				       	b |= a.second->delete_all_facets();
-				}
+			for (typename aspect_map::value_type a : aspects_) {
+				b |= a.second->delete_all_facets();
+			}
 			return b;
 		}
 		return false;
@@ -212,7 +273,7 @@ public:
 	std::vector<component*> handle_get_children()
 	{
 		std::vector<component*> children;
-		BOOST_FOREACH(typename aspect_map::value_type a, aspects_) {
+		for (typename aspect_map::value_type a : aspects_) {
 			children.push_back(&*a.second);
 		}
 		return children;
@@ -222,22 +283,30 @@ private:
 
 	const std::string &property_;
 	aspect_map &aspects_;
+	std::function<void(aspect_map&, const config&, std::string)> factory_;
 
 };
 
 
 
 template<typename X>
-static void register_vector_property(std::map<std::string,property_handler_ptr> &property_handlers, const std::string &property, std::vector< boost::shared_ptr<X> > &values, boost::function2<void, std::vector< boost::shared_ptr<X> >&, const config&> construction_factory)
+static void register_vector_property(std::map<std::string,property_handler_ptr> &property_handlers, const std::string &property, std::vector< std::shared_ptr<X> > &values, std::function<void(std::vector< std::shared_ptr<X> >&, const config&)> construction_factory)
 {
 	property_handler_ptr handler_ptr = property_handler_ptr(new vector_property_handler<X>(property,values,construction_factory));
 	property_handlers.insert(std::make_pair(property,handler_ptr));
 }
 
 template<typename X>
-static void register_aspect_property(std::map<std::string,property_handler_ptr> &property_handlers, const std::string &property, std::map< std::string, boost::shared_ptr<X> > &aspects)
+static void register_facets_property(std::map<std::string,property_handler_ptr> &property_handlers, const std::string &property, std::vector< std::shared_ptr<X> > &values, std::shared_ptr<X>& def, std::function<void(std::vector< std::shared_ptr<X> >&, const config&)> construction_factory)
 {
-	property_handler_ptr handler_ptr = property_handler_ptr(new aspect_property_handler<X>(property,aspects));
+	property_handler_ptr handler_ptr = property_handler_ptr(new facets_property_handler<X>(property,values,def,construction_factory));
+	property_handlers.insert(std::make_pair(property,handler_ptr));
+}
+
+template<typename X>
+static void register_aspect_property(std::map<std::string,property_handler_ptr> &property_handlers, const std::string &property, std::map< std::string, std::shared_ptr<X> > &aspects, std::function<void(std::map< std::string, std::shared_ptr<X> >&, const config&, std::string)> construction_factory)
+{
+	property_handler_ptr handler_ptr = property_handler_ptr(new aspect_property_handler<X>(property,aspects,construction_factory));
 	property_handlers.insert(std::make_pair(property,handler_ptr));
 }
 

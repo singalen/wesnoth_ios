@@ -1,6 +1,5 @@
-/* $Id: mapbuilder.hpp 53970 2012-04-22 23:18:06Z gabba $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -20,44 +19,44 @@
 #ifndef WB_MAPBUILDER_HPP_
 #define WB_MAPBUILDER_HPP_
 
+#include "side_actions.hpp"
+
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <list>
 
 #include "utility.hpp"
-#include "visitor.hpp"
 
 struct unit_movement_resetter;
+
+struct temporary_unit_remover;
 
 namespace wb
 {
 
 /**
- * Visitor that collects and applies unit_map modifications from the actions it visits
+ * Class that collects and applies unit_map modifications from the actions it visits
  * and reverts all changes on destruction.
  */
 class mapbuilder
-	: private enable_visit_all<mapbuilder>
 {
-	friend class enable_visit_all<mapbuilder>;
 
 public:
 	mapbuilder(unit_map& unit_map);
 	virtual ~mapbuilder();
 
-	///builds every team's actions as far into the future as possible, in the correct order
+	/**
+	 * Builds every team's actions as far into the future as possible, in the correct order.
+	 */
 	void build_map();
 
 private:
-	//"Inherited" from enable_visit_all
-	bool process(size_t team_index, team&, side_actions&, side_actions::iterator);
-	bool pre_visit_team(size_t turn, size_t team_index, team&, side_actions&);
-	bool post_visit_team(size_t turn, size_t team_index, team&, side_actions&);
+	/** Function called on each action. */
+	void process(side_actions &sa, side_actions::iterator action_it);
 
-	bool process_helper(side_actions::iterator const&, action_ptr const&);
+	/** Function called after visiting a team. */
+	void post_visit_team(size_t turn);
 
-	//For validate_visitor to override
-	virtual void validate(side_actions::iterator const&) {}
-
-	//Does various preliminary actions on the unit map such as resetting moves for some units
+	/** Does various preliminary actions on the unit map such as resetting moves for some units. */
 	void pre_build();
 
 	void restore_normal_map();
@@ -71,8 +70,10 @@ private:
 	boost::ptr_vector<unit_movement_resetter> resetters_;
 	boost::ptr_vector<temporary_unit_remover> removers_;
 
-	//Used by visit()
+	//Used by process()
 	std::set<unit const*> acted_this_turn_;
+	std::set<unit const*> has_invalid_actions_;
+	std::list<side_actions::iterator> invalid_actions_; ///< Conserved invalid actions.
 };
 
 }

@@ -1,6 +1,5 @@
-/* $Id: debug_clock.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,69 +15,75 @@
 #ifndef GUI_DIALOGS_DEBUG_CLOCK_HPP_INCLUDED
 #define GUI_DIALOGS_DEBUG_CLOCK_HPP_INCLUDED
 
-#include "gui/dialogs/popup.hpp"
+#include "gui/dialogs/modeless_dialog.hpp"
 
-#include "gui/auxiliary/event/dispatcher.hpp"
+#include "gui/core/event/dispatcher.hpp"
 
-namespace gui2 {
+namespace gui2
+{
 
-class tcontrol;
-class tprogress_bar;
-class tinteger_selector_;
+class styled_widget;
+class pane;
+class progress_bar;
+class integer_selector;
+
+namespace dialogs
+{
 
 /** Clock to test the draw events. */
-class tdebug_clock
-	: public tpopup
+class debug_clock : public modeless_dialog
 {
 public:
-	tdebug_clock()
-		: tpopup()
-		, hour_percentage_(NULL)
-		, minute_percentage_(NULL)
-		, second_percentage_(NULL)
-		, hour_(NULL)
-		, minute_(NULL)
-		, second_(NULL)
-		, clock_(NULL)
-		, window_(NULL)
+	debug_clock()
+		: modeless_dialog()
+		, hour_percentage_(nullptr)
+		, minute_percentage_(nullptr)
+		, second_percentage_(nullptr)
+		, hour_(nullptr)
+		, minute_(nullptr)
+		, second_(nullptr)
+		, pane_(nullptr)
+		, clock_(nullptr)
+		, window_(nullptr)
 		, signal_()
 		, time_()
 	{
 	}
 
 private:
-
 	/** Progress bar for displaying the hours as a percentage. */
-	tprogress_bar* hour_percentage_;
+	progress_bar* hour_percentage_;
 
 	/** Progress bar for displaying the minutes as a percentage. */
-	tprogress_bar* minute_percentage_;
+	progress_bar* minute_percentage_;
 
 	/** Progress bar for displaying the seconds as a percentage. */
-	tprogress_bar* second_percentage_;
+	progress_bar* second_percentage_;
 
 	/** An integer selector to display the total seconds. */
-	tinteger_selector_* hour_;
+	integer_selector* hour_;
 
 	/** An integer selector to display the total seconds this hour. */
-	tinteger_selector_* minute_;
+	integer_selector* minute_;
 
 	/** An integer selector to display the seconds this minute. */
-	tinteger_selector_* second_;
+	integer_selector* second_;
+
+	pane* pane_;
 
 	/** A widget that can display the time. */
-	tcontrol* clock_;
+	styled_widget* clock_;
 
 	/** The window being shown. */
-	twindow* window_;
+	window* window_;
 
 	/** The signal patched in the drawing routine. */
-	event::tsignal_function signal_;
+	event::signal_function signal_;
 
 	/** Helper struct to keep track of the time. */
-	struct ttime
+	struct time
 	{
-		ttime();
+		time();
 
 		/**
 		 * Sets the fields to the current time.
@@ -120,15 +125,15 @@ private:
 	 * @note Since the dialog is used to test the drawing routine by keeping
 	 * track of the calls to the drawing routine, the clock might be off.
 	 */
-	ttime time_;
+	time time_;
 
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
 
-	/** Inherited from tdialog. */
-	void pre_show(CVideo& video, twindow& window);
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 
-	/** Inherited from tdialog. */
+	/** Inherited from modal_dialog. */
 	void post_show(CVideo& video);
 
 	/**
@@ -143,7 +148,7 @@ private:
 	void update_time(const bool force);
 };
 
+} // namespace dialogs
 } // namespace gui2
 
 #endif
-

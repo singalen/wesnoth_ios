@@ -1,6 +1,5 @@
-/* $Id: network_transmission.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2011 Sergey Popov <loonycyborg@gmail.com>
+   Copyright (C) 2011 - 2016 Sergey Popov <loonycyborg@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,84 +16,144 @@
 
 #include "gui/dialogs/network_transmission.hpp"
 
-#include "formula_string_utils.hpp"
+#include "formula/string_utils.hpp"
 #include "gettext.hpp"
+#include "gui/auxiliary/find_widget.hpp"
 #include "gui/widgets/button.hpp"
 #include "gui/widgets/progress_bar.hpp"
 #include "gui/widgets/label.hpp"
 #include "gui/widgets/settings.hpp"
+#include "gui/dialogs/loading_screen.hpp"
 #include "gui/widgets/window.hpp"
 #include "log.hpp"
 #include "serialization/string_utils.hpp"
+#include "video.hpp"
+#include "wesnothd_connection.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 REGISTER_DIALOG(network_transmission)
 
-void tnetwork_transmission::pump_monitor::process(events::pump_info&)
+void network_transmission::pump_monitor::process(events::pump_info&)
 {
-	connection_.poll();
-	if(!window_) return;
-	if(connection_.done()) {
-		window_.get().set_retval(twindow::OK);
+	if(!window_)
+		return;
+	connection_->poll();
+	if(connection_->finished()) {
+		window_.get().set_retval(window::OK);
 	} else {
 		size_t completed, total;
-		if(track_upload_) {
-			completed = connection_.bytes_written();
-			total = connection_.bytes_to_write();
-		} else {
-			completed = connection_.bytes_read();
-			total = connection_.bytes_to_read();
-		}
+			completed = connection_->current();
+			total = connection_->total();
 		if(total) {
-			find_widget<tprogress_bar>(&(window_.get()), "progress", false)
-				.set_percentage((completed*100.)/total);
+			find_widget<progress_bar>(&(window_.get()), "progress", false)
+					.set_percentage((completed * 100.) / total);
 
 			std::stringstream ss;
-			ss << utils::si_string(completed, true, _("unit_byte^B"))
-			   << "/"
+			ss << utils::si_string(completed, true, _("unit_byte^B")) << "/"
 			   << utils::si_string(total, true, _("unit_byte^B"));
 
-			find_widget<tlabel>(&(window_.get()), "numeric_progress", false)
+			find_widget<label>(&(window_.get()), "numeric_progress", false)
 					.set_label(ss.str());
 			window_->invalidate_layout();
 		}
 	}
 }
 
-tnetwork_transmission::tnetwork_transmission(
-		  network_asio::connection& connection
-		, const std::string& title
-		, const std::string& subtitle
-		, bool track_upload)
-	: connection_(connection)
-	, pump_monitor(connection, track_upload)
+network_transmission::network_transmission(
+		connection_data& connection,
+		const std::string& title,
+		const std::string& subtitle)
+	: connection_(&connection)
+	, pump_monitor_(connection_)
 	, subtitle_(subtitle)
 {
 	register_label("title", true, title, false);
+	set_restore(true);
 }
 
-void tnetwork_transmission::set_subtitle(const std::string& subtitle)
+void network_transmission::set_subtitle(const std::string& subtitle)
 {
 	subtitle_ = subtitle;
 }
 
-void tnetwork_transmission::pre_show(CVideo& /*video*/, twindow& window)
+void network_transmission::pre_show(window& window)
 {
 	// ***** ***** ***** ***** Set up the widgets ***** ***** ***** *****
 	if(!subtitle_.empty()) {
-		find_widget<tlabel>(&window, "subtitle", false).set_label(subtitle_);
+		label& subtitle_label
+				= find_widget<label>(&window, "subtitle", false);
+		subtitle_label.set_label(subtitle_);
+		subtitle_label.set_use_markup(true);
 	}
 
-	pump_monitor.window_ = window;
-
+	pump_monitor_.window_ = window;
 }
 
-void tnetwork_transmission::post_show(twindow& /*window*/)
+void network_transmission::post_show(window& /*window*/)
 {
-	pump_monitor.window_.reset();
-	connection_.cancel();
+	pump_monitor_.window_.reset();
+	connection_->cancel();
 }
 
-} // namespace gui2
+void network_transmission::wesnothd_dialog(CVideo& video, network_transmission::connection_data& conn, const std::string& msg)
+{
+	if (video.faked()) {
+		while (!conn.finished()) {
+			conn.poll();
+			SDL_Delay(1);
+		}
+	}
+	else {
+		loading_screen::display(video, [&]() {
+			loading_screen::progress(msg.c_str());
+			while(!conn.finished()) {
+				conn.poll();
+				SDL_Delay(1);
+			}
+		});
+	}
+}
 
+struct read_wesnothd_connection_data : public network_transmission::connection_data
+{
+	read_wesnothd_connection_data(wesnothd_connection& conn) : conn_(conn) {}
+	size_t total() override { return conn_.bytes_to_read(); }
+	virtual size_t current()  override { return conn_.bytes_read(); }
+	virtual bool finished() override { return conn_.has_data_received(); }
+	virtual void cancel() override { }
+	virtual void poll() override { conn_.poll(); }
+	wesnothd_connection& conn_;
+};
+
+bool network_transmission::wesnothd_receive_dialog(CVideo& video, const std::string& msg, config& cfg, wesnothd_connection& connection)
+{
+	assert(!msg.empty());
+	read_wesnothd_connection_data gui_data(connection);
+	wesnothd_dialog(video, gui_data, msg);
+	return connection.receive_data(cfg);
+}
+
+struct connect_wesnothd_connection_data : public network_transmission::connection_data
+{
+	connect_wesnothd_connection_data(wesnothd_connection& conn) : conn_(conn) {}
+	virtual bool finished() override { return conn_.handshake_finished(); }
+	virtual void cancel() override { }
+	virtual void poll() override { conn_.poll(); }
+	wesnothd_connection& conn_;
+};
+
+std::unique_ptr<wesnothd_connection> network_transmission::wesnothd_connect_dialog(CVideo& video, const std::string& msg, const std::string& hostname, int port)
+{
+	assert(!msg.empty());
+	std::unique_ptr<wesnothd_connection> res(new wesnothd_connection(hostname, std::to_string(port)));
+	connect_wesnothd_connection_data gui_data(*res);
+	wesnothd_dialog(video, gui_data, msg);
+	return res;
+}
+
+} // namespace dialogs
+} // namespace gui2

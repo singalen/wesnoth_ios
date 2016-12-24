@@ -1,6 +1,5 @@
-/* $Id: recruit.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -17,20 +16,22 @@
  * @file
  */
 
-#include "recruit.hpp"
+#include "whiteboard/recruit.hpp"
 
-#include "manager.hpp"
-#include "side_actions.hpp"
-#include "utility.hpp"
-#include "visitor.hpp"
+#include "whiteboard/manager.hpp"
+#include "whiteboard/side_actions.hpp"
+#include "whiteboard/utility.hpp"
+#include "whiteboard/visitor.hpp"
 
-#include "game_display.hpp"
+#include "fake_unit_manager.hpp"
+#include "fake_unit_ptr.hpp"
 #include "menu_events.hpp"
 #include "play_controller.hpp"
 #include "resources.hpp"
-#include "unit.hpp"
-#include "unit_map.hpp"
-#include "unit_types.hpp"
+#include "units/unit.hpp"
+#include "units/animation_component.hpp"
+#include "units/map.hpp"
+#include "units/types.hpp"
 
 namespace wb
 {
@@ -57,8 +58,7 @@ recruit::recruit(size_t team_index, bool hidden, const std::string& unit_name, c
 		unit_name_(unit_name),
 		recruit_hex_(recruit_hex),
 		temp_unit_(create_corresponding_unit()), //auto-ptr ownership transfer
-		valid_(true),
-		fake_unit_(new game_display::fake_unit(*temp_unit_)), //temp_unit_ *copied* into new fake unit
+		fake_unit_(unit_ptr(new unit(*temp_unit_))), //temp_unit_ *copied* into new fake unit
 		cost_(0)
 {
 	this->init();
@@ -67,9 +67,8 @@ recruit::recruit(size_t team_index, bool hidden, const std::string& unit_name, c
 recruit::recruit(config const& cfg, bool hidden)
 	: action(cfg,hidden)
 	, unit_name_(cfg["unit_name_"])
-	, recruit_hex_(cfg.child("recruit_hex_")["x"],cfg.child("recruit_hex_")["y"])
+	, recruit_hex_(cfg.child("recruit_hex_")["x"],cfg.child("recruit_hex_")["y"], wml_loc())
 	, temp_unit_()
-	, valid_(true)
 	, fake_unit_()
 	, cost_(0)
 {
@@ -79,7 +78,7 @@ recruit::recruit(config const& cfg, bool hidden)
 
 	// Construct temp_unit_ and fake_unit_
 	temp_unit_ = create_corresponding_unit(); //auto-ptr ownership transfer
-	fake_unit_.reset(new game_display::fake_unit(*temp_unit_)), //temp_unit_ copied into new fake_unit
+	fake_unit_.reset(unit_ptr (new unit(*temp_unit_))), //temp_unit_ copied into new fake_unit
 
 	this->init();
 }
@@ -87,12 +86,12 @@ recruit::recruit(config const& cfg, bool hidden)
 void recruit::init()
 {
 	fake_unit_->set_location(recruit_hex_);
-	fake_unit_->set_movement(0);
+	fake_unit_->set_movement(0, true);
 	fake_unit_->set_attacks(0);
-	fake_unit_->set_ghosted(false);
-	fake_unit_->place_on_game_display(resources::screen);
+	fake_unit_->anim_comp().set_ghosted(false);
+	fake_unit_.place_on_fake_unit_manager(resources::fake_units);
 
-	cost_ = fake_unit_->type()->cost();
+	cost_ = fake_unit_->type().cost();
 }
 
 recruit::~recruit()
@@ -106,33 +105,33 @@ void recruit::accept(visitor& v)
 
 void recruit::execute(bool& success, bool& complete)
 {
-	assert(valid_);
+	assert(valid());
 	temporary_unit_hider const raii(*fake_unit_);
-	int const side_num = team_index() + 1;
+	const int side_num = team_index() + 1;
 	//Give back the spent gold so we don't get "not enough gold" message
-	resources::teams->at(team_index()).get_side_actions()->change_gold_spent_by(-cost_);
+	resources::gameboard->teams().at(team_index()).get_side_actions()->change_gold_spent_by(-cost_);
 	bool const result = resources::controller->get_menu_handler().do_recruit(unit_name_, side_num, recruit_hex_);
 	//If it failed, take back the gold
 	if (!result) {
-		resources::teams->at(team_index()).get_side_actions()->change_gold_spent_by(cost_);
+		resources::gameboard->teams().at(team_index()).get_side_actions()->change_gold_spent_by(cost_);
 	}
 	success = complete = result;
 }
 
 void recruit::apply_temp_modifier(unit_map& unit_map)
 {
-	assert(valid_);
+	assert(valid());
 	temp_unit_->set_location(recruit_hex_);
 
 	DBG_WB << "Inserting future recruit [" << temp_unit_->id()
 			<< "] at position " << temp_unit_->get_location() << ".\n";
 
 	// Add cost to money spent on recruits.
-	resources::teams->at(team_index()).get_side_actions()->change_gold_spent_by(cost_);
+	resources::gameboard->teams().at(team_index()).get_side_actions()->change_gold_spent_by(cost_);
 
 	// Temporarily insert unit into unit_map
 	// unit map takes ownership of temp_unit
-	unit_map.insert(temp_unit_.release());
+	unit_map.insert(temp_unit_);
 
 	// Update gold in the top bar
 	resources::screen->invalidate_game_status();
@@ -141,7 +140,7 @@ void recruit::apply_temp_modifier(unit_map& unit_map)
 void recruit::remove_temp_modifier(unit_map& unit_map)
 {
 	//Unit map gives back ownership of temp_unit_
-	temp_unit_.reset(unit_map.extract(recruit_hex_));
+	temp_unit_ = unit_map.extract(recruit_hex_);
 	assert(temp_unit_.get());
 }
 
@@ -153,25 +152,55 @@ void recruit::draw_hex(map_location const& hex)
 		const double y_offset = 0.7;
 		//position 0,0 in the hex is the upper left corner
 		std::stringstream number_text;
-		number_text << utils::unicode_minus << cost_;
+		number_text << font::unicode_minus << cost_;
 		size_t font_size = 16;
-		SDL_Color color; color.r = 255; color.g = 0; color.b = 0; //red
+		color_t color; color.r = 255; color.g = 0; color.b = 0; //red
 		resources::screen->draw_text_in_hex(hex, display::LAYER_ACTIONS_NUMBERING,
 						number_text.str(), font_size, color, x_offset, y_offset);
 	}
 }
 
-std::auto_ptr<unit> recruit::create_corresponding_unit()
+void recruit::redraw()
+{
+	resources::screen->invalidate(recruit_hex_);
+}
+
+
+unit_ptr recruit::create_corresponding_unit()
 {
 	unit_type const* type = unit_types.find(unit_name_);
 	assert(type);
 	int side_num = team_index() + 1;
 	//real_unit = false needed to avoid generating random traits and causing OOS
 	bool real_unit = false;
-	std::auto_ptr<unit> result(new unit(type, side_num, real_unit));
-	result->set_movement(0);
+	unit_ptr result(new unit(*type, side_num, real_unit));
+	result->set_movement(0, true);
 	result->set_attacks(0);
-	return result; //ownership gets transferred to returned auto_ptr copy
+	return result; //ownership gets transferred to returned unique_ptr copy
+}
+
+action::error recruit::check_validity() const
+{
+	//Check that destination hex is still free
+	if(resources::gameboard->units().find(recruit_hex_) != resources::gameboard->units().end()) {
+		return LOCATION_OCCUPIED;
+	}
+	//Check that unit to recruit is still in side's recruit list
+	//FIXME: look at leaders extra_recruit too.
+	const std::set<std::string>& recruits = resources::gameboard->teams()[team_index()].recruits();
+	if(recruits.find(unit_name_) == recruits.end()) {
+		return UNIT_UNAVAILABLE;
+	}
+	//Check that there is still enough gold to recruit this unit
+	if(temp_unit_->cost() > resources::gameboard->teams()[team_index()].gold()) {
+		return NOT_ENOUGH_GOLD;
+	}
+	//Check that there is a leader available to recruit this unit
+	if(!find_recruiter(team_index(),get_recruit_hex())) {
+		return NO_LEADER;
+	}
+
+	return OK;
 }
 
 config recruit::to_config() const
@@ -183,8 +212,8 @@ config recruit::to_config() const
 //	final_cfg["temp_cost_"] = temp_cost_; //Unnecessary
 
 	config loc_cfg;
-	loc_cfg["x"]=recruit_hex_.x;
-	loc_cfg["y"]=recruit_hex_.y;
+	loc_cfg["x"]=recruit_hex_.wml_x();
+	loc_cfg["y"]=recruit_hex_.wml_y();
 	final_cfg.add_child("recruit_hex_",loc_cfg);
 
 	return final_cfg;

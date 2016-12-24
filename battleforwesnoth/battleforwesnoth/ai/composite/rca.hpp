@@ -1,6 +1,5 @@
-/* $Id: rca.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,8 +20,8 @@
 #ifndef AI_COMPOSITE_RCA_HPP_INCLUDED
 #define AI_COMPOSITE_RCA_HPP_INCLUDED
 
-#include "component.hpp"
-#include "contexts.hpp"
+#include "ai/composite/component.hpp"
+#include "ai/composite/contexts.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -41,12 +40,6 @@ public:
 	//this is a score guaranteed to be very high, higher than any 'normal' candidate action score
 	static const double HIGH_SCORE;
 
-	/**
-	 * Constructor
-	 * @param ai context of the candidate action
-	 * @param name name of the action (for debug purposes)
-	 * @param type type of the action (for debug purposes)
-	 */
 	candidate_action( rca_context &context, const config &cfg );
 
 	/**
@@ -152,19 +145,20 @@ private:
 
 };
 
-typedef boost::shared_ptr<candidate_action> candidate_action_ptr;
+typedef std::shared_ptr<candidate_action> candidate_action_ptr;
 
 class candidate_action_factory;
 
 class candidate_action_factory{
+	bool is_duplicate(const std::string &name);
 public:
-	typedef boost::shared_ptr< candidate_action_factory > factory_ptr;
+	typedef std::shared_ptr< candidate_action_factory > factory_ptr;
 	typedef std::map<std::string, factory_ptr> factory_map;
 	typedef std::pair<const std::string, factory_ptr> factory_map_pair;
 
 	static factory_map& get_list() {
 		static factory_map *candidate_action_factories;
-		if (candidate_action_factories==NULL) {
+		if (candidate_action_factories==nullptr) {
 			candidate_action_factories = new factory_map;
 		}
 		return *candidate_action_factories;
@@ -174,6 +168,9 @@ public:
 
 	candidate_action_factory( const std::string &name )
 	{
+		if (is_duplicate(name)) {
+			return;
+		}
 		factory_ptr ptr_to_this(this);
 		get_list().insert(make_pair(name,ptr_to_this));
 	}
@@ -195,12 +192,11 @@ public:
 	}
 };
 
-
 //============================================================================
 
-} //end of namespace ai
-
 std::ostream &operator<<(std::ostream &s, ai::candidate_action const &ca);
+
+} //end of namespace ai
 
 #ifdef _MSC_VER
 #pragma warning(pop)

@@ -1,8 +1,7 @@
-/* $Id: parser.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
    Copyright (C) 2003 by David White <dave@whitevine.net>
    Copyright (C) 2005 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
-   Copyright (C) 2005 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2005 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -26,7 +25,6 @@
 #include "config.hpp"
 #include "log.hpp"
 #include "gettext.hpp"
-#include "loadscreen.hpp"
 #include "wesconfig.h"
 #include "serialization/preprocessor.hpp"
 #include "serialization/tokenizer.hpp"
@@ -35,11 +33,19 @@
 
 #include <stack>
 
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/variant.hpp>
-#include <boost/foreach.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4456)
+#pragma warning(disable: 4458)
+#endif
+#include <boost/iostreams/filter/gzip.hpp>
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+#include <boost/variant/static_visitor.hpp>
 
 static lg::log_domain log_config("config");
 #define ERR_CF LOG_STREAM(err, log_config)
@@ -56,23 +62,25 @@ class parser
 	parser& operator=(const parser&);
 public:
 	parser(config& cfg, std::istream& in,
-		   abstract_validator * validator = NULL);
+		   abstract_validator * validator = nullptr);
 	~parser();
 	void operator()();
 
 private:
 	void parse_element();
 	void parse_variable();
-	std::string lineno_string(utils::string_map &map, std::string const &lineno,
-		const char *error_string);
-	void error(const std::string& message);
+	std::string lineno_string(utils::string_map &map, const std::string& lineno,
+		const std::string &error_string,
+		const std::string &hint_string = "",
+		const std::string &debug_string = "");
+	void error(const std::string& message, const std::string& pos_format = "");
 
 	config& cfg_;
-	tokenizer *tok_;
+	tokenizer tok_;
 	abstract_validator *validator_;
 
 	struct element {
-		element(config *cfg, std::string const &name,
+		element(config *cfg, const std::string& name,
 			int start_line = 0, const std::string &file = "") :
 			cfg(cfg), name(name), start_line(start_line), file(file)
 		{}
@@ -88,7 +96,7 @@ private:
 
 parser::parser(config &cfg, std::istream &in, abstract_validator * validator)
 			   :cfg_(cfg),
-			   tok_(new tokenizer(in)),
+			   tok_(in),
 			   validator_(validator),
 			   elements()
 {
@@ -96,9 +104,7 @@ parser::parser(config &cfg, std::istream &in, abstract_validator * validator)
 
 
 parser::~parser()
-{
-	delete tok_;
-}
+{}
 
 void parser::operator()()
 {
@@ -106,9 +112,9 @@ void parser::operator()()
 	elements.push(element(&cfg_, ""));
 
 	do {
-		tok_->next_token();
+		tok_.next_token();
 
-		switch(tok_->current_token().type) {
+		switch(tok_.current_token().type) {
 		case token::LF:
 			continue;
 		case '[':
@@ -118,11 +124,17 @@ void parser::operator()()
 			parse_variable();
 			break;
 		default:
-			if (static_cast<unsigned char>(tok_->current_token().value[0]) == 0xEF &&
-			    static_cast<unsigned char>(tok_->next_token().value[0])    == 0xBB &&
-			    static_cast<unsigned char>(tok_->next_token().value[0])    == 0xBF)
+			if (static_cast<unsigned char>(tok_.current_token().value[0]) == 0xEF &&
+			    static_cast<unsigned char>(tok_.next_token().value[0])    == 0xBB &&
+			    static_cast<unsigned char>(tok_.next_token().value[0])    == 0xBF)
 			{
-				ERR_CF << "Skipping over a utf8 BOM\n";
+				utils::string_map i18n_symbols;
+				std::stringstream ss;
+				ss << tok_.get_start_line() << " " << tok_.get_file();
+				ERR_CF << lineno_string(i18n_symbols,
+										ss.str(),
+										"Skipping over a utf8 BOM at $pos")
+					   << '\n';
 			} else {
 				error(_("Unexpected characters at line start"));
 			}
@@ -130,8 +142,7 @@ void parser::operator()()
 		case token::END:
 			break;
 		}
-		loadscreen::increment_progress();
-	} while (tok_->current_token().type != token::END);
+	} while (tok_.current_token().type != token::END);
 
 	// The main element should be there. If it is not, this is a parser error.
 	assert(!elements.empty());
@@ -142,34 +153,35 @@ void parser::operator()()
 		std::stringstream ss;
 		ss << elements.top().start_line << " " << elements.top().file;
 		error(lineno_string(i18n_symbols, ss.str(),
-				N_("Missing closing tag for tag $tag at $pos")));
+				_("Missing closing tag for tag [$tag]"),
+				_("expected at $pos")), _("opened at $pos"));
 	}
 }
 
 void parser::parse_element()
 {
-	tok_->next_token();
+	tok_.next_token();
 	std::string elname;
-	config* current_element = NULL;
-	switch(tok_->current_token().type) {
+	config* current_element = nullptr;
+	switch(tok_.current_token().type) {
 	case token::STRING: // [element]
-		elname = tok_->current_token().value;
-		if (tok_->next_token().type != ']')
+		elname = tok_.current_token().value;
+		if (tok_.next_token().type != ']')
 			error(_("Unterminated [element] tag"));
 		// Add the element
 		current_element = &(elements.top().cfg->add_child(elname));
-		elements.push(element(current_element, elname, tok_->get_start_line(), tok_->get_file()));
+		elements.push(element(current_element, elname, tok_.get_start_line(), tok_.get_file()));
 		if (validator_){
-			validator_->open_tag(elname,tok_->get_start_line(),
-								  tok_->get_file());
+			validator_->open_tag(elname,tok_.get_start_line(),
+								  tok_.get_file());
 		}
 		break;
 
 	case '+': // [+element]
-		if (tok_->next_token().type != token::STRING)
+		if (tok_.next_token().type != token::STRING)
 			error(_("Invalid tag name"));
-		elname = tok_->current_token().value;
-		if (tok_->next_token().type != ']')
+		elname = tok_.current_token().value;
+		if (tok_.next_token().type != ']')
 			error(_("Unterminated [+element] tag"));
 
 		// Find the last child of the current element whose name is
@@ -177,24 +189,24 @@ void parser::parse_element()
 		if (config &c = elements.top().cfg->child(elname, -1)) {
 			current_element = &c;
 			if (validator_){
-				validator_->open_tag(elname,tok_->get_start_line(),
-									 tok_->get_file(),true);
+				validator_->open_tag(elname,tok_.get_start_line(),
+									 tok_.get_file(),true);
 			}
 		} else {
 			current_element = &elements.top().cfg->add_child(elname);
 			if (validator_){
-				validator_->open_tag(elname,tok_->get_start_line(),
-									 tok_->get_file());
+				validator_->open_tag(elname,tok_.get_start_line(),
+									 tok_.get_file());
 			}
 		}
-		elements.push(element(current_element, elname, tok_->get_start_line(), tok_->get_file()));
+		elements.push(element(current_element, elname, tok_.get_start_line(), tok_.get_file()));
 		break;
 
 	case '/': // [/element]
-		if(tok_->next_token().type != token::STRING)
+		if(tok_.next_token().type != token::STRING)
 			error(_("Invalid closing tag name"));
-		elname = tok_->current_token().value;
-		if(tok_->next_token().type != ']')
+		elname = tok_.current_token().value;
+		if(tok_.next_token().type != ']')
 			error(_("Unterminated closing tag"));
 		if(elements.size() <= 1)
 			error(_("Unexpected closing tag"));
@@ -205,7 +217,8 @@ void parser::parse_element()
 			std::stringstream ss;
 			ss << elements.top().start_line << " " << elements.top().file;
 			error(lineno_string(i18n_symbols, ss.str(),
-					N_("Found invalid closing tag $tag2 for tag $tag1 (opened at $pos)")));
+					_("Found invalid closing tag [/$tag2] for tag [$tag1]"),
+					_("opened at $pos")), _("closed at $pos"));
 		}
 		if(validator_){
 			element & el= elements.top();
@@ -225,12 +238,12 @@ void parser::parse_variable()
 	std::vector<std::string> variables;
 	variables.push_back("");
 
-	while (tok_->current_token().type != '=') {
-		switch(tok_->current_token().type) {
+	while (tok_.current_token().type != '=') {
+		switch(tok_.current_token().type) {
 		case token::STRING:
 			if(!variables.back().empty())
 				variables.back() += ' ';
-			variables.back() += tok_->current_token().value;
+			variables.back() += tok_.current_token().value;
 			break;
 		case ',':
 			if(variables.back().empty()) {
@@ -243,7 +256,7 @@ void parser::parse_variable()
 			error(_("Unexpected characters after variable name (expected , or =)"));
 			break;
 		}
-		tok_->next_token();
+		tok_.next_token();
 	}
 	if(variables.back().empty())
 		error(_("Empty variable name"));
@@ -254,10 +267,10 @@ void parser::parse_variable()
 
 	bool ignore_next_newlines = false, previous_string = false;
 	while(1) {
-		tok_->next_token();
+		tok_.next_token();
 		assert(curvar != variables.end());
 
-		switch (tok_->current_token().type) {
+		switch (tok_.current_token().type) {
 		case ',':
 			if ((curvar+1) != variables.end()) {
 				if (buffer.translatable())
@@ -266,8 +279,8 @@ void parser::parse_variable()
 					cfg[*curvar] = buffer.value();
 				if(validator_){
 					validator_->validate_key (cfg,*curvar,buffer.value(),
-											  tok_->get_start_line (),
-											  tok_->get_file ());
+											  tok_.get_start_line (),
+											  tok_.get_file ());
 				}
 				buffer = t_string_base();
 				++curvar;
@@ -276,17 +289,17 @@ void parser::parse_variable()
 			}
 			break;
 		case '_':
-			tok_->next_token();
-			switch (tok_->current_token().type) {
+			tok_.next_token();
+			switch (tok_.current_token().type) {
 			case token::UNTERMINATED_QSTRING:
 				error(_("Unterminated quoted string"));
 				break;
 			case token::QSTRING:
-				buffer += t_string_base(tok_->current_token().value, tok_->textdomain());
+				buffer += t_string_base(tok_.current_token().value, tok_.textdomain());
 				break;
 			default:
 				buffer += "_";
-				buffer += tok_->current_token().value;
+				buffer += tok_.current_token().value;
 				break;
 			case token::END:
 			case token::LF:
@@ -301,10 +314,10 @@ void parser::parse_variable()
 			if (previous_string) buffer += " ";
 			//nobreak
 		default:
-			buffer += tok_->current_token().value;
+			buffer += tok_.current_token().value;
 			break;
 		case token::QSTRING:
-			buffer += tok_->current_token().value;
+			buffer += tok_.current_token().value;
 			break;
 		case token::UNTERMINATED_QSTRING:
 			error(_("Unterminated quoted string"));
@@ -316,7 +329,7 @@ void parser::parse_variable()
 			goto finish;
 		}
 
-		previous_string = tok_->current_token().type == token::STRING;
+		previous_string = tok_.current_token().type == token::STRING;
 		ignore_next_newlines = false;
 	}
 
@@ -327,8 +340,8 @@ void parser::parse_variable()
 		cfg[*curvar] = buffer.value();
 	if(validator_){
 		validator_->validate_key (cfg,*curvar,buffer.value(),
-								  tok_->get_start_line (),
-								  tok_->get_file ());
+								  tok_.get_start_line (),
+								  tok_.get_file ());
 	}
 	while (++curvar != variables.end()) {
 		cfg[*curvar] = "";
@@ -338,33 +351,56 @@ void parser::parse_variable()
 /**
  * This function is crap. Don't use it on a string_map with prefixes.
  */
-std::string parser::lineno_string(utils::string_map &i18n_symbols,
-	std::string const &lineno, const char *error_string)
+std::string parser::lineno_string(utils::string_map& i18n_symbols,
+								  const std::string& lineno,
+								  const std::string& error_string,
+								  const std::string& hint_string,
+								  const std::string& debug_string)
 {
 	i18n_symbols["pos"] = ::lineno_string(lineno);
-	std::string result = _(error_string);
-	BOOST_FOREACH(utils::string_map::value_type& var, i18n_symbols)
+	std::string result = error_string;
+
+	if(!hint_string.empty()) {
+		result += '\n' + hint_string;
+	}
+
+	if(!debug_string.empty()) {
+		result += '\n' + debug_string;
+	}
+
+	for(utils::string_map::value_type& var : i18n_symbols)
 		boost::algorithm::replace_all(result, std::string("$") + var.first, std::string(var.second));
 	return result;
 }
 
-void parser::error(const std::string& error_type)
+void parser::error(const std::string& error_type, const std::string& pos_format)
 {
+	std::string hint_string = pos_format;
+
+	if(hint_string.empty()) {
+		hint_string = _("at $pos");
+	}
+
 	utils::string_map i18n_symbols;
 	i18n_symbols["error"] = error_type;
-	i18n_symbols["value"] = tok_->current_token().value;
+
 	std::stringstream ss;
-	ss << tok_->get_start_line() << " " << tok_->get_file();
-#ifdef DEBUG
-	i18n_symbols["previous_value"] = tok_->previous_token().value;
-	throw config::error(
-		lineno_string(i18n_symbols, ss.str(),
-		              N_("$error, value '$value', previous '$previous_value' at $pos")));
+	ss << tok_.get_start_line() << " " << tok_.get_file();
+
+#ifdef DEBUG_TOKENIZER
+	i18n_symbols["value"] = tok_.current_token().value;
+	i18n_symbols["previous_value"] = tok_.previous_token().value;
+
+	const std::string& tok_state =
+		_("Value: '$value' Previous: '$previous_value'");
 #else
-	throw config::error(
-		lineno_string(i18n_symbols, ss.str(),
-		              N_("$error, value '$value' at $pos")));
+	const std::string& tok_state = "";
 #endif
+
+	const std::string& message =
+		lineno_string(i18n_symbols, ss.str(), "$error", hint_string, tok_state);
+
+	throw config::error(message);
 }
 
 } // end anon namespace
@@ -374,13 +410,14 @@ void read(config &cfg, std::istream &in, abstract_validator * validator)
 	parser(cfg, in, validator)();
 }
 
-void read(config &cfg, std::string &in, abstract_validator * validator)
+void read(config &cfg, const std::string &in, abstract_validator * validator)
 {
 	std::istringstream ss(in);
 	parser(cfg, ss, validator)();
 }
 
-void read_gz(config &cfg, std::istream &file, abstract_validator * validator)
+template <typename decompressor>
+void read_compressed(config &cfg, std::istream &file, abstract_validator * validator)
 {
 	//an empty gzip file seems to confuse boost on msvc
 	//so return early if this is the case
@@ -388,104 +425,149 @@ void read_gz(config &cfg, std::istream &file, abstract_validator * validator)
 		return;
 	}
 	boost::iostreams::filtering_stream<boost::iostreams::input> filter;
-	filter.push(boost::iostreams::gzip_decompressor());
+	filter.push(decompressor());
 	filter.push(file);
+
+
+
+	// This causes especially gzip_error (and the corresponding bz2 error), std::ios_base::failure to be thrown here.
+	// save_index_class::data expects that and config_cache::read_cache and other functions are also capable of catching.
+	// Note that parser(cuff, filter,validator)(); -> tokenizer::tokenizer can throw exeptions too (meaning this functions did already throw these exceptions before this patch).
+	// We try to fix https://svn.boost.org/trac/boost/ticket/5237 by not creating empty gz files.
+	filter.exceptions(filter.exceptions() | std::ios_base::badbit);
 
 	/*
 	 * It sometimes seems the file is not empty but still no real data.
 	 * Filter that case here. It might be previous test is no longer required
 	 * but simply keep it.
 	 */
+
+	// on msvc filter.peek() != EOF does not imply filter.good().
+	// we never create empty compressed gzip files because boosts gzip fails at doing that.
+	// but empty compressed bz2 files are possible.
 	if(filter.peek() == EOF) {
+		LOG_CF << "Empty compressed file or error at reading a compressed file.";
 		return;
+	}
+
+
+	if(!filter.good()) {
+		LOG_CF << " filter.peek() != EOF but !filter.good(), this indicates a malformed gz stream, and can make wesnoth crash.";
 	}
 
 	parser(cfg, filter,validator)();
 }
 
-static std::string escaped_string(const std::string &value)
+/// might throw a std::ios_base::failure especially a gzip_error
+void read_gz(config &cfg, std::istream &file, abstract_validator * validator)
 {
-	std::string res;
-	std::string::const_iterator iter = value.begin();
-	while (iter != value.end()) {
-		const char c = *iter;
-		res.append(c == '"' ? 2 : 1, c);
-		++iter;
-	}
-	return res;
+	read_compressed<boost::iostreams::gzip_decompressor>(cfg, file, validator);
 }
 
-struct write_key_val_visitor : boost::static_visitor<void>
+/// might throw a std::ios_base::failure especially bzip2_error
+void read_bz2(config &cfg, std::istream &file, abstract_validator * validator)
 {
-	std::ostream &out_;
-	unsigned level_;
-	std::string &textdomain_;
-	const std::string &key_;
+	read_compressed<boost::iostreams::bzip2_decompressor>(cfg, file, validator);
+}
 
-	write_key_val_visitor(std::ostream &out, unsigned level,
-		std::string &textdomain, const std::string &key)
-		: out_(out), level_(level), textdomain_(textdomain), key_(key)
-	{}
-
-	void operator()(boost::blank const &) const
-	{ out_ << "\"\""; }
-	void operator()(bool b) const
-	{ out_ << (b ? "yes" : "no"); }
-	void operator()(double d) const
-	{ int i = d; if (d == i) out_ << i; else out_ << d; }
-	void operator()(std::string const &s) const
-	{ out_ << '"' << escaped_string(s) << '"'; }
-	void operator()(t_string const &s) const;
-};
-
-/**
- * Writes all the parts of a translatable string.
- * @note If the first part is translatable and in the wrong textdomain,
- *       the textdomain change has to happen before the attribute name.
- *       That is the reason for not outputting the key beforehand and
- *       letting this function do it.
- */
-void write_key_val_visitor::operator()(t_string const &value) const
-{
-	bool first = true;
-
-	for (t_string::walker w(value); !w.eos(); w.next())
+namespace { // helpers for write_key_val().
+	/**
+	 * Copies a string fragment and converts it to a suitable format for WML.
+	 * (I.e., quotes are doubled.)
+	 */
+	std::string escaped_string(const std::string::const_iterator &begin,
+	                           const std::string::const_iterator &end)
 	{
-		std::string part(w.begin(), w.end());
-
-		if (!first)
-			out_ << " +\n";
-
-		if (w.translatable() && w.textdomain() != textdomain_) {
-			textdomain_ = w.textdomain();
-			out_ << "#textdomain " << textdomain_ << '\n';
+		std::string res;
+		std::string::const_iterator iter = begin;
+		while ( iter != end ) {
+			const char c = *iter;
+			res.append(c == '"' ? 2 : 1, c);
+			++iter;
 		}
-
-		for (unsigned i = 0; i < level_; ++i) out_ << '\t';
-
-		if (first)
-			out_ << key_ << '=';
-		else
-			out_ << '\t';
-
-		if (w.translatable())
-			out_ << '_';
-
-		out_ << '"' << escaped_string(part) << '"';
-		first = false;
+		return res;
 	}
-}
+	/**
+	 * Copies a string and converts it to a suitable format for WML.
+	 * (I.e., quotes are doubled.)
+	 */
+	inline std::string escaped_string(const std::string &value)
+	{
+		return escaped_string(value.begin(), value.end());
+	}
+
+	class write_key_val_visitor : public boost::static_visitor<void>
+	{
+		std::ostream &out_;
+		const unsigned level_;
+		std::string &textdomain_;
+		const std::string &key_;
+
+	public:
+		write_key_val_visitor(std::ostream &out, unsigned level,
+			std::string &textdomain, const std::string &key)
+			: out_(out), level_(level), textdomain_(textdomain), key_(key)
+		{}
+
+		// Generic visitor just streams "key=value".
+		template <typename T> void operator()(T const & v) const
+		{ indent(); out_ << key_ << '=' << v << '\n'; }
+
+		// Specialized visitors for things that go in quotes:
+		void operator()(boost::blank const &) const
+		{ /* treat blank values as nonexistent which fits better than treating them as empty strings.*/ }
+		void operator()(const std::string& s) const
+		{ indent(); out_ << key_ << '=' << '"' << escaped_string(s) << '"' << '\n'; }
+		void operator()(t_string const &s) const;
+
+	private:
+		void indent() const
+		{ for ( unsigned i = 0; i < level_; ++i )  out_ << '\t'; }
+	};
+
+	/**
+	 * Writes all the parts of a translatable string.
+	 * @note If the first part is translatable and in the wrong textdomain,
+	 *       the textdomain change has to happen before the attribute name.
+	 *       That is the reason for not outputting the key beforehand and
+	 *       letting this function do it.
+	 */
+	void write_key_val_visitor::operator()(t_string const &value) const
+	{
+		bool first = true;
+
+		for (t_string::walker w(value); !w.eos(); w.next())
+		{
+			if (!first)
+				out_ << " +\n";
+
+			if (w.translatable() && w.textdomain() != textdomain_) {
+				textdomain_ = w.textdomain();
+				out_ << "#textdomain " << textdomain_ << '\n';
+			}
+
+			indent();
+
+			if (first)
+				out_ << key_ << '=';
+			else
+				out_ << '\t';
+
+			if (w.translatable())
+				out_ << '_';
+
+			out_ << '"' << escaped_string(w.begin(), w.end()) << '"';
+			first = false;
+		}
+		out_ << '\n';
+	}
+}//unnamed namespace for write_key_val() helpers.
 
 void write_key_val(std::ostream &out, const std::string &key,
-	const config::attribute_value &value, unsigned level,
-	std::string& textdomain)
+                   const config::attribute_value &value, unsigned level,
+                   std::string& textdomain)
 {
-	if (!boost::get<t_string const>(&value.value)) {
-		for (unsigned i = 0; i < level; ++i) out << '\t';
-		out << key << '=';
-	}
-	boost::apply_visitor(write_key_val_visitor(out, level, textdomain, key), value.value);
-	out << '\n';
+	value.apply_visitor(write_key_val_visitor(out, level, textdomain, key));
 }
 
 void write_open_child(std::ostream &out, const std::string &child, unsigned int level)
@@ -503,29 +585,71 @@ static void write_internal(config const &cfg, std::ostream &out, std::string& te
 	if (tab > max_recursion_levels)
 		throw config::error("Too many recursion levels in config write");
 
-	BOOST_FOREACH(const config::attribute &i, cfg.attribute_range()) {
+	for (const config::attribute &i : cfg.attribute_range()) {
+		if (!config::valid_id(i.first)) {
+			ERR_CF << "Config contains invalid attribute name '" << i.first << "', skipping...\n";
+			continue;
+		}
 		write_key_val(out, i.first, i.second, tab, textdomain);
 	}
 
-	BOOST_FOREACH(const config::any_child &item, cfg.all_children_range())
+	for (const config::any_child &item : cfg.all_children_range())
 	{
+		if (!config::valid_id(item.key)) {
+			ERR_CF << "Config contains invalid tag name '" << item.key << "', skipping...\n";
+			continue;
+		}
 		write_open_child(out, item.key, tab);
 		write_internal(item.cfg, out, textdomain, tab + 1);
 		write_close_child(out, item.key, tab);
 	}
 }
 
-void write(std::ostream &out, config const &cfg, unsigned int level)
+static void write_internal(configr_of const &cfg, std::ostream &out, std::string& textdomain, size_t tab = 0)
+{
+	if (tab > max_recursion_levels)
+		throw config::error("Too many recursion levels in config write");
+	if (cfg.data_) {
+		write_internal(*cfg.data_, out, textdomain, tab);
+	}
+
+	for (const auto &pair: cfg.subtags_)
+	{
+		assert(pair.first && pair.second);
+		if (!config::valid_id(*pair.first)) {
+			ERR_CF << "Config contains invalid tag name '" << *pair.first << "', skipping...\n";
+			continue;
+		}
+		write_open_child(out, *pair.first, tab);
+		write_internal(*pair.second, out, textdomain, tab + 1);
+		write_close_child(out, *pair.first, tab);
+	}
+}
+
+void write(std::ostream &out, configr_of const &cfg, unsigned int level)
 {
 	std::string textdomain = PACKAGE;
 	write_internal(cfg, out, textdomain, level);
 }
 
-void write_gz(std::ostream &out, config const &cfg)
+template <typename compressor>
+void write_compressed(std::ostream &out, configr_of const &cfg)
 {
 	boost::iostreams::filtering_stream<boost::iostreams::output> filter;
-	filter.push(boost::iostreams::gzip_compressor());
+	filter.push(compressor());
 	filter.push(out);
 
 	write(filter, cfg);
+	// prevent empty gz files because of https://svn.boost.org/trac/boost/ticket/5237
+	filter << "\n";
+}
+
+void write_gz(std::ostream &out, configr_of const &cfg)
+{
+	write_compressed<boost::iostreams::gzip_compressor>(out, cfg);
+}
+
+void write_bz2(std::ostream &out, configr_of const &cfg)
+{
+	write_compressed<boost::iostreams::bzip2_compressor>(out, cfg);
 }

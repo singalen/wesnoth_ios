@@ -1,6 +1,5 @@
-/* $Id: contexts.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,12 +21,34 @@
 #ifndef AI_CONTEXTS_HPP_INCLUDED
 #define AI_CONTEXTS_HPP_INCLUDED
 
-#include "game_info.hpp"
-#include "../generic_event.hpp"
-#include "../config.hpp"
+#include "ai/game_info.hpp"                // for move_map, aspect_type, etc
 
+#include "global.hpp"
 
-//#include "../unit.hpp"
+#include "config.hpp"                // for config
+#include "game_errors.hpp"
+#include "generic_event.hpp"         // for observer
+#include "units/ptr.hpp"              // for unit_ptr
+#include "map/location.hpp"       // for map_location
+
+#include <map>                          // for map, map<>::value_compare
+#include <set>                          // for set
+#include <string>                       // for string
+#include <utility>                      // for pair
+#include <vector>                       // for vector
+
+class gamemap;  // lines 41-41
+class team;
+class terrain_filter;  // lines 43-43
+class unit_map;
+class unit_type;  // lines 46-46
+class variant;  // lines 42-42
+namespace ai { class ai_context; }  // lines 51-51
+namespace ai { class unit_advancements_aspect; }
+namespace ai { template <typename T> class typesafe_aspect; }
+namespace boost { template <class T> class shared_ptr; }
+namespace pathfind { struct paths; }
+struct battle_context_unit_stats;  // lines 39-39
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -35,20 +56,7 @@
 #pragma warning(disable:4250)
 #endif
 
-class battle_context;
-struct battle_context_unit_stats;
-class game_display;
-class gamemap;
-class variant;
-class terrain_filter;
-class terrain_translation;
-class unit;
-class unit_type;
-
 namespace ai {
-
-class interface;
-class ai_context;
 
 typedef ai_context* ai_context_ptr;
 
@@ -115,9 +123,9 @@ public:
 	void handle_generic_event(const std::string& event_name);
 	void clear();
 	const std::set<map_location>& get();
-	void init(gamemap &map);
+	void init(const gamemap &map);
 private:
-	gamemap *map_;
+	const gamemap *map_;
 	std::set<map_location> keeps_;
 };
 
@@ -183,18 +191,19 @@ public:
 	virtual void diagnostic(const std::string& msg) = 0;
 	virtual void log_message(const std::string& msg) = 0;
 	virtual attack_result_ptr check_attack_action(const map_location& attacker_loc, const map_location& defender_loc, int attacker_weapon) = 0;
-	virtual move_result_ptr check_move_action(const map_location& from, const map_location& to, bool remove_movement=true) = 0;
-	virtual recall_result_ptr check_recall_action(const std::string& id, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location) = 0;
-	virtual recruit_result_ptr check_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location) = 0;
+	virtual move_result_ptr check_move_action(const map_location& from, const map_location& to, bool remove_movement=true, bool unreach_is_ok=false) = 0;
+	virtual recall_result_ptr check_recall_action(const std::string& id, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location()) = 0;
+	virtual recruit_result_ptr check_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location()) = 0;
 	virtual stopunit_result_ptr check_stopunit_action(const map_location& unit_location, bool remove_movement = true, bool remove_attacks = false) = 0;
+	virtual synced_command_result_ptr check_synced_command_action(const std::string& lua_code, const map_location& location = map_location::null_location()) = 0;
 	virtual void calculate_possible_moves(std::map<map_location,pathfind::paths>& possible_moves,
 		move_map& srcdst, move_map& dstsrc, bool enemy,
 		bool assume_full_movement=false,
-		const terrain_filter* remove_destinations=NULL) const = 0;
+		const terrain_filter* remove_destinations=nullptr) const = 0;
 	virtual void calculate_moves(const unit_map& units,
 		std::map<map_location,pathfind::paths>& possible_moves, move_map& srcdst,
 		move_map& dstsrc, bool enemy, bool assume_full_movement=false,
-		const terrain_filter* remove_destinations=NULL,
+		const terrain_filter* remove_destinations=nullptr,
 		bool see_all=false) const = 0;
 
 	virtual const game_info& get_info() const = 0;
@@ -206,6 +215,9 @@ public:
 
 
 	virtual std::map<map_location,defensive_position>& defensive_position_cache() const = 0;
+
+
+	virtual const unit_advancements_aspect& get_advancements() const = 0;
 
 
 	virtual double get_aggression() const = 0;
@@ -276,10 +288,10 @@ public:
 	virtual config get_leader_goal() const = 0;
 
 
+	virtual bool get_leader_ignores_keep() const = 0;
+
+
 	virtual double get_leader_value() const = 0;
-
-
-	virtual double get_number_of_possible_recruits_to_force_recruit() const = 0;
 
 
 	virtual bool get_passive_leader() const = 0;
@@ -291,19 +303,25 @@ public:
 	virtual const moves_map& get_possible_moves() const = 0;
 
 
-	virtual const std::vector<unit>& get_recall_list() const = 0;
+	virtual const std::vector<unit_ptr>& get_recall_list() const = 0;
 
 
-	virtual stage_ptr get_recruitment(ai_context &context) const = 0;
+	virtual double get_recruitment_diversity() const = 0;
 
 
-	virtual bool get_recruitment_ignore_bad_combat() const = 0;
+	virtual const config get_recruitment_instructions() const = 0;
 
 
-	virtual bool get_recruitment_ignore_bad_movement() const = 0;
+	virtual const std::vector<std::string> get_recruitment_more() const = 0;
 
 
 	virtual const std::vector<std::string> get_recruitment_pattern() const = 0;
+
+
+	virtual int get_recruitment_randomness() const = 0;
+
+
+	virtual const config get_recruitment_save_gold() const = 0;
 
 
 	virtual double get_scout_village_targeting() const = 0;
@@ -324,8 +342,16 @@ public:
 	virtual int get_villages_per_scout() const = 0;
 
 
+
 	virtual bool is_active(const std::string &time_of_day, const std::string &turns) const = 0;
 
+	virtual bool is_dst_src_valid_lua() const = 0;
+
+	virtual bool is_dst_src_enemy_valid_lua() const = 0;
+
+	virtual bool is_src_dst_valid_lua() const = 0;
+
+	virtual bool is_src_dst_enemy_valid_lua() const = 0;
 
 	virtual void invalidate_defensive_position_cache() const = 0;
 
@@ -367,6 +393,11 @@ public:
 
 	virtual void recalculate_move_maps_enemy() const = 0;
 
+	virtual void set_src_dst_valid_lua() = 0;
+	virtual void set_src_dst_enemy_valid_lua() = 0;
+	virtual void set_dst_src_valid_lua() = 0;
+	virtual void set_dst_src_enemy_valid_lua() = 0;
+
 	/** get most suitable keep for leader - nearest free that can be reached in 1 turn, if none - return nearest occupied that can be reached in 1 turn, if none - return nearest keep, if none - return null_location */
 	virtual const map_location& suitable_keep( const map_location& leader_location, const pathfind::paths& leader_paths ) = 0;
 
@@ -376,8 +407,10 @@ public:
 	virtual config to_readonly_context_config() const = 0;
 
 
-	virtual std::map<std::pair<map_location,const unit_type *>,
-		std::pair<battle_context_unit_stats,battle_context_unit_stats> >& unit_stats_cache() const = 0;
+	typedef std::map<std::pair<map_location,const unit_type *>,
+	                 std::pair<battle_context_unit_stats,battle_context_unit_stats> >
+	        unit_stats_cache_t;
+	virtual unit_stats_cache_t & unit_stats_cache() const = 0;
 
 };
 
@@ -396,16 +429,19 @@ public:
 	virtual attack_result_ptr execute_attack_action(const map_location& attacker_loc, const map_location& defender_loc, int attacker_weapon) = 0;
 
 
-	virtual move_result_ptr execute_move_action(const map_location& from, const map_location& to, bool remove_movement=true) = 0;
+	virtual move_result_ptr execute_move_action(const map_location& from, const map_location& to, bool remove_movement=true, bool unreach_is_ok=false) = 0;
 
 
-	virtual recall_result_ptr execute_recall_action(const std::string& id, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location) = 0;
+	virtual recall_result_ptr execute_recall_action(const std::string& id, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location()) = 0;
 
 
-	virtual recruit_result_ptr execute_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location) = 0;
+	virtual recruit_result_ptr execute_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location()) = 0;
 
 
 	virtual stopunit_result_ptr execute_stopunit_action(const map_location& unit_location, bool remove_movement = true, bool remove_attacks = false) = 0;
+
+
+	virtual synced_command_result_ptr execute_synced_command_action(const std::string& lua_code, const map_location& location = map_location::null_location()) = 0;
 
 
 	virtual team& current_team_w() = 0;
@@ -429,7 +465,7 @@ public:
 class side_context_proxy : public virtual side_context {
 public:
 	side_context_proxy()
-		: target_(NULL)
+		: target_(nullptr)
 	{
 	}
 
@@ -476,7 +512,7 @@ private:
 class readonly_context_proxy : public virtual readonly_context, public virtual side_context_proxy {
 public:
 	readonly_context_proxy()
-		: target_(NULL)
+		: target_(nullptr)
 	{
 	}
 
@@ -520,21 +556,21 @@ public:
 		return target_->check_attack_action(attacker_loc, defender_loc, attacker_weapon);
 	}
 
-	virtual move_result_ptr check_move_action(const map_location &from, const map_location &to, bool remove_movement=true)
+	virtual move_result_ptr check_move_action(const map_location &from, const map_location &to, bool remove_movement=true, bool unreach_is_ok=false)
 	{
-		return target_->check_move_action(from, to, remove_movement);
+		return target_->check_move_action(from, to, remove_movement, unreach_is_ok);
 	}
 
 
-	virtual recall_result_ptr check_recall_action(const std::string &id, const map_location &where = map_location::null_location,
-			const map_location &from = map_location::null_location)
+	virtual recall_result_ptr check_recall_action(const std::string &id, const map_location &where = map_location::null_location(),
+			const map_location &from = map_location::null_location())
 	{
 		return target_->check_recall_action(id, where, from);
 	}
 
 
-	virtual recruit_result_ptr check_recruit_action(const std::string &unit_name, const map_location &where = map_location::null_location,
-			const map_location &from = map_location::null_location)
+	virtual recruit_result_ptr check_recruit_action(const std::string &unit_name, const map_location &where = map_location::null_location(),
+			const map_location &from = map_location::null_location())
 	{
 		return target_->check_recruit_action(unit_name, where, from);
 	}
@@ -544,10 +580,15 @@ public:
 		return target_->check_stopunit_action(unit_location, remove_movement, remove_attacks);
 	}
 
+	virtual synced_command_result_ptr check_synced_command_action(const std::string& lua_code, const map_location& location = map_location::null_location())
+	{
+		return target_->check_synced_command_action(lua_code, location);
+	}
+
 	virtual void calculate_possible_moves(std::map<map_location,pathfind::paths>& possible_moves,
 		move_map& srcdst, move_map& dstsrc, bool enemy,
 		bool assume_full_movement=false,
-		const terrain_filter* remove_destinations=NULL) const
+		const terrain_filter* remove_destinations=nullptr) const
 	{
 		target_->calculate_possible_moves(possible_moves, srcdst, dstsrc, enemy, assume_full_movement, remove_destinations);
 	}
@@ -555,7 +596,7 @@ public:
 	virtual void calculate_moves(const unit_map& units,
 		std::map<map_location,pathfind::paths>& possible_moves, move_map& srcdst,
 		move_map& dstsrc, bool enemy, bool assume_full_movement=false,
-		const terrain_filter* remove_destinations=NULL,
+		const terrain_filter* remove_destinations=nullptr,
 		bool see_all=false) const
 	{
 		target_->calculate_moves(units, possible_moves, srcdst, dstsrc, enemy, assume_full_movement, remove_destinations, see_all);
@@ -588,6 +629,12 @@ public:
 	virtual std::map<map_location,defensive_position>& defensive_position_cache() const
 	{
 		return target_->defensive_position_cache();
+	}
+
+
+	virtual const unit_advancements_aspect& get_advancements() const
+	{
+		return target_->get_advancements();
 	}
 
 
@@ -726,15 +773,15 @@ public:
 	}
 
 
-	virtual double get_leader_value() const
+	virtual bool get_leader_ignores_keep() const
 	{
-		return target_->get_leader_value();
+		return target_->get_leader_ignores_keep();
 	}
 
 
-	virtual double get_number_of_possible_recruits_to_force_recruit() const
+	virtual double get_leader_value() const
 	{
-		return target_->get_number_of_possible_recruits_to_force_recruit();
+		return target_->get_leader_value();
 	}
 
 
@@ -762,33 +809,45 @@ public:
 	}
 
 
-	virtual const std::vector<unit>& get_recall_list() const
+	virtual const std::vector<unit_ptr>& get_recall_list() const
 	{
 		return target_->get_recall_list();
 	}
 
 
-	virtual stage_ptr get_recruitment(ai_context &context) const
+	virtual double get_recruitment_diversity() const
 	{
-		return target_->get_recruitment(context);
+		return target_->get_recruitment_diversity();
 	}
 
 
-	virtual bool get_recruitment_ignore_bad_combat() const
+	virtual const config get_recruitment_instructions() const
 	{
-		return target_->get_recruitment_ignore_bad_combat();
+		return target_->get_recruitment_instructions();
 	}
 
 
-	virtual bool get_recruitment_ignore_bad_movement() const
+	virtual const std::vector<std::string> get_recruitment_more() const
 	{
-		return target_->get_recruitment_ignore_bad_movement();
+		return target_->get_recruitment_more();
 	}
 
 
 	virtual const std::vector<std::string> get_recruitment_pattern() const
 	{
 		return target_->get_recruitment_pattern();
+	}
+
+
+	virtual int get_recruitment_randomness() const
+	{
+		return target_->get_recruitment_randomness();
+	}
+
+
+	virtual const config get_recruitment_save_gold() const
+	{
+		return target_->get_recruitment_save_gold();
 	}
 
 
@@ -834,6 +893,25 @@ public:
 		return target_->is_active(time_of_day, turns);
 	}
 
+	virtual bool is_dst_src_valid_lua() const
+	{
+		return target_->is_dst_src_valid_lua();
+	}
+
+	virtual bool is_dst_src_enemy_valid_lua() const
+	{
+		return target_->is_dst_src_enemy_valid_lua();
+	}
+
+	virtual bool is_src_dst_valid_lua() const
+	{
+		return target_->is_src_dst_valid_lua();
+	}
+
+	virtual bool is_src_dst_enemy_valid_lua() const
+	{
+		return target_->is_src_dst_enemy_valid_lua();
+	}
 
 	virtual void invalidate_defensive_position_cache() const
 	{
@@ -882,6 +960,25 @@ public:
 		target_->recalculate_move_maps_enemy();
 	}
 
+	virtual void set_dst_src_valid_lua()
+	{
+		target_->set_dst_src_valid_lua();
+	}
+
+	virtual void set_dst_src_enemy_valid_lua()
+	{
+		target_->set_dst_src_enemy_valid_lua();
+	}
+
+	virtual void set_src_dst_valid_lua()
+	{
+		target_->set_src_dst_valid_lua();
+	}
+
+	virtual void set_src_dst_enemy_valid_lua()
+	{
+		target_->set_src_dst_enemy_valid_lua();
+	}
 
 	virtual const map_location& suitable_keep( const map_location& leader_location, const pathfind::paths& leader_paths )
 	{
@@ -895,8 +992,7 @@ public:
 	}
 
 
-	virtual std::map<std::pair<map_location,const unit_type *>,
-		std::pair<battle_context_unit_stats,battle_context_unit_stats> >& unit_stats_cache() const
+	virtual unit_stats_cache_t & unit_stats_cache() const
 	{
 		return target_->unit_stats_cache();
 	}
@@ -910,7 +1006,7 @@ private:
 class readwrite_context_proxy : public virtual readwrite_context, public virtual readonly_context_proxy {
 public:
 	readwrite_context_proxy()
-		: target_(NULL)
+		: target_(nullptr)
 	{
 	}
 
@@ -934,19 +1030,19 @@ public:
 	}
 
 
-	virtual move_result_ptr execute_move_action(const map_location& from, const map_location& to, bool remove_movement=true)
+	virtual move_result_ptr execute_move_action(const map_location& from, const map_location& to, bool remove_movement=true, bool unreach_is_ok=false)
 	{
-		return target_->execute_move_action(from, to, remove_movement);
+		return target_->execute_move_action(from, to, remove_movement, unreach_is_ok);
 	}
 
 
-	virtual recall_result_ptr execute_recall_action(const std::string& id, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location)
+	virtual recall_result_ptr execute_recall_action(const std::string& id, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location())
 	{
 		return target_->execute_recall_action(id,where,from);
 	}
 
 
-	virtual recruit_result_ptr execute_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location)
+	virtual recruit_result_ptr execute_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location())
 	{
 		return target_->execute_recruit_action(unit_name,where,from);
 	}
@@ -955,6 +1051,12 @@ public:
 	virtual stopunit_result_ptr execute_stopunit_action(const map_location& unit_location, bool remove_movement = true, bool remove_attacks = false)
 	{
 		return target_->execute_stopunit_action(unit_location,remove_movement,remove_attacks);
+	}
+
+
+	virtual synced_command_result_ptr execute_synced_command_action(const std::string& lua_code, const map_location& location = map_location::null_location())
+	{
+		return target_->execute_synced_command_action(lua_code,location);
 	}
 
 
@@ -1098,7 +1200,7 @@ public:
 	 * @retval possible result: move is interrupted
 	 * @retval possible result: move is impossible
 	 */
-	move_result_ptr check_move_action(const map_location& from, const map_location& to, bool remove_movement=true);
+	move_result_ptr check_move_action(const map_location& from, const map_location& to, bool remove_movement=true, bool unreach_is_ok=false);
 
 
 
@@ -1112,7 +1214,7 @@ public:
 	 * @retval possible_result: no free space on keep
 	 * @retval possible_result: not enough gold
 	 */
-	recall_result_ptr check_recall_action(const std::string& id, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location);
+	recall_result_ptr check_recall_action(const std::string& id, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location());
 
 
 	/**
@@ -1125,7 +1227,7 @@ public:
 	 * @retval possible_result: no free space on keep
 	 * @retval possible_result: not enough gold
 	 */
-	recruit_result_ptr check_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location);
+	recruit_result_ptr check_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location());
 
 
 	/**
@@ -1138,6 +1240,17 @@ public:
 	 * @retval possible_result: nothing to do
 	 */
 	stopunit_result_ptr check_stopunit_action(const map_location& unit_location, bool remove_movement = true, bool remove_attacks = false);
+
+
+	/**
+	 * Check if it is possible to run Lua code
+	 * @param lua_code the code to be run
+	 * @param location location to be passed to the code as x1/y1
+	 * @retval possible result: ok
+	 * @retval possible_result: something wrong
+	 * @retval possible_result: nothing to do
+	 */
+	synced_command_result_ptr check_synced_command_action(const std::string& lua_code, const map_location& location = map_location::null_location());
 
 
 	/**
@@ -1167,16 +1280,19 @@ public:
 	void calculate_possible_moves(std::map<map_location,pathfind::paths>& possible_moves,
 		move_map& srcdst, move_map& dstsrc, bool enemy,
 		bool assume_full_movement=false,
-		const terrain_filter* remove_destinations=NULL) const;
+		const terrain_filter* remove_destinations=nullptr) const;
 
  	/**
 	 * A more fundamental version of calculate_possible_moves which allows the
 	 * use of a speculative unit map.
+	 * NOTE: Support for a speculative map is broken (not used when pathfinding)
+	 *       and has not been used since (probably) r38610 (September 2009).
+	 *       (See the todo in the implementation.)
 	 */
 	void calculate_moves(const unit_map& units,
 		std::map<map_location,pathfind::paths>& possible_moves, move_map& srcdst,
 		move_map& dstsrc, bool enemy, bool assume_full_movement=false,
-		const terrain_filter* remove_destinations=NULL,
+		const terrain_filter* remove_destinations=nullptr,
 		bool see_all=false) const;
 
 
@@ -1200,6 +1316,9 @@ public:
 
 
 	virtual std::map<map_location,defensive_position>& defensive_position_cache() const;
+
+
+	virtual const unit_advancements_aspect& get_advancements() const;
 
 
 	virtual double get_aggression() const;
@@ -1256,13 +1375,13 @@ public:
 	virtual std::vector<goal_ptr>& get_goals();
 
 
-	virtual double get_number_of_possible_recruits_to_force_recruit() const;
-
-
 	virtual double get_leader_aggression() const;
 
 
 	virtual config get_leader_goal() const;
+
+
+	virtual bool get_leader_ignores_keep() const;
 
 
 	virtual double get_leader_value() const;
@@ -1277,19 +1396,25 @@ public:
 	virtual const moves_map& get_possible_moves() const;
 
 
-	virtual const std::vector<unit>& get_recall_list() const;
+	virtual const std::vector<unit_ptr>& get_recall_list() const;
 
 
-	virtual stage_ptr get_recruitment(ai_context &context) const;
+	virtual double get_recruitment_diversity() const;
 
 
-	virtual bool get_recruitment_ignore_bad_combat() const;
+	virtual const config get_recruitment_instructions() const;
 
 
-	virtual bool get_recruitment_ignore_bad_movement() const;
+	virtual const std::vector<std::string> get_recruitment_more() const;
 
 
 	virtual const std::vector<std::string> get_recruitment_pattern() const;
+
+
+	virtual int get_recruitment_randomness() const;
+
+
+	virtual const config get_recruitment_save_gold() const;
 
 
 	virtual double get_scout_village_targeting() const;
@@ -1312,6 +1437,13 @@ public:
 
 	virtual bool is_active(const std::string &time_of_day, const std::string &turns) const;
 
+	virtual bool is_dst_src_valid_lua() const;
+
+	virtual bool is_dst_src_enemy_valid_lua() const;
+
+	virtual bool is_src_dst_valid_lua() const;
+
+	virtual bool is_src_dst_enemy_valid_lua() const;
 
 	virtual void invalidate_defensive_position_cache() const;
 
@@ -1348,6 +1480,13 @@ public:
 
 	void on_create();
 
+	virtual void set_dst_src_valid_lua();
+
+	virtual void set_dst_src_enemy_valid_lua();
+
+	virtual void set_src_dst_valid_lua();
+
+	virtual void set_src_dst_enemy_valid_lua();
 
 	virtual const map_location& suitable_keep( const map_location& leader_location, const pathfind::paths& leader_paths );
 
@@ -1355,12 +1494,11 @@ public:
 	virtual config to_readonly_context_config() const;
 
 
-	virtual std::map<std::pair<map_location,const unit_type *>,
-		std::pair<battle_context_unit_stats,battle_context_unit_stats> >& unit_stats_cache() const;
+	virtual unit_stats_cache_t & unit_stats_cache() const;
 
 private:
 	template<typename T>
-	void add_known_aspect(const std::string &name, boost::shared_ptr< typesafe_aspect <T> >& where);
+	void add_known_aspect(const std::string &name, std::shared_ptr< typesafe_aspect <T> >& where);
 
 	const config cfg_;
 
@@ -1371,6 +1509,7 @@ private:
 
 	known_aspect_map known_aspects_;
 
+	aspect_type< unit_advancements_aspect >::typesafe_ptr advancements_;
 	aspect_type<double>::typesafe_ptr aggression_;
 	aspect_type<int>::typesafe_ptr attack_depth_;
 	aspect_map aspects_;
@@ -1387,24 +1526,29 @@ private:
 	mutable keeps_cache keeps_;
 	aspect_type<double>::typesafe_ptr leader_aggression_;
 	aspect_type< config >::typesafe_ptr leader_goal_;
+	aspect_type<bool>::typesafe_ptr leader_ignores_keep_;
 	aspect_type< double >::typesafe_ptr leader_value_;
 	mutable bool move_maps_enemy_valid_;
 	mutable bool move_maps_valid_;
-	aspect_type<double>::typesafe_ptr number_of_possible_recruits_to_force_recruit_;
+	mutable bool dst_src_valid_lua_;
+	mutable bool dst_src_enemy_valid_lua_;
+	mutable bool src_dst_valid_lua_;
+	mutable bool src_dst_enemy_valid_lua_;
 	aspect_type<bool>::typesafe_ptr passive_leader_;
 	aspect_type<bool>::typesafe_ptr passive_leader_shares_keep_;
 	mutable moves_map possible_moves_;
-	aspect_type< ministage >::typesafe_ptr recruitment_;
-	aspect_type< bool >::typesafe_ptr recruitment_ignore_bad_combat_;
-	aspect_type< bool >::typesafe_ptr recruitment_ignore_bad_movement_;
+	aspect_type< double >::typesafe_ptr recruitment_diversity_;
+	aspect_type< config >::typesafe_ptr recruitment_instructions_;
+	aspect_type< std::vector<std::string> >::typesafe_ptr recruitment_more_;
 	aspect_type< std::vector<std::string> >::typesafe_ptr recruitment_pattern_;
+	aspect_type< int >::typesafe_ptr recruitment_randomness_;
+	aspect_type< config >::typesafe_ptr recruitment_save_gold_;
 	recursion_counter recursion_counter_;
 	aspect_type< double >::typesafe_ptr scout_village_targeting_;
 	aspect_type< bool >::typesafe_ptr simple_targeting_;
 	mutable move_map srcdst_;
 	aspect_type< bool >::typesafe_ptr support_villages_;
-	mutable std::map<std::pair<map_location,const unit_type *>,
-			 std::pair<battle_context_unit_stats,battle_context_unit_stats> > unit_stats_cache_;
+	mutable unit_stats_cache_t unit_stats_cache_;
 	aspect_type< double >::typesafe_ptr village_value_;
 	aspect_type< int >::typesafe_ptr villages_per_scout_;
 
@@ -1446,7 +1590,7 @@ public:
 	 * @retval possible result: move is interrupted
 	 * @retval possible result: move is impossible
 	 */
-	virtual move_result_ptr execute_move_action(const map_location& from, const map_location& to, bool remove_movement=true);
+	virtual move_result_ptr execute_move_action(const map_location& from, const map_location& to, bool remove_movement=true, bool unreach_is_ok=false);
 
 
 	/**
@@ -1459,7 +1603,7 @@ public:
 	 * @retval possible_result: no free space on keep
 	 * @retval possible_result: not enough gold
 	 */
-	virtual recall_result_ptr execute_recall_action(const std::string& id, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location);
+	virtual recall_result_ptr execute_recall_action(const std::string& id, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location());
 
 
 	/**
@@ -1472,7 +1616,7 @@ public:
 	 * @retval possible_result: no free space on keep
 	 * @retval possible_result: not enough gold
 	 */
-	virtual recruit_result_ptr execute_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location, const map_location &from = map_location::null_location);
+	virtual recruit_result_ptr execute_recruit_action(const std::string& unit_name, const map_location &where = map_location::null_location(), const map_location &from = map_location::null_location());
 
 
 	/**
@@ -1485,6 +1629,17 @@ public:
 	 * @retval possible_result: nothing to do
 	 */
 	virtual stopunit_result_ptr execute_stopunit_action(const map_location& unit_location, bool remove_movement = true, bool remove_attacks = false);
+
+
+	/**
+	 * Ask the game to run Lua code
+	 * @param lua_code the code to be run
+	 * @param location location to be passed to the code as x1/y1
+	 * @retval possible result: ok
+	 * @retval possible_result: something wrong
+	 * @retval possible_result: nothing to do
+	 */
+	virtual synced_command_result_ptr execute_synced_command_action(const std::string& lua_code, const map_location& location = map_location::null_location());
 
 
 	/** Return a reference to the 'team' object for the AI. */

@@ -1,6 +1,5 @@
-/* $Id: part.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Ignacio R. Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2009 - 2016 by Ignacio R. Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -25,12 +24,11 @@
 #include <utility>
 #include <vector>
 
-#include "sdl_utils.hpp"
+#include "sdl/surface.hpp"
 
 class config;
 class vconfig;
 class display;
-class game_state;
 
 namespace storyscreen {
 
@@ -101,7 +99,7 @@ public:
 	 * Gets a render_input object for use by the rendering code after applying
 	 * any geometric transformations required.
 	 */
-	render_input get_render_input(double scale, SDL_Rect& dst_rect) const;
+	render_input get_render_input(double xscale, double yscale, SDL_Rect& dst_rect) const;
 
 private:
 	std::string file_;
@@ -112,6 +110,127 @@ private:
 
 	/** Copy constructor and operator=() implementation details. */
 	void assign(const floating_image& fi);
+};
+
+class background_layer
+{
+public:
+	/**
+	 * Constructor.
+	 */
+	background_layer();
+
+	/**
+	 * Constructor. Initializes a background_layer object from a
+	 * [background_layer] WML node.
+	 */
+	background_layer(const config& cfg);
+
+	/**
+	 * Whether the layer should be scaled horizontally.
+	 */
+	bool scale_horizontally() const {
+		return scale_horizontally_;
+	}
+
+	/**
+	 * Sets whether the layer should be scaled horizontally.
+	 */
+	void set_scale_horizontally(bool b) {
+		scale_horizontally_ = b;
+	}
+
+	/**
+	 * Whether the layer should be scaled vertically.
+	 */
+	bool scale_vertically() const {
+		return scale_vertically_;
+	}
+
+	/**
+	 * Sets whether the layer should be scaled vertically.
+	 */
+	void set_scale_vertically(bool b) {
+		scale_vertically_ = b;
+	}
+
+	/**
+	 * Whether the layer should be tiled horizontally.
+	 */
+	bool tile_horizontally() const {
+		return tile_horizontally_;
+	}
+
+	/**
+	 * Sets whether the layer should be tiled horizontally.
+	 */
+	void set_tile_horizontally(bool b) {
+		tile_horizontally_ = b;
+	}
+
+	/**
+	 * Whether the layer should be tiled vertically.
+	 */
+	bool tile_vertically() const {
+		return tile_vertically_;
+	}
+
+	/**
+	 * Sets whether the layer should be tiled vertically.
+	 */
+	void set_tile_vertically(bool b) {
+		tile_vertically_ = b;
+	}
+
+	/**
+	 * Whether the aspect ratio should be preserved while scaling.
+	 */
+	bool keep_aspect_ratio() const {
+		return keep_aspect_ratio_;
+	}
+
+	/**
+	 * Sets whether the aspect ratio should be preserved.
+	 */
+	void set_keep_aspect_ratio(bool b) {
+		keep_aspect_ratio_ = b;
+	}
+
+	/**
+	 * Whether is this layer the base layer.
+	 */
+	bool is_base_layer() const {
+		return is_base_layer_;
+	}
+
+	/**
+	 * Sets whether is this layer a base layer.
+	 */
+	void set_base_layer(bool b) {
+		is_base_layer_ = b;
+	}
+
+	/**
+	 * The path to the file to load the image from.
+	 */
+	const std::string& file() const {
+		return image_file_;
+	}
+
+	/**
+	 * Sets the path to the image file.
+	 */
+	void set_file(const std::string& str) {
+		image_file_ = str;
+	}
+private:
+	bool scale_horizontally_;
+	bool scale_vertically_;
+	bool tile_horizontally_;
+	bool tile_vertically_;
+	bool keep_aspect_ratio_;
+	bool is_base_layer_;
+	std::string image_file_;
 };
 
 /**
@@ -155,16 +274,6 @@ public:
 	 */
 	part(const vconfig &part_cfg);
 
-	/** Whether the background image should be scaled to fill the screen or not. */
-	bool scale_background() const {
-		return scale_background_;
-	}
-
-	/** Path to the background image. */
-	const std::string& background() const {
-		return background_file_;
-	}
-
 	/** Whether the story screen title should be displayed or not. */
 	bool show_title() const {
 		return show_title_;
@@ -205,6 +314,11 @@ public:
 		return text_block_loc_;
 	}
 
+	/** Retrieves the alignment of the story text within the text area. */
+	TEXT_ALIGNMENT story_text_alignment() const {
+		return text_alignment_;
+	}
+
 	/** Retrieves the alignment of the title text against the screen. */
 	TEXT_ALIGNMENT title_text_alignment() const {
 		return title_alignment_;
@@ -215,6 +329,11 @@ public:
 		return floating_images_;
 	}
 
+	/** Retrieve background layers for this story screen. */
+	const std::vector<background_layer>& get_background_layers() const {
+		return background_layers_;
+	}
+
 private:
 	/** Takes care of initializing and branching properties. */
 	void resolve_wml(const vconfig &cfg);
@@ -222,18 +341,17 @@ private:
 	static BLOCK_LOCATION string_tblock_loc(const std::string& s);
 	static TEXT_ALIGNMENT string_title_align(const std::string& s);
 
-	bool scale_background_;
-	std::string background_file_;
-
 	bool show_title_;
 	std::string text_;
 	std::string text_title_;
 	BLOCK_LOCATION text_block_loc_;
+	TEXT_ALIGNMENT text_alignment_;
 	TEXT_ALIGNMENT title_alignment_;
 
 	std::string music_;
 	std::string sound_;
 
+	std::vector<background_layer> background_layers_;
 	std::vector<floating_image> floating_images_;
 };
 

@@ -1,6 +1,5 @@
-/* $Id: language_selection.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,6 +16,7 @@
 
 #include "gui/dialogs/language_selection.hpp"
 
+#include "gui/auxiliary/find_widget.hpp"
 #ifdef GUI2_EXPERIMENTAL_LISTBOX
 #include "gui/widgets/list.hpp"
 #else
@@ -27,9 +27,10 @@
 #include "language.hpp"
 #include "preferences.hpp"
 
-#include <boost/foreach.hpp>
-
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /*WIKI
  * @page = GUIWindowDefinitionWML
@@ -46,7 +47,7 @@ namespace gui2 {
  * language_list & & listbox & m &
  *         This listbox contains the list with available languages. $
  *
- * - & & control & o &
+ * - & & styled_widget & o &
  *         Show the name of the language in the current row. $
  *
  * @end{table}
@@ -59,29 +60,31 @@ namespace gui2 {
 
 REGISTER_DIALOG(language_selection)
 
-void tlanguage_selection::pre_show(CVideo& /*video*/, twindow& window)
+void language_selection::pre_show(window& window)
 {
-	tlistbox& list = find_widget<tlistbox>(&window, "language_list", false);
+	listbox& list = find_widget<listbox>(&window, "language_list", false);
 	window.keyboard_capture(&list);
 
 	const std::vector<language_def>& languages = get_languages();
 	const language_def& current_language = get_language();
-	BOOST_FOREACH(const language_def& lang, languages) {
-		string_map item;
-		item.insert(std::make_pair("label", lang.language));
+	for(const auto & lang : languages)
+	{
+		std::map<std::string, string_map> data;
 
-		list.add_row(item);
+		data["language"]["label"] = lang.language;
+
+		list.add_row(data);
 		if(lang == current_language) {
 			list.select_row(list.get_item_count() - 1);
-		}        
+		}
 	}
 }
 
-void tlanguage_selection::post_show(twindow& window)
+void language_selection::post_show(window& window)
 {
-	if(get_retval() == twindow::OK) {
-		const int res = find_widget<tlistbox>(&window, "language_list", false)
-				.get_selected_row();
+	if(get_retval() == window::OK) {
+		const int res = find_widget<listbox>(&window, "language_list", false)
+								.get_selected_row();
 
 		assert(res != -1);
 
@@ -91,4 +94,5 @@ void tlanguage_selection::post_show(twindow& window)
 	}
 }
 
+} // namespace dialogs
 } // namespace gui2

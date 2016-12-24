@@ -1,6 +1,5 @@
-/* $Id: render.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Ignacio R. Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2009 - 2016 by Ignacio R. Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -24,10 +23,11 @@
 
 #include "key.hpp"
 #include "storyscreen/part.hpp"
+#include "events.hpp"
 // #include "widgets/button.hpp"
 
-class display;
 class CVideo;
+class display;
 
 namespace gui { class button; }
 
@@ -40,7 +40,7 @@ namespace storyscreen {
  * assumed that the screen dimensions remain constant between the
  * constructor call, and the destruction of the objects.
  */
-class part_ui
+class part_ui : public events::sdl_handler
 {
 public:
 	/** Storyscreen result. */
@@ -55,9 +55,8 @@ public:
 	 * @param p A storyscreen::part with the required information and parameters.
 	 * @param disp Display.
 	 * @param next_button Next button. Shouldn't be destroyed before the part_ui object.
-	 * @param skip_button Skip button. Shouldn't be destroyed before the part_ui object.
 	 */
-	part_ui(part &p, display &disp, gui::button &next_button,
+	part_ui(part &p, CVideo& video, gui::button &next_button,
 		gui::button &back_button, gui::button& play_button);
 
 	/**
@@ -65,23 +64,29 @@ public:
 	 */
 	RESULT show();
 
+	virtual void handle_event(const SDL_Event&);
+
+	virtual void handle_window_event(const SDL_Event& event);
+
 private:
 	part& p_;
-	display& disp_;
-	CVideo& video_; // convenience, it's currently obtained from disp_
+	CVideo& video_;
 	CKey keys_;     // convenience
 
 	gui::button& next_button_;
 	gui::button& back_button_;
 	gui::button& play_button_;
 
+	bool dirty_;
+
 	RESULT ret_;
 	bool skip_, last_key_;
 
-	double scale_factor_;
+	double x_scale_factor_;
+	double y_scale_factor_;
 
-	// The background is aspect-corrected when scaled, so the image doesn't
-	// look distorted. base_rect_ has the actual area occupied by the background.
+	// Keeps the area occupied on the screen by the base layer
+	// (the background layer we align the images to)
 	SDL_Rect base_rect_;
 
 	surface background_;

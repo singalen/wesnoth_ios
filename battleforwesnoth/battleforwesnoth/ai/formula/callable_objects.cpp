@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2009 - 2012 by Bartosz Waresiak <dragonking@o2.pl>
+   Copyright (C) 2009 - 2016 by Bartosz Waresiak <dragonking@o2.pl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -12,10 +12,11 @@
    See the COPYING file for more details.
 */
 
-#include "ai.hpp"
-#include "../../attack_prediction.hpp"
-#include "callable_objects.hpp"
-#include "../../resources.hpp"
+#include "ai/formula/ai.hpp"
+#include "attack_prediction.hpp"
+#include "game_board.hpp"
+#include "ai/formula/callable_objects.hpp"
+#include "resources.hpp"
 
 
 namespace game_logic {
@@ -49,7 +50,7 @@ void move_map_callable::get_inputs(std::vector<game_logic::formula_input>* input
 int move_callable::do_compare(const formula_callable* callable) const
 {
 	const move_callable* mv_callable = dynamic_cast<const move_callable*>(callable);
-	if(mv_callable == NULL) {
+	if(mv_callable == nullptr) {
 		return formula_callable::do_compare(callable);
 	}
 
@@ -66,7 +67,7 @@ int move_callable::do_compare(const formula_callable* callable) const
 int move_partial_callable::do_compare(const formula_callable* callable) const
 {
 	const move_partial_callable* mv_callable = dynamic_cast<const move_partial_callable*>(callable);
-	if(mv_callable == NULL) {
+	if(mv_callable == nullptr) {
 		return formula_callable::do_compare(callable);
 	}
 
@@ -114,8 +115,8 @@ void outcome_callable::get_inputs(std::vector<game_logic::formula_input>* inputs
 attack_callable::attack_callable(const map_location& move_from,
 				    const map_location& src, const map_location& dst, int weapon)
 	: move_from_(move_from), src_(src), dst_(dst),
-	bc_(*resources::units, src, dst, weapon, -1, 1.0, NULL,
-		&*resources::units->find(move_from))
+	bc_(resources::gameboard->units(), src, dst, weapon, -1, 1.0, nullptr,
+		&*resources::gameboard->units().find(move_from))
 {
       type_ = ATTACK_C;
 }
@@ -142,7 +143,7 @@ void attack_callable::get_inputs(std::vector<game_logic::formula_input>* inputs)
 int attack_callable::do_compare(const game_logic::formula_callable* callable)
 	const {
 	const attack_callable* a_callable = dynamic_cast<const attack_callable*>(callable);
-	if(a_callable == NULL) {
+	if(a_callable == nullptr) {
 		return formula_callable::do_compare(callable);
 	}
 
@@ -178,7 +179,7 @@ variant attack_map_callable::get_value(const std::string& key) const {
 			}
 		}
 		/* special case, when unit moved toward enemy and can only attack */
-		for(unit_map::const_iterator i = resources::units->begin(); i != resources::units->end(); ++i) {
+		for(unit_map::const_iterator i = resources::gameboard->units().begin(); i != resources::gameboard->units().end(); ++i) {
 			if (i->side() == ai_.get_side() && i->attacks_left() > 0) {
 				collect_possible_attacks(vars, i->get_location(), i->get_location());
 			}
@@ -200,7 +201,7 @@ void attack_map_callable::collect_possible_attacks(std::vector<variant>& vars, m
 
 	for(int n = 0; n != 6; ++n) {
 		/* if adjacent tile is outside the board */
-		if (! resources::game_map->on_board(adj[n]))
+		if (! resources::gameboard->map().on_board(adj[n]))
 			continue;
 		unit_map::const_iterator unit = units_.find(adj[n]);
 		/* if tile is empty */
@@ -209,7 +210,7 @@ void attack_map_callable::collect_possible_attacks(std::vector<variant>& vars, m
 		/* if tile is occupied by friendly or petrified/invisible unit */
 		if (!ai_.current_team().is_enemy(unit->side())  ||
 		    unit->incapacitated() ||
-		    unit->invisible(unit->get_location()))
+		    unit->invisible(unit->get_location(), *resources::gameboard))
 			continue;
 		/* add attacks with default weapon */
 		attack_callable* item = new attack_callable(attacker_location, attack_position, adj[n], -1);
@@ -304,7 +305,7 @@ variant safe_call_result::get_value(const std::string& key) const {
 		return variant(status_);
 
 	if(key == "object") {
-		if( failed_callable_ != NULL)
+		if( failed_callable_ != nullptr)
 			return variant(failed_callable_);
 		else
 			return variant();

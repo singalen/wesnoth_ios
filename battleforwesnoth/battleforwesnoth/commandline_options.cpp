@@ -1,6 +1,5 @@
-/* $Id: commandline_options.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2011 by Lukasz Dobrogowski <lukasz.dobrogowski@gmail.com>
+   Copyright (C) 2011 - 2016 by Lukasz Dobrogowski <lukasz.dobrogowski@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -14,43 +13,63 @@
 */
 
 #include "commandline_options.hpp"
-#include "serialization/string_utils.hpp"
-#include "util.hpp"
-#include "lua/llimits.h"
+#include "global.hpp"
 
-#include <boost/version.hpp>
-#include <boost/foreach.hpp>
+#include "config.hpp"
+#include "formatter.hpp"
+#include "lexical_cast.hpp"
+#include "log.hpp"                      // for logger, set_strict_severity, etc
+#include "serialization/string_utils.hpp"  // for split
+
+#include <boost/any.hpp>                // for any
+#include <boost/program_options/cmdline.hpp>
+#include <boost/program_options/errors.hpp>  // for validation_error, etc
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <boost/program_options/value_semantic.hpp>  // for value, etc
+#include <boost/program_options/variables_map.hpp>  // for variables_map, etc
+#include <iostream>                     // for operator<<, basic_ostream, etc
 
 namespace po = boost::program_options;
 
-// this class is needed since boost has some templated operators>> declared internally for tuples and we don't want them to interfere. Existence of such operator>> apparently causes program_options to cause the custom class somehow specially... well, the boost::tuple default operator>>  format doesn't suit our needs anyway.
-class two_strings : public boost::tuple<std::string,std::string> {};
+class two_strings : public std::pair<std::string,std::string> {};
 
 static void validate(boost::any& v, const std::vector<std::string>& values,
               two_strings*, int)
 {
-    two_strings ret_val;
-	if (values.size() != 2)
-#if BOOST_VERSION >= 104200
+	two_strings ret_val;
+	if (values.size() != 2) {
 		throw po::validation_error(po::validation_error::invalid_option_value);
-#else
-		throw po::validation_error("Invalid number of strings provided to option requiring exactly two of them.");
-#endif
-    ret_val.get<0>() = values.at(0);
-    ret_val.get<1>() = values.at(1);
-    v = ret_val;
+	}
+	ret_val.first = values.at(0);
+	ret_val.second = values.at(1);
+	v = ret_val;
 }
 
-commandline_options::commandline_options ( int argc, char** argv ) :
-	bpp(),
+bad_commandline_resolution::bad_commandline_resolution(const std::string& resolution)
+	: error(formatter() << "Invalid resolution \"" << resolution
+						 << "\" (WIDTHxHEIGHT expected)")
+{
+}
+
+bad_commandline_tuple::bad_commandline_tuple(const std::string& str,
+											 const std::string& expected_format)
+	: error(formatter() << "Invalid value set \"" << str
+						 << "\" (" << expected_format << " expected)")
+{
+}
+
+commandline_options::commandline_options (const std::vector<std::string>& args) :
+	bunzip2(),
+	bzip2(),
 	campaign(),
 	campaign_difficulty(),
 	campaign_scenario(),
 	clock(false),
-	config_path(false),
-	config_dir(),
+	data_path(false),
 	data_dir(),
 	debug(false),
+	debug_lua(false),
 #ifdef DEBUG_WINDOW_LAYOUT_GRAPHS
 	debug_dot_domain(),
 	debug_dot_level(),
@@ -65,25 +84,27 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 	log(),
 	load(),
 	logdomains(),
+	log_precise_timestamps(false),
 	multiplayer(false),
 	multiplayer_ai_config(),
 	multiplayer_algorithm(),
 	multiplayer_controller(),
 	multiplayer_era(),
 	multiplayer_exit_at_end(),
+	multiplayer_ignore_map_settings(),
 	multiplayer_label(),
 	multiplayer_parm(),
+	multiplayer_repeat(),
 	multiplayer_scenario(),
 	multiplayer_side(),
 	multiplayer_turns(),
 	max_fps(),
+	noaddons(false),
 	nocache(false),
 	nodelay(false),
 	nogui(false),
 	nomusic(false),
 	nosound(false),
-	new_storyscreens(false),
-	new_syntax(false),
 	new_widgets(false),
 	path(false),
 	preprocess(false),
@@ -92,26 +113,31 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 	preprocess_output_macros(),
 	preprocess_path(),
 	preprocess_target(),
-	proxy(false),
-	proxy_address(),
-	proxy_password(),
-	proxy_port(),
-	proxy_user(),
 	resolution(),
 	rng_seed(),
 	server(),
+	username(),
+	password(),
 	screenshot(false),
 	screenshot_map_file(),
 	screenshot_output_file(),
-	smallgui(false),
+	script_unsafe_mode(false),
 	strict_validation(false),
 	test(),
+	unit_test(),
+	headless_unit_test(false),
+	noreplaycheck(false),
+	mptest(false),
+	userconfig_path(false),
+	userconfig_dir(),
+	userdata_path(false),
+	userdata_dir(),
 	validcache(false),
 	version(false),
 	windowed(false),
 	with_replay(false),
-	argc_(argc),
-	argv_(argv),
+	args_(args.begin() + 1 , args.end()),
+	args0_(*args.begin()),
 	all_(),
 	visible_(),
 	hidden_()
@@ -120,11 +146,16 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 	// Options are sorted alphabetically by --long-option.
 	po::options_description general_opts("General options");
 	general_opts.add_options()
+		("bunzip2", po::value<std::string>(), "decompresses a file (<arg>.bz2) in bzip2 format and stores it without the .bz2 suffix. <arg>.bz2 will be removed.")
+		("bzip2", po::value<std::string>(), "compresses a file (<arg>) in bzip2 format, stores it as <arg>.bz2 and removes <arg>.")
 		("clock", "Adds the option to show a clock for testing the drawing timer.")
-		("config-dir", po::value<std::string>(), "sets the path of the user config directory to $HOME/<arg> or My Documents\\My Games\\<arg> for Windows. You can specify also an absolute path outside the $HOME or My Documents\\My Games directory.")
-		("config-path", "prints the path of the user config directory and exits.")
+		("config-dir", po::value<std::string>(), "sets the path of the userdata directory to $HOME/<arg> or My Documents\\My Games\\<arg> for Windows. You can specify also an absolute path outside the $HOME or My Documents\\My Games directory. DEPRECATED: use userdata-path and userconfig-path instead.")
+		("config-path", "prints the path of the userdata directory and exits. DEPRECATED: use userdata-path and userconfig-path instead.")
+		("core", po::value<std::string>(), "overrides the loaded core with the one whose id is specified.")
 		("data-dir", po::value<std::string>(), "overrides the data directory with the one specified.")
+		("data-path", "prints the path of the data directory and exits.")
 		("debug,d", "enables additional command mode options in-game.")
+		("debug-lua", "enables some Lua debugging mechanisms")
 #ifdef DEBUG_WINDOW_LAYOUT_GRAPHS
 		("debug-dot-level", po::value<std::string>(), "sets the level of the debug dot files. <arg> should be a comma separated list of levels. These files are used for debugging the widgets especially the for the layout engine. When enabled the engine will produce dot files which can be converted to images with the dot tool. Available levels: size (generate the size info of the widget), state (generate the state info of the widget).")
 		("debug-dot-domain", po::value<std::string>(), "sets the domain of the debug dot files. <arg> should be a comma separated list of domains. See --debug-dot-level for more info. Available domains: show (generate the data when the dialog is about to be shown), layout (generate the data during the layout phase - might result in multiple files). The data can also be generated when the F12 is pressed in a dialog.")
@@ -135,21 +166,40 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 		("help,h", "prints this message and exits.")
 		("language,L", po::value<std::string>(), "uses language <arg> (symbol) this session. Example: --language ang_GB@latin")
 		("load,l", po::value<std::string>(), "loads the save <arg> from the standard save game directory. When launching the map editor via -e, the map <arg> is loaded, relative to the current directory. If it is a directory, the editor will start with a load map dialog opened there.")
-		//disabled until this project continues
-		//("new-syntax", "enables the new campaign syntax parsing.")
+		("noaddons", "disables the loading of all add-ons.")
 		("nocache", "disables caching of game data.")
 		("nodelay", "runs the game without any delays.")
 		("nomusic", "runs the game without music.")
 		("nosound", "runs the game without sounds and music.")
 		("path", "prints the path to the data directory and exits.")
+		("plugin", po::value<std::string>(), "(experimental) load a script which defines a wesnoth plugin. similar to --script below, but lua file should return a function which will be run as a coroutine and periodically woken up with updates.")
+		("render-image", po::value<two_strings>()->multitoken(), "takes two arguments: <image> <output>. Like screenshot, but instead of a map, takes a valid wesnoth 'image path string' with image path functions, and outputs to a windows .bmp file."
+#ifdef _WIN32
+		 " Implies --wconsole."
+#endif // _WIN32
+		 )
 		("rng-seed", po::value<unsigned int>(), "seeds the random number generator with number <arg>. Example: --rng-seed 0")
-		("screenshot", po::value<two_strings>()->multitoken(), "takes two arguments: <map> <output>. Saves a screenshot of <map> to <output> without initializing a screen. Editor must be compiled in for this to work.")
+		("screenshot", po::value<two_strings>()->multitoken(), "takes two arguments: <map> <output>. Saves a screenshot of <map> to <output> without initializing a screen. Editor must be compiled in for this to work."
+#ifdef _WIN32
+		 " Implies --wconsole."
+#endif // _WIN32
+		 )
+		("script", po::value<std::string>(), "(experimental) file containing a lua script to control the client")
+		("unsafe-scripts", "makes the \'package\' package available to lua scripts, so that they can load arbitrary packages. Do not do this with untrusted scripts! This action gives lua the same permissions as the wesnoth executable.")
 		("server,s", po::value<std::string>()->implicit_value(std::string()), "connects to the host <arg> if specified or to the first host in your preferences.")
+		("username", po::value<std::string>(), "uses <username> when connecting to a server, ignoring other preferences.")
+		("password", po::value<std::string>(), "uses <password> when connecting to a server, ignoring other preferences.")
 		("strict-validation", "makes validation errors fatal")
-		("test,t", po::value<std::string>()->implicit_value(std::string()), "runs the game in a small test scenario. If specified, scenario <arg> will be used instead.")
+		("userconfig-dir", po::value<std::string>(), "sets the path of the user config directory to $HOME/<arg> or My Documents\\My Games\\<arg> for Windows. You can specify also an absolute path outside the $HOME or My Documents\\My Games directory. Defaults to $HOME/.config/wesnoth on X11 and to the userdata-dir on other systems.")
+		("userconfig-path", "prints the path of the user config directory and exits.")
+		("userdata-dir", po::value<std::string>(), "sets the path of the userdata directory to $HOME/<arg> or My Documents\\My Games\\<arg> for Windows. You can specify also an absolute path outside the $HOME or My Documents\\My Games directory.")
+		("userdata-path", "prints the path of the userdata directory and exits.")
 		("validcache", "assumes that the cache is valid. (dangerous)")
 		("version,v", "prints the game's version number and exits.")
 		("with-replay", "replays the file loaded with the --load option.")
+#ifdef _WIN32
+		("wconsole", "attaches a console window on startup (Windows only). Implied by any option that prints something and exits.")
+#endif // _WIN32
 		;
 
 	po::options_description campaign_opts("Campaign options");
@@ -161,7 +211,6 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 
 	po::options_description display_opts("Display options");
 	display_opts.add_options()
-		("bpp", po::value<int>(), "sets BitsPerPixel value. Example: --bpp 32")
 		("fps", "displays the number of frames per second the game is currently running at, in a corner of the screen.")
 		("fullscreen,f", "runs the game in full screen mode.")
 		("max-fps", po::value<int>(), "the maximum fps the game tries to run at. Values should be between 1 and 1000, the default is 50.")
@@ -177,6 +226,7 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 		("log-warning", po::value<std::string>(), "sets the severity level of the specified log domain(s) to 'warning'. Similar to --log-error.")
 		("log-info", po::value<std::string>(), "sets the severity level of the specified log domain(s) to 'info'. Similar to --log-error.")
 		("log-debug", po::value<std::string>(), "sets the severity level of the specified log domain(s) to 'debug'. Similar to --log-error.")
+		("log-precise", "shows the timestamps in the logfile with more precision.")
 		;
 
 	po::options_description multiplayer_opts("Multiplayer options");
@@ -187,12 +237,25 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 		("controller", po::value<std::vector<std::string> >()->composing(), "selects the controller for this side. <arg> should have format side:value")
 		("era", po::value<std::string>(), "selects the era to be played in by its id.")
 		("exit-at-end", "exit Wesnoth at the end of the scenario.")
+		("ignore-map-settings", "do not use map settings.")
 		("label", po::value<std::string>(), "sets the label for AIs.") //TODO is the description precise? this option was undocumented before.
+		("multiplayer-repeat",  po::value<unsigned int>(), "repeats a multiplayer game after it is finished <arg> times.")
 		("nogui", "runs the game without the GUI.")
 		("parm", po::value<std::vector<std::string> >()->composing(), "sets additional parameters for this side. <arg> should have format side:name:value.")
 		("scenario", po::value<std::string>(), "selects a multiplayer scenario. The default scenario is \"multiplayer_The_Freelands\".")
 		("side", po::value<std::vector<std::string> >()->composing(), "selects a faction of the current era for this side by id. <arg> should have format side:value.")
 		("turns", po::value<std::string>(), "sets the number of turns. The default is \"50\".")
+		;
+
+	po::options_description testing_opts("Testing options");
+	testing_opts.add_options()
+		("test,t", po::value<std::string>()->implicit_value(std::string()), "runs the game in a small test scenario. If specified, scenario <arg> will be used instead.")
+		("unit,u", po::value<std::string>()->implicit_value(std::string()), "runs a unit test scenario. Works like test, except that the exit code of the program reflects the victory / defeat conditions of the scenario.\n\t0 - PASS\n\t1 - FAIL\n\t2 - FAIL (TIMEOUT)\n\t3 - FAIL (INVALID REPLAY)\n\t4 - FAIL (ERRORED REPLAY)")
+		("showgui", "don't run headlessly (for debugging a failing test)")
+		("timeout", po::value<unsigned int>(), "sets a timeout (milliseconds) for the unit test. (DEPRECATED)")
+		("log-strict", po::value<std::string>(), "sets the strict level of the logger. any messages sent to log domains of this level or more severe will cause the unit test to fail regardless of the victory result.")
+		("noreplaycheck", "don't try to validate replay of unit test.")
+		("mp-test", "load the test mp scenarios.")
 		;
 
 	po::options_description preprocessor_opts("Preprocessor mode options");
@@ -212,11 +275,10 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 		("proxy-password", po::value<std::string>(), "specifies password to log in to the proxy.")
 		;
 
-	hidden_.add_options()
-		("new-storyscreens", "")
-		("smallgui", "")
-		;
-	visible_.add(general_opts).add(campaign_opts).add(display_opts).add(logging_opts).add(multiplayer_opts).add(preprocessor_opts).add(proxy_opts);
+	//hidden_.add_options()
+	//	("example-hidden-option", "")
+	//	;
+	visible_.add(general_opts).add(campaign_opts).add(display_opts).add(logging_opts).add(multiplayer_opts).add(testing_opts).add(preprocessor_opts).add(proxy_opts);
 
 	all_.add(visible_).add(hidden_);
 
@@ -225,14 +287,16 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 
 	po::variables_map vm;
 	const int parsing_style = po::command_line_style::default_style ^ po::command_line_style::allow_guessing;
-	po::store(po::command_line_parser(argc_,argv_).options(all_).positional(positional).style(parsing_style).run(),vm);
+	po::store(po::command_line_parser(args_).options(all_).positional(positional).style(parsing_style).run(),vm);
 
 	if (vm.count("ai-config"))
 		multiplayer_ai_config = parse_to_uint_string_tuples_(vm["ai-config"].as<std::vector<std::string> >());
 	if (vm.count("algorithm"))
 		multiplayer_algorithm = parse_to_uint_string_tuples_(vm["algorithm"].as<std::vector<std::string> >());
-	if (vm.count("bpp"))
-		bpp = vm["bpp"].as<int>();
+	if (vm.count("bunzip2"))
+		bunzip2 = vm["bunzip2"].as<std::string>();
+	if (vm.count("bzip2"))
+		bzip2 = vm["bzip2"].as<std::string>();
 	if (vm.count("campaign"))
 		campaign = vm["campaign"].as<std::string>();
 	if (vm.count("campaign-difficulty"))
@@ -241,16 +305,22 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 		campaign_scenario = vm["campaign-scenario"].as<std::string>();
 	if (vm.count("clock"))
 		clock = true;
+	if (vm.count("core"))
+		core_id = vm["core"].as<std::string>();
 	if (vm.count("config-dir"))
-		config_dir = vm["config-dir"].as<std::string>();
+		userdata_dir = vm["config-dir"].as<std::string>(); //TODO: complain and remove
 	if (vm.count("config-path"))
-		config_path = true;
+		userdata_path = true; //TODO: complain and remove
 	if (vm.count("controller"))
 		multiplayer_controller = parse_to_uint_string_tuples_(vm["controller"].as<std::vector<std::string> >());
 	if (vm.count("data-dir"))
 		data_dir = vm["data-dir"].as<std::string>();
+	if (vm.count("data-path"))
+		data_path = true;
 	if (vm.count("debug"))
 		debug = true;
+	if (vm.count("debug-lua"))
+		debug_lua = true;
 #ifdef DEBUG_WINDOW_LAYOUT_GRAPHS
 	if (vm.count("debug-dot-domain")) {
 		debug_dot_domain = vm["debug-dot-domain"].as<std::string>();
@@ -275,6 +345,8 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 		gzip = vm["gzip"].as<std::string>();
 	if (vm.count("help"))
 		help = true;
+	if (vm.count("ignore-map-settings"))
+		multiplayer_ignore_map_settings = true;
 	if (vm.count("label"))
 		multiplayer_label = vm["label"].as<std::string>();
 	if (vm.count("language"))
@@ -282,31 +354,39 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 	if (vm.count("load"))
 		load = vm["load"].as<std::string>();
 	if (vm.count("log-error"))
-		 parse_log_domains_(vm["log-error"].as<std::string>(),0);
+		 parse_log_domains_(vm["log-error"].as<std::string>(),lg::err().get_severity());
 	if (vm.count("log-warning"))
-		 parse_log_domains_(vm["log-warning"].as<std::string>(),1);
+		 parse_log_domains_(vm["log-warning"].as<std::string>(),lg::warn().get_severity());
 	if (vm.count("log-info"))
-		 parse_log_domains_(vm["log-info"].as<std::string>(),2);
+		 parse_log_domains_(vm["log-info"].as<std::string>(),lg::info().get_severity());
 	if (vm.count("log-debug"))
-		 parse_log_domains_(vm["log-debug"].as<std::string>(),3);
+		 parse_log_domains_(vm["log-debug"].as<std::string>(),lg::debug().get_severity());
 	if (vm.count("logdomains"))
 		logdomains = vm["logdomains"].as<std::string>();
+	if (vm.count("log-precise"))
+		log_precise_timestamps = true;
+	if (vm.count("log-strict"))
+		parse_log_strictness(vm["log-strict"].as<std::string>());
 	if (vm.count("max-fps"))
 		max_fps = vm["max-fps"].as<int>();
+	if (vm.count("mp-test"))
+		mptest = true;
 	if (vm.count("multiplayer"))
 		multiplayer = true;
-	if (vm.count("new-storyscreens"))
-		new_storyscreens = true;
-	if (vm.count("new-syntax"))
-		new_syntax = true;
+	if (vm.count("multiplayer-repeat"))
+		multiplayer_repeat = vm["multiplayer-repeat"].as<unsigned int>();
 	if (vm.count("new-widgets"))
 		new_widgets = true;
+	if (vm.count("noaddons"))
+		noaddons = true;
 	if (vm.count("nocache"))
 		nocache = true;
 	if (vm.count("nodelay"))
 		nodelay = true;
 	if (vm.count("nomusic"))
 		nomusic = true;
+	if (vm.count("noreplaycheck"))
+		noreplaycheck = true;
 	if (vm.count("nosound"))
 		nosound = true;
 	if (vm.count("nogui"))
@@ -318,8 +398,8 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 	if (vm.count("preprocess"))
 	{
 		preprocess = true;
-		preprocess_path = vm["preprocess"].as<two_strings>().get<0>();
-		preprocess_target = vm["preprocess"].as<two_strings>().get<1>();
+		preprocess_path = vm["preprocess"].as<two_strings>().first;
+		preprocess_target = vm["preprocess"].as<two_strings>().second;
 	}
 	if (vm.count("preprocess-defines"))
 		preprocess_defines = utils::split(vm["preprocess-defines"].as<std::string>(), ',');
@@ -327,40 +407,62 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 		preprocess_input_macros = vm["preprocess-input-macros"].as<std::string>();
 	if (vm.count("preprocess-output-macros"))
 		preprocess_output_macros = vm["preprocess-output-macros"].as<std::string>();
-	if (vm.count("proxy"))
-		proxy = true;
-	if (vm.count("proxy-address"))
-		proxy_address = vm["proxy-address"].as<std::string>();
-	if (vm.count("proxy-password"))
-		proxy_password = vm["proxy-password"].as<std::string>();
-	if (vm.count("proxy-port"))
-		proxy_port = vm["proxy-port"].as<std::string>();
-	if (vm.count("proxy-user"))
-		proxy_user = vm["proxy-user"].as<std::string>();
 	if (vm.count("resolution"))
 		parse_resolution_(vm["resolution"].as<std::string>());
 	if (vm.count("rng-seed"))
 		rng_seed = vm["rng-seed"].as<unsigned int>();
 	if (vm.count("scenario"))
 		multiplayer_scenario = vm["scenario"].as<std::string>();
+	if (vm.count("render-image"))
+	{
+		render_image = vm["render-image"].as<two_strings>().first;
+		render_image_dst = vm["render-image"].as<two_strings>().second;
+	}
 	if (vm.count("screenshot"))
 	{
 		screenshot = true;
-		screenshot_map_file = vm["screenshot"].as<two_strings>().get<0>();
-		screenshot_output_file = vm["screenshot"].as<two_strings>().get<1>();
+		screenshot_map_file = vm["screenshot"].as<two_strings>().first;
+		screenshot_output_file = vm["screenshot"].as<two_strings>().second;
 	}
+	if (vm.count("script"))
+		script_file = vm["script"].as<std::string>();
+	if (vm.count("unsafe-scripts"))
+		script_unsafe_mode = true;
+	if (vm.count("plugin"))
+		plugin_file = vm["plugin"].as<std::string>();
 	if (vm.count("server"))
 		server = vm["server"].as<std::string>();
+	if (vm.count("username"))
+		username = vm["username"].as<std::string>();
+	if (vm.count("password"))
+		password = vm["password"].as<std::string>();
 	if (vm.count("side"))
 		multiplayer_side = parse_to_uint_string_tuples_(vm["side"].as<std::vector<std::string> >());
 	if (vm.count("test"))
 		test = vm["test"].as<std::string>();
+	if (vm.count("unit"))
+	{
+		unit_test = vm["unit"].as<std::string>();
+		headless_unit_test = true;
+	}
+	if (vm.count("showgui"))
+		headless_unit_test = false;
+	if (vm.count("timeout"))
+		timeout = vm["timeout"].as<unsigned int>();
+	if (vm.count("noreplaycheck"))
+		noreplaycheck = true;
 	if (vm.count("turns"))
 		multiplayer_turns = vm["turns"].as<std::string>();
-	if (vm.count("smallgui"))
-		smallgui = true;
 	if (vm.count("strict-validation"))
 		strict_validation = true;
+	if (vm.count("userconfig-dir"))
+		userconfig_dir = vm["userconfig-dir"].as<std::string>();
+	if (vm.count("userconfig-path"))
+		userconfig_path = true;
+	if (vm.count("userdata-dir"))
+		userdata_dir = vm["userdata-dir"].as<std::string>();
+	if (vm.count("userdata-path"))
+		userdata_path = true;
 	if (vm.count("validcache"))
 		validcache = true;
 	if (vm.count("version"))
@@ -374,58 +476,93 @@ commandline_options::commandline_options ( int argc, char** argv ) :
 void commandline_options::parse_log_domains_(const std::string &domains_string, const int severity)
 {
 	const std::vector<std::string> domains = utils::split(domains_string, ',');
-	BOOST_FOREACH(const std::string& domain, domains)
+	for (const std::string& domain : domains)
 	{
 		if (!log)
-			log = std::vector<boost::tuple<int, std::string> >();
-		log->push_back(boost::tuple<int, std::string>(severity,domain));
+			log = std::vector<std::pair<int, std::string> >();
+		log->push_back(std::make_pair(severity, domain));
 	}
+}
+
+void commandline_options::parse_log_strictness (const std::string & severity ) {
+	static lg::logger const *loggers[] = { &lg::err(), &lg::warn(), &lg::info(), &lg::debug() };
+	for (const lg::logger * l : loggers ) {
+		if (severity == l->get_name()) {
+			lg::set_strict_severity(*l);
+			return ;
+		}
+	}
+	std::cerr << "Unrecognized argument to --log-strict : " << severity << " . \nDisabling strict mode logging." << std::endl;
+	lg::set_strict_severity(-1);
 }
 
 void commandline_options::parse_resolution_ ( const std::string& resolution_string )
 {
 	const std::vector<std::string> tokens = utils::split(resolution_string, 'x');
-	if (tokens.size() != 2)
-		{} // TODO throw a meaningful exception
-	int xres = lexical_cast<int>(tokens[0]);
-	int yres = lexical_cast<int>(tokens[1]);
-	resolution = boost::tuple<int,int>(xres,yres);
+	if (tokens.size() != 2) {
+		throw bad_commandline_resolution(resolution_string);
+	}
+
+	int xres, yres;
+
+	try {
+		xres = std::stoi(tokens[0]);
+		yres = std::stoi(tokens[1]);
+	} catch(std::invalid_argument &) {
+		throw bad_commandline_resolution(resolution_string);
+	}
+
+	resolution = std::make_pair(xres, yres);
 }
 
-std::vector<boost::tuple<unsigned int,std::string> > commandline_options::parse_to_uint_string_tuples_(const std::vector<std::string> &strings, char separator)
+std::vector<std::pair<unsigned int,std::string> > commandline_options::parse_to_uint_string_tuples_(const std::vector<std::string> &strings, char separator)
 {
-	std::vector<boost::tuple<unsigned int,std::string> > vec;
-	boost::tuple<unsigned int,std::string> elem;
-	BOOST_FOREACH(const std::string &s, strings)
+	std::vector<std::pair<unsigned int,std::string> > vec;
+	const std::string& expected_format
+			= std::string() + "UINT" + separator + "STRING";
+
+	for (const std::string &s : strings)
 	{
 		const std::vector<std::string> tokens = utils::split(s, separator);
-		if (tokens.size()!=2)
-		{
-			 //TODO throw a meaningful exception
+		if(tokens.size() != 2) {
+			throw bad_commandline_tuple(s, expected_format);
 		}
-		elem.get<0>() = lexical_cast<unsigned int>(tokens[0]);
-			//TODO catch exception and pack in meaningful something
-		elem.get<1>() = tokens[1];
-		vec.push_back(elem);
+
+		unsigned int temp;
+		try {
+			temp = lexical_cast<unsigned int>(tokens[0]);
+		} catch (bad_lexical_cast &) {
+			throw bad_commandline_tuple(s, expected_format);
+		}
+
+		vec.push_back(std::make_pair(temp, tokens[1]));
 	}
 	return vec;
 }
 
-std::vector<boost::tuple<unsigned int,std::string,std::string> > commandline_options::parse_to_uint_string_string_tuples_(const std::vector<std::string> &strings, char separator)
+std::vector<std::tuple<unsigned int,std::string,std::string> > commandline_options::parse_to_uint_string_string_tuples_(const std::vector<std::string> &strings, char separator)
 {
-	std::vector<boost::tuple<unsigned int,std::string,std::string> > vec;
-	boost::tuple<unsigned int,std::string,std::string> elem;
-	BOOST_FOREACH(const std::string &s, strings)
+	std::vector<std::tuple<unsigned int,std::string,std::string> > vec;
+	std::tuple<unsigned int,std::string,std::string> elem;
+	const std::string& expected_format
+			= std::string() + "UINT" + separator + "STRING" + separator + "STRING";
+
+	for (const std::string &s : strings)
 	{
 		const std::vector<std::string> tokens = utils::split(s, separator);
-		if (tokens.size()!=3)
-		{
-			 //TODO throw a meaningful exception
+		if(tokens.size() != 3) {
+			throw bad_commandline_tuple(s, expected_format);
 		}
-		elem.get<0>() = lexical_cast<unsigned int>(tokens[0]);
-			//TODO catch exception and pack in meaningful something
-		elem.get<1>() = tokens[1];
-		elem.get<2>() = tokens[2];
+
+		unsigned int temp;
+		try {
+			temp = lexical_cast<unsigned int>(tokens[0]);
+		} catch (bad_lexical_cast &) {
+			throw bad_commandline_tuple(s, expected_format);
+		}
+		std::get<0>(elem) = temp;
+		std::get<1>(elem) = tokens[1];
+		std::get<2>(elem) = tokens[2];
 		vec.push_back(elem);
 	}
 	return vec;
@@ -433,7 +570,21 @@ std::vector<boost::tuple<unsigned int,std::string,std::string> > commandline_opt
 
 std::ostream& operator<<(std::ostream &os, const commandline_options& cmdline_opts)
 {
-	os << "Usage: " << cmdline_opts.argv_[0] << " [<options>] [<data-directory>]\n";
+	os << "Usage: " << cmdline_opts.args0_ << " [<options>] [<data-directory>]\n";
 	os << cmdline_opts.visible_;
 	return os;
+}
+
+config commandline_options::to_config() const {
+	config ret;
+	if (server) {
+		ret["server"] = *server;
+	}
+	if (username) {
+		ret["username"] = *username;
+	}
+	if (password) {
+		ret["password"] = *password;
+	}
+	return ret;
 }

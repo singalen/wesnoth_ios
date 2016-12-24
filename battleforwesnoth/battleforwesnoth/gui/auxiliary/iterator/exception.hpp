@@ -1,6 +1,5 @@
-/* $Id: exception.hpp 49690 2011-05-28 19:00:21Z mordante $ */
 /*
-   Copyright (C) 2011 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2011 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -15,7 +14,7 @@
 
 /**
  * @file
- * Contains the exceptions throw by the @ref gui2::iterator::titerator classes.
+ * Contains the exceptions thrown by the @ref gui2::iteration::iterator classes.
  */
 
 #ifndef GUI_WIDGETS_AUXILIARY_ITERATOR_EXCEPTION_HPP_INCLUDED
@@ -26,29 +25,28 @@
 #include <stdexcept>
 #include <string>
 
-namespace gui2 {
+namespace gui2
+{
 
-namespace iterator {
+namespace iteration
+{
 
 /**
  * Thrown when deferring an invalid iterator.
  *
  * Invalid means the initial state at_end() == true.
  */
-class tlogic_error
-	: public std::logic_error
-	, public tlua_jailbreak_exception
+class logic_error : public std::logic_error, public lua_jailbreak_exception
 {
 public:
-	explicit tlogic_error(const std::string& message)
+	explicit logic_error(const std::string& message)
 		: std::logic_error("GUI2 ITERATOR: " + message)
-		, tlua_jailbreak_exception()
+		, lua_jailbreak_exception()
 	{
 	}
 
 private:
-
-	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(tlogic_error)
+	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(logic_error)
 };
 
 /**
@@ -56,25 +54,21 @@ private:
  *
  * Invalid means the initial state at_end() == true.
  */
-class trange_error
-	: public std::range_error
-	, public tlua_jailbreak_exception
+class range_error : public std::range_error, public lua_jailbreak_exception
 {
 public:
-	explicit trange_error(const std::string& message)
+	explicit range_error(const std::string& message)
 		: std::range_error("GUI2 ITERATOR: " + message)
-		, tlua_jailbreak_exception()
+		, lua_jailbreak_exception()
 	{
 	}
 
 private:
-
-	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(trange_error)
+	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(range_error)
 };
 
-} // namespace iterator
+} // namespace iteration
 
 } // namespace gui2
 
 #endif
-

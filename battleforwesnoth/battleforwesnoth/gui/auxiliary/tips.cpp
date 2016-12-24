@@ -1,6 +1,5 @@
-/* $Id: tips.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,45 +20,45 @@
 #include "game_preferences.hpp"
 #include "serialization/string_utils.hpp"
 
-#include <boost/foreach.hpp>
+namespace gui2
+{
 
-namespace gui2 {
-
-ttip::ttip(const t_string& text
-		, const t_string& source
-		, const std::string& unit_filter)
-	: text_(text)
-	, source_(source)
-	, unit_filter_(utils::split(unit_filter))
+game_tip::game_tip(const t_string& text,
+		   const t_string& source,
+		   const std::string& unit_filter)
+	: text_(text), source_(source), unit_filter_(utils::split(unit_filter))
 {
 }
 
-namespace tips {
-
-std::vector<ttip> load(const config& cfg)
+namespace tip_of_the_day
 {
-	std::vector<ttip> result;
 
-	BOOST_FOREACH(const config &tip, cfg.child_range("tip")) {
-		result.push_back(ttip(tip["text"]
-				, tip["source"]
-				, tip["encountered_units"]));
+std::vector<game_tip> load(const config& cfg)
+{
+	std::vector<game_tip> result;
+
+	for(const auto & tip : cfg.child_range("tip"))
+	{
+		result.push_back(
+				game_tip(tip["text"], tip["source"], tip["encountered_units"]));
 	}
 
 	return result;
 }
 
-std::vector<ttip> shuffle(const std::vector<ttip>& tips)
+std::vector<game_tip> shuffle(const std::vector<game_tip>& tips)
 {
-	std::vector<ttip> result;
+	std::vector<game_tip> result;
 
 	const std::set<std::string>& units = preferences::encountered_units();
 
-	BOOST_FOREACH(const ttip& tip, tips) {
+	for(const auto & tip : tips)
+	{
 		if(tip.unit_filter_.empty()) {
 			result.push_back(tip);
 		} else {
-			BOOST_FOREACH(const std::string& unit, tip.unit_filter_) {
+			for(const auto & unit : tip.unit_filter_)
+			{
 				if(units.find(unit) != units.end()) {
 					result.push_back(tip);
 					break;

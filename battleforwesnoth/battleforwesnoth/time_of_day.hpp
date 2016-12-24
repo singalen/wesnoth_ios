@@ -1,6 +1,5 @@
-/* $Id: time_of_day.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,20 +20,32 @@
 #include "global.hpp"
 
 #include "tstring.hpp"
+#include "utils/general.hpp"
 
 #include <vector>
 
 class config;
 
-/** Small struct to store and manipulate ToD colors */
-
-struct tod_color{
-	tod_color(int red = 0, int green = 0, int blue = 0) : r(red), g(green), b(blue) {}
-	bool operator==(const tod_color& o) const { return r == o.r && g == o.g && b == o.b; }
-	bool is_zero() const { return r == 0 && g == 0 && b == 0; }
-	bool operator!=(const tod_color& o) const { return !operator==(o); }
-	tod_color operator+(const tod_color& o) const { return tod_color(r+o.r, g+o.g, b+o.b);}
-	void operator*=(float x) { r *= x; g *= x; b *= x;}
+/** Small struct to store and manipulate ToD color adjusts. */
+// This is a color delta, so do not replace with color_t!
+struct tod_color {
+	explicit tod_color(int red = 0, int green = 0, int blue = 0)
+		: r(util::clamp(red, -255, 255))
+		, g(util::clamp(green, -255, 255))
+		, b(util::clamp(blue, -255, 255))
+	{}
+	bool operator==(const tod_color& o) const {
+		return r == o.r && g == o.g && b == o.b;
+	}
+	bool is_zero() const {
+		return r == 0 && g == 0 && b == 0;
+	}
+	bool operator!=(const tod_color& o) const {
+		return !operator==(o);
+	}
+	tod_color operator+(const tod_color& o) const {
+		return tod_color(r + o.r, g + o.g, b + o.b);
+	}
 
 	int r,g,b;
 };
@@ -54,10 +65,21 @@ struct time_of_day
 	 * getters for properties that would emit a warning when such an object
 	 * is actually used, but it does not seem necessary at the moment.
 	 */
-	explicit time_of_day();
+	time_of_day();
 
 	/** Construct a time of day from config */
 	explicit time_of_day(const config& cfg);
+
+	bool operator==(const time_of_day& o) const {
+		return lawful_bonus == o.lawful_bonus
+            && bonus_modified == o.bonus_modified
+			&& image == o.image
+			&& name == o.name
+			&& id == o.id
+			&& image_mask == o.image_mask
+			//&& color == o.color
+			&& sounds == o.sounds;
+	}
 
 	void write(config& cfg) const;
 
@@ -68,6 +90,7 @@ struct time_of_day
 	/** The image to be displayed in the game status. */
 	std::string image;
 	t_string name;
+	t_string description;
 	std::string id;
 
 	/**

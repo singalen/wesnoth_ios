@@ -40,21 +40,14 @@ documentation and/or software.
 
  */
 
-
-
-
-
-
 #include "md5.hpp"
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
-#include <string.h> // Edit: needed for strlen() (strings.h should
+#include <cstring> // Edit: needed for strlen() (strings.h should
                     // include it but apparently does not for me)
 
 #include "global.hpp"
-
-
 
 // MD5 simple initialization method
 
@@ -72,7 +65,7 @@ MD5::MD5()
 // operation, processing another message block, and updating the
 // context.
 
-void MD5::update (uint1 *input, uint4 input_length) {
+void MD5::update (const uint1* input, uint4 input_length) {
 
   uint4 input_index, buffer_index;
   uint4 buffer_space;                // how much space is left in buffer
@@ -83,13 +76,13 @@ void MD5::update (uint1 *input, uint4 input_length) {
   }
 
   // Compute number of bytes mod 64
-  buffer_index = static_cast<uint4>(((count[0] >> 3) & 0x3F));
+  buffer_index = ((count[0] >> 3) & 0x3F);
 
   // Update number of bits
-  if (  (count[0] += (static_cast<uint4>(input_length) << 3))<(static_cast<uint4>(input_length) << 3) )
+  if (  (count[0] += (input_length << 3))<(input_length << 3) )
     count[1]++;
 
-  count[1] += (static_cast<uint4>(input_length) >> 29);
+  count[1] += (input_length >> 29);
 
 
   buffer_space = 64 - buffer_index;  // how much space is left in buffer
@@ -138,7 +131,7 @@ void MD5::finalize (){
   encode (bits, count, 8);
 
   // Pad out to 56 mod 64.
-  index = static_cast<uint4>((count[0] >> 3) & 0x3f);
+  index = (count[0] >> 3) & 0x3f;
   padLen = (index < 56) ? (56 - index) : (120 - index);
   update (PADDING, padLen);
 
@@ -156,17 +149,17 @@ void MD5::finalize (){
 }
 
 
-MD5::uint1 *MD5::raw_digest()
+std::array<uint8_t, 16> MD5::raw_digest()
 {
-  static uint1 s[16];
+  std::array<uint8_t, 16> s;
 
   if (!finalized){
     std::cerr << "MD5::raw_digest:  Can't get digest if you haven't "<<
       "finalized the digest!" <<std::endl;
-    return ( const_cast<uint1*>(reinterpret_cast<const uint1*>("")));
+    throw std::logic_error("MD5::raw_digest: attempted to obtain digest before finalizing it");
   }
 
-  memcpy(s, digest, 16);
+  memcpy(s.data(), digest, 16);
   return s;
 }
 
@@ -213,7 +206,7 @@ void MD5::init(){
 
 
 // MD5 basic transformation. Transforms state based on block.
-void MD5::transform (uint1 block[64]){
+void MD5::transform (const uint1 block[64]){
 
   uint4 a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
@@ -324,7 +317,7 @@ void MD5::encode (uint1 *output, uint4 *input, uint4 len) {
 
 // Decodes input (uint1) into output (UINT4). Assumes len is
 // a multiple of 4.
-void MD5::decode (uint4 *output, uint1 *input, uint4 len){
+void MD5::decode (uint4 *output, const uint1 *input, uint4 len){
 
   uint4 i, j;
 

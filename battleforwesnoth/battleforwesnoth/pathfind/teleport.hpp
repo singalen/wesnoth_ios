@@ -1,6 +1,5 @@
-/* $Id: teleport.hpp 51426 2011-10-10 02:43:29Z ai0867 $ */
 /*
-   Copyright (C) 2010 by Fabian Mueller <fabianmueller5@gmx.de>
+   Copyright (C) 2010 - 2016 by Fabian Mueller <fabianmueller5@gmx.de>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -15,13 +14,12 @@
 #ifndef TELEPORT_H_INCLUDED
 #define TELEPORT_H_INCLUDED
 
-#include "map.hpp"
-
 #include "config.hpp"
-#include "team.hpp"
-#include "terrain_filter.hpp"
-#include "savegame_config.hpp"
-#include "pathfind/pathfind.hpp"
+#include "map/location.hpp"
+
+class team;
+class unit;
+class vconfig;
 
 
 namespace pathfind {
@@ -32,7 +30,8 @@ typedef std::pair<std::set<map_location>, std::set<map_location> >
 /*
  * Represents the tunnel wml tag.
  */
-class teleport_group: public savegame::savegame_config {
+class teleport_group
+{
 public:
 	/*
 	 * Constructs the object from a saved file.
@@ -71,6 +70,16 @@ public:
 	 */
 	bool always_visible() const;
 
+	/*
+	 * Returns whether allied units on the exit hex can be passed.
+	 */
+	bool pass_allied_units() const;
+
+	/*
+	 * Returns whether vision through tunnels is possible.
+	 */
+	bool allow_vision() const;
+
 	/** Inherited from savegame_config. */
 	config to_config() const;
 
@@ -90,19 +99,21 @@ public:
 	 * @param viewing_team
 	 * @param see_all
 	 * @param ignore_units
+	 * @param check_vision
 	 */
 	teleport_map(
 			  const std::vector<teleport_group>& teleport_groups
 			, const unit& u
 			, const team &viewing_team
 			, const bool see_all
-			, const bool ignore_units);
+			, const bool ignore_units
+			, const bool check_vision);
 
 	/*
 	 * Constructs an empty teleport map.
 	 */
 	teleport_map() :
-		teleport_map_(), sources_(), targets_() {};
+		teleport_map_(), sources_(), targets_() {}
 
 	/*
 	 * @param adjacents		used to return the adjacent hexes
@@ -136,12 +147,14 @@ private:
  * @param viewing_team		The team the player belongs to
  * @param see_all			Whether the teleport can be seen below shroud
  * @param ignore_units		Whether to ignore zoc and blocking by units
+ * @param check_vision		Whether to check vision as opposed to movement range
  * @returns a teleport_map
  */
 const teleport_map get_teleport_locations(const unit &u, const team &viewing_team,
-		bool see_all = false, bool ignore_units = false);
+		bool see_all = false, bool ignore_units = false, bool check_vision = false);
 
-class manager: public savegame::savegame_config {
+class manager
+{
 public:
 	manager(const config &cfg);
 

@@ -16,7 +16,7 @@
 #include "global.hpp"
 
 #include "about.hpp"
-#include "addon/manager.hpp"
+//#include "addon/manager.hpp"
 #include "commandline_options.hpp"
 #include "game_controller.hpp"
 #include "game_controller_new.hpp"

@@ -1,6 +1,5 @@
-/* $Id: halo.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -24,18 +23,24 @@
 #include "display.hpp"
 #include "game_preferences.hpp"
 #include "halo.hpp"
+#include "log.hpp"
 #include "serialization/string_utils.hpp"
+
+#include <iostream>
+
+static lg::log_domain log_display("display");
+#define ERR_DP LOG_STREAM(err, log_display)
 
 namespace halo
 {
 
-namespace {
-display* disp = NULL;
+class halo_impl
+{
 
 class effect
 {
 public:
-	effect(int xpos, int ypos, const animated<image::locator>::anim_description& img,
+	effect(display * screen, int xpos, int ypos, const animated<image::locator>::anim_description& img,
 			const map_location& loc, ORIENTATION, bool infinite);
 
 	void set_location(int x, int y);
@@ -47,6 +52,7 @@ public:
 	bool need_update() const { return images_.need_update(); }
 	bool does_change() const { return !images_.does_not_change(); }
 	bool on_location(const std::set<map_location>& locations) const;
+	bool location_not_known() const;
 
 	void add_overlay_location(std::set<map_location>& locations);
 private:
@@ -66,10 +72,14 @@ private:
 
 	/** All locations over which the halo lies. */
 	std::vector<map_location> overlayed_hexes_;
+
+	display * disp;
 };
 
+display* disp;
+
 std::map<int, effect> haloes;
-int halo_id = 1;
+int halo_id;
 
 /**
  * Upon unrendering, an invalidation list is send. All haloes in that area and
@@ -98,19 +108,56 @@ std::set<int> deleted_haloes;
  */
 std::set<int> changing_haloes;
 
-effect::effect(int xpos, int ypos, const animated<image::locator>::anim_description& img,
+public:
+/**
+ * impl's of exposed functions
+ */
+
+halo_impl(display & screen) :
+	disp(&screen),
+	haloes(),
+	halo_id(1),
+	invalidated_haloes(),
+	new_haloes(),
+	deleted_haloes(),
+	changing_haloes()
+{}
+
+
+int add(int x, int y, const std::string& image, const map_location& loc,
+		ORIENTATION orientation=NORMAL, bool infinite=true);
+
+/** Set the position of an existing haloing effect, according to its handle. */
+void set_location(int handle, int x, int y);
+
+/** Remove the halo with the given handle. */
+void remove(int handle);
+
+/**
+ * Render and unrender haloes.
+ *
+ * Which haloes are rendered is determined by invalidated_locations and the
+ * internal state in the control sets (in halo.cpp).
+ */
+void unrender(std::set<map_location> invalidated_locations);
+void render();
+
+}; //end halo_impl
+
+halo_impl::effect::effect(display * screen, int xpos, int ypos, const animated<image::locator>::anim_description& img,
 		const map_location& loc, ORIENTATION orientation, bool infinite) :
 	images_(img),
 	orientation_(orientation),
-	x_(xpos),
-	y_(ypos),
-	surf_(NULL),
-	buffer_(NULL),
-	rect_(empty_rect),
+	x_(0),
+	y_(0),
+	surf_(nullptr),
+	buffer_(nullptr),
+	rect_(sdl::empty_rect),
 	loc_(loc),
-	overlayed_hexes_()
+	overlayed_hexes_(),
+	disp(screen)
 {
-	assert(disp != NULL);
+	assert(disp != nullptr);
 
 	set_location(xpos,ypos);
 
@@ -118,22 +165,22 @@ effect::effect(int xpos, int ypos, const animated<image::locator>::anim_descript
 
 }
 
-void effect::set_location(int x, int y)
+void halo_impl::effect::set_location(int x, int y)
 {
-	const map_location zero_loc(0,0);
-	int new_x = x - disp->get_location_x(zero_loc);
-	int new_y = y - disp->get_location_y(zero_loc);
+	int new_x = x - disp->get_location_x(map_location::ZERO());
+	int new_y = y - disp->get_location_y(map_location::ZERO());
 	if (new_x != x_ || new_y != y_) {
+		unrender();
 		x_ = new_x;
 		y_ = new_y;
-		buffer_.assign(NULL);
+		buffer_.assign(nullptr);
 		overlayed_hexes_.clear();
 	}
 }
 
-bool effect::render()
+bool halo_impl::effect::render()
 {
-	if(disp == NULL) {
+	if(disp == nullptr) {
 		return false;
 	}
 
@@ -156,7 +203,7 @@ bool effect::render()
 
 	images_.update_last_draw_time();
 	surf_.assign(image::get_image(current_image(),image::SCALED_TO_ZOOM));
-	if(surf_ == NULL) {
+	if(surf_ == nullptr) {
 		return false;
 	}
 	if(orientation_ == HREVERSE || orientation_ == HVREVERSE) {
@@ -166,20 +213,19 @@ bool effect::render()
 		surf_.assign(flop_surface(surf_));
 	}
 
-	const map_location zero_loc(0,0);
-	const int screenx = disp->get_location_x(zero_loc);
-	const int screeny = disp->get_location_y(zero_loc);
+	const int screenx = disp->get_location_x(map_location::ZERO());
+	const int screeny = disp->get_location_y(map_location::ZERO());
 
 	const int xpos = x_ + screenx - surf_->w/2;
 	const int ypos = y_ + screeny - surf_->h/2;
 
-	SDL_Rect rect = create_rect(xpos, ypos, surf_->w, surf_->h);
+	SDL_Rect rect = sdl::create_rect(xpos, ypos, surf_->w, surf_->h);
 	rect_ = rect;
 	SDL_Rect clip_rect = disp->map_outside_area();
 
 	// If rendered the first time, need to determine the area affected.
 	// If a halo changes size, it is not updated.
-	if(overlayed_hexes_.empty()) {
+	if(location_not_known()) {
 		display::rect_of_hexes hexes = disp->hexes_under_rect(rect);
 		display::rect_of_hexes::iterator i = hexes.begin(), end = hexes.end();
 		for (;i != end; ++i) {
@@ -187,55 +233,60 @@ bool effect::render()
 		}
 	}
 
-	if(rects_overlap(rect,clip_rect) == false) {
-		buffer_.assign(NULL);
+	if(sdl::rects_overlap(rect,clip_rect) == false) {
+		buffer_.assign(nullptr);
 		return false;
 	}
 
-	surface screen = disp->get_screen_surface();
+	surface& screen = disp->get_screen_surface();
 
 	const clip_rect_setter clip_setter(screen, &clip_rect);
-	if(buffer_ == NULL || buffer_->w != rect.w || buffer_->h != rect.h) {
-		SDL_Rect rect = rect_;
-		buffer_.assign(get_surface_portion(screen,rect));
+	if(buffer_ == nullptr || buffer_->w != rect.w || buffer_->h != rect.h) {
+		SDL_Rect rect2 = rect_;
+		buffer_.assign(get_surface_portion(screen,rect2));
 	} else {
-		SDL_Rect rect = rect_;
-		sdl_blit(screen,&rect,buffer_,NULL);
+		SDL_Rect rect2 = rect_;
+		sdl_copy_portion(screen,&rect2,buffer_,nullptr);
 	}
 
-	sdl_blit(surf_,NULL,screen,&rect);
-
-	update_rect(rect_);
+	sdl_blit(surf_,nullptr,screen,&rect);
 
 	return true;
 }
 
-void effect::unrender()
+void halo_impl::effect::unrender()
 {
 	if (!surf_ || !buffer_) {
 		return;
 	}
 
-	surface screen = disp->get_screen_surface();
+	// Shrouded haloes are never rendered unless shroud has been re-placed; in
+	// that case, unrendering causes the hidden terrain (and previous halo
+	// frame, when dealing with animated halos) to glitch through shroud. We
+	// don't need to unrender them because shroud paints over the underlying
+	// area anyway.
+	if (loc_.x != -1 && loc_.y != -1 && disp->shrouded(loc_)) {
+		return;
+	}
+
+	surface& screen = disp->get_screen_surface();
 
 	SDL_Rect clip_rect = disp->map_outside_area();
 	const clip_rect_setter clip_setter(screen, &clip_rect);
 
 	// Due to scrolling, the location of the rendered halo
 	// might have changed; recalculate
-	const map_location zero_loc(0,0);
-	const int screenx = disp->get_location_x(zero_loc);
-	const int screeny = disp->get_location_y(zero_loc);
+	const int screenx = disp->get_location_x(map_location::ZERO());
+	const int screeny = disp->get_location_y(map_location::ZERO());
 
 	const int xpos = x_ + screenx - surf_->w/2;
 	const int ypos = y_ + screeny - surf_->h/2;
 
-	SDL_Rect rect = create_rect(xpos, ypos, surf_->w, surf_->h);
-	sdl_blit(buffer_,NULL,screen,&rect);
-	update_rect(rect);
+	SDL_Rect rect = sdl::create_rect(xpos, ypos, surf_->w, surf_->h);
+	sdl_blit(buffer_,nullptr,screen,&rect);
 }
 
-bool effect::on_location(const std::set<map_location>& locations) const
+bool halo_impl::effect::on_location(const std::set<map_location>& locations) const
 {
 	for(std::vector<map_location>::const_iterator itor = overlayed_hexes_.begin();
 			itor != overlayed_hexes_.end(); ++itor) {
@@ -246,7 +297,12 @@ bool effect::on_location(const std::set<map_location>& locations) const
 	return false;
 }
 
-void effect::add_overlay_location(std::set<map_location>& locations)
+bool halo_impl::effect::location_not_known() const
+{
+	return overlayed_hexes_.empty();
+}
+
+void halo_impl::effect::add_overlay_location(std::set<map_location>& locations)
 {
 	for(std::vector<map_location>::const_iterator itor = overlayed_hexes_.begin();
 			itor != overlayed_hexes_.end(); ++itor) {
@@ -255,47 +311,32 @@ void effect::add_overlay_location(std::set<map_location>& locations)
 	}
 }
 
-} // end anon namespace
+// End halo_impl::effect impl's
 
-manager::manager(display& screen) : old(disp)
-{
-	disp = &screen;
-}
-
-manager::~manager()
-{
-	haloes.clear();
-	invalidated_haloes.clear();
-	new_haloes.clear();
-	deleted_haloes.clear();
-	changing_haloes.clear();
-
-	disp = old;
-}
-
-int add(int x, int y, const std::string& image, const map_location& loc,
+int halo_impl::add(int x, int y, const std::string& image, const map_location& loc,
 		ORIENTATION orientation, bool infinite)
 {
 	const int id = halo_id++;
 	animated<image::locator>::anim_description image_vector;
-	std::vector<std::string> items = utils::parenthetical_split(image, ',');
-	std::vector<std::string>::const_iterator itor = items.begin();
-	for(; itor != items.end(); ++itor) {
-		const std::vector<std::string>& items = utils::split(*itor, ':');
-		std::string str;
-		int time;
+	std::vector<std::string> items = utils::square_parenthetical_split(image, ',');
 
-		if(items.size() > 1) {
-			str = items.front();
-			time = atoi(items.back().c_str());
-		} else {
-			str = *itor;
-			time = 100;
+	for(const std::string& item : items) {
+		const std::vector<std::string>& sub_items = utils::split(item, ':');
+		std::string str = item;
+		int time = 100;
+
+		if(sub_items.size() > 1) {
+			str = sub_items.front();
+			try {
+				time = std::stoi(sub_items.back());
+			} catch(std::invalid_argument) {
+				ERR_DP << "Invalid time value found when constructing halo: " << sub_items.back() << "\n";
+			}
 		}
 		image_vector.push_back(animated<image::locator>::frame_description(time,image::locator(str)));
 
 	}
-	haloes.insert(std::pair<int,effect>(id,effect(x,y,image_vector,loc,orientation,infinite)));
+	haloes.insert(std::pair<int,effect>(id,effect(disp,x,y,image_vector,loc,orientation,infinite)));
 	new_haloes.insert(id);
 	if(haloes.find(id)->second.does_change() || !infinite) {
 		changing_haloes.insert(id);
@@ -303,7 +344,7 @@ int add(int x, int y, const std::string& image, const map_location& loc,
 	return id;
 }
 
-void set_location(int handle, int x, int y)
+void halo_impl::set_location(int handle, int x, int y)
 {
 	const std::map<int,effect>::iterator itor = haloes.find(handle);
 	if(itor != haloes.end()) {
@@ -311,7 +352,7 @@ void set_location(int handle, int x, int y)
 	}
 }
 
-void remove(int handle)
+void halo_impl::remove(int handle)
 {
 	// Silently ignore invalid haloes.
 	// This happens when Wesnoth is being terminated as well.
@@ -322,12 +363,12 @@ void remove(int handle)
 	deleted_haloes.insert(handle);
 }
 
-void unrender(std::set<map_location> invalidated_locations)
+void halo_impl::unrender(std::set<map_location> invalidated_locations)
 {
-	if(preferences::show_haloes() == false || haloes.size() == 0) {
+	if(preferences::show_haloes() == false || haloes.empty()) {
 		return;
 	}
-	//assert(invalidated_haloes.size() == 0);
+	//assert(invalidated_haloes.empty());
 
 	// Remove expired haloes
 	std::map<int, effect>::iterator itor = haloes.begin();
@@ -364,7 +405,8 @@ void unrender(std::set<map_location> invalidated_locations)
 			// Test all haloes not yet in the set
 			// which match one of the locations
 			if(invalidated_haloes.find(itor->first) == invalidated_haloes.end() &&
-					itor->second.on_location(invalidated_locations)) {
+					(itor->second.location_not_known() ||
+					itor->second.on_location(invalidated_locations))) {
 
 				// If found, add all locations which the halo invalidates,
 				// and add it to the set
@@ -399,10 +441,10 @@ void unrender(std::set<map_location> invalidated_locations)
 	deleted_haloes.clear();
 }
 
-void render()
+void halo_impl::render()
 {
-	if(preferences::show_haloes() == false || haloes.size() == 0 ||
-			(new_haloes.size() == 0 && invalidated_haloes.size() == 0)) {
+	if(preferences::show_haloes() == false || haloes.empty() ||
+			(new_haloes.empty() && invalidated_haloes.empty())) {
 		return;
 	}
 
@@ -428,5 +470,79 @@ void render()
 	new_haloes = unrendered_new_haloes;
 }
 
-} // end namespace halo
+// end halo_impl implementations
 
+// begin halo::manager
+
+manager::manager(display& screen) : impl_(new halo_impl(screen))
+{}
+
+handle manager::add(int x, int y, const std::string& image, const map_location& loc,
+		ORIENTATION orientation, bool infinite)
+{
+	int new_halo = impl_->add(x,y,image, loc, orientation, infinite);
+	return handle(new halo_record(new_halo, impl_));
+}
+
+/** Set the position of an existing haloing effect, according to its handle. */
+void manager::set_location(const handle & h, int x, int y)
+{
+	impl_->set_location(h->id_,x,y);
+}
+
+/** Remove the halo with the given handle. */
+void manager::remove(const handle & h)
+{
+	impl_->remove(h->id_);
+	h->id_ = NO_HALO;
+}
+
+/**
+ * Render and unrender haloes.
+ *
+ * Which haloes are rendered is determined by invalidated_locations and the
+ * internal state in the control sets (in halo.cpp).
+ */
+void manager::unrender(std::set<map_location> invalidated_locations)
+{
+	impl_->unrender(invalidated_locations);
+}
+
+void manager::render()
+{
+	impl_->render();
+}
+
+// end halo::manager implementation
+
+
+/**
+ * halo::halo_record implementation
+ */
+
+halo_record::halo_record() :
+	id_(NO_HALO), //halo::NO_HALO
+	my_manager_()
+{}
+
+halo_record::halo_record(int id, const std::shared_ptr<halo_impl> & my_manager) :
+	id_(id),
+	my_manager_(my_manager)
+{}
+
+halo_record::~halo_record()
+{
+	if (!valid()) return;
+
+	std::shared_ptr<halo_impl> man = my_manager_.lock();
+
+	if (man) {
+		try {
+			man->remove(id_);
+		} catch (std::exception & e) {
+			std::cerr << "Caught an exception in halo::halo_record destructor: \n" << e.what() << std::endl;
+		} catch (...) {}
+	}
+}
+
+} //end namespace halo

@@ -1,6 +1,5 @@
-/* $Id: action.cpp 55503 2012-10-06 21:46:53Z gabba $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -17,16 +16,17 @@
  * @file
  */
 
-#include "action.hpp"
-#include "move.hpp"
-#include "attack.hpp"
-#include "recruit.hpp"
-#include "recall.hpp"
-#include "suppose_dead.hpp"
+#include "whiteboard/action.hpp"
+#include "whiteboard/move.hpp"
+#include "whiteboard/attack.hpp"
+#include "whiteboard/recruit.hpp"
+#include "whiteboard/recall.hpp"
+#include "whiteboard/suppose_dead.hpp"
 
+#include "config.hpp"
+#include "game_board.hpp"
 #include "resources.hpp"
-#include "team.hpp"
-#include "unit.hpp"
+#include "units/unit.hpp"
 
 namespace wb {
 
@@ -105,7 +105,7 @@ action::action(config const& cfg, bool hidden)
 	// Construct and validate team_index_
 	int team_index_temp = cfg["team_index_"].to_int(-1); //default value: -1
 	if(team_index_temp < 0
-			|| team_index_temp >= static_cast<int>(resources::teams->size()))
+			|| team_index_temp >= static_cast<int>(resources::gameboard->teams().size()))
 		throw ctor_err("action: Invalid team_index_");
 	team_index_ = team_index_temp;
 }
@@ -116,7 +116,7 @@ action::~action()
 
 size_t action::get_unit_id() const
 {
-	unit *ret = get_unit();
+	unit_ptr ret = get_unit();
 	return ret ? ret->underlying_id() : 0;
 }
 

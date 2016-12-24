@@ -1,6 +1,5 @@
-/* $Id: listbox.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,20 +20,32 @@
 #include "gui/widgets/generator.hpp"
 #include "gui/widgets/scrollbar_container.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
 
-namespace implementation {
-	struct tbuilder_listbox;
-	struct tbuilder_horizontal_listbox;
+#include <boost/dynamic_bitset.hpp>
+
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
+
+class selectable_item;
+namespace implementation
+{
+struct builder_listbox;
+struct builder_horizontal_listbox;
+struct builder_grid_listbox;
 }
 
 /** The listbox class. */
-class tlistbox
-		: public tscrollbar_container
+class listbox : public scrollbar_container
 {
-	friend struct implementation::tbuilder_listbox;
-	friend struct implementation::tbuilder_horizontal_listbox;
-	friend class tdebug_layout_graph;
+	friend struct implementation::builder_listbox;
+	friend struct implementation::builder_horizontal_listbox;
+	friend struct implementation::builder_grid_listbox;
+	friend class debug_layout_graph;
+
 public:
 	/**
 	 * Constructor.
@@ -47,8 +58,10 @@ public:
 	 * @param select              Select an item when selected, if false it
 	 *                            changes the visible state instead.
 	 */
-	tlistbox(const bool has_minimum, const bool has_maximum,
-			const tgenerator_::tplacement placement, const bool select);
+	listbox(const bool has_minimum,
+			 const bool has_maximum,
+			 const generator_base::placement placement,
+			 const bool select);
 
 	/***** ***** ***** ***** Row handling. ***** ***** ****** *****/
 	/**
@@ -61,7 +74,7 @@ public:
 	 * @param index               The item before which to add the new item,
 	 *                            0 == begin, -1 == end.
 	 */
-	void add_row(const string_map& item, const int index = -1);
+	grid& add_row(const string_map& item, const int index = -1);
 
 	/**
 	 * Adds single row to the grid.
@@ -76,13 +89,12 @@ public:
 	 *                            the wanted id (if any). If the member id is an
 	 *                            empty string, it is send to all members.
 	 *                            Having both empty and non-empty id's gives
-	 *                            undefined behaviour.
+	 *                            undefined behavior.
 	 * @param index               The item before which to add the new item,
 	 *                            0 == begin, -1 == end.
 	 */
-	void add_row(
-			  const std::map<std::string /* widget id */, string_map>& data
-			, const int index = -1);
+	grid& add_row(const std::map<std::string /* widget id */, string_map>& data,
+				 const int index = -1);
 
 	/**
 	 * Removes a row in the listbox.
@@ -130,7 +142,16 @@ public:
 	 *                            be equal to the number of items in the
 	 *                            listbox.
 	 */
-	void set_row_shown(const std::vector<bool>& shown);
+	void set_row_shown(const boost::dynamic_bitset<>& shown);
+
+	/**
+	 * Returns a list of visible rows
+	 *
+	 * @returns                   A mask indicating which rows are visible
+	 */
+	boost::dynamic_bitset<> get_rows_shown() const;
+
+	bool any_rows_shown() const;
 
 	/**
 	 * Returns the grid of the wanted row.
@@ -144,7 +165,7 @@ public:
 	 *                            to make sure the row is a valid row.
 	 * @returns                   The grid of the wanted row.
 	 */
-	const tgrid* get_row_grid(const unsigned row) const;
+	const grid* get_row_grid(const unsigned row) const;
 
 	/**
 	 * The possibly-giving-problems nonconst version of get_row_grid
@@ -153,7 +174,7 @@ public:
 	 *                            to make sure the row is a valid row.
 	 * @returns                   The grid of the wanted row.
 	 */
-	tgrid* get_row_grid(const unsigned row);
+	grid* get_row_grid(const unsigned row);
 
 	/**
 	 * Selectes a row.
@@ -172,19 +193,17 @@ public:
 	int get_selected_row() const;
 
 	/** Function to call after the user clicked on a row. */
-	void list_item_clicked(twidget* caller);
+	void list_item_clicked(widget& caller);
 
-	/** Inherited from tcontainer_. */
-	void set_self_active(const bool /*active*/)  {}
-//		{ state_ = active ? ENABLED : DISABLED; }
-//
+	/** See @ref container_base::set_self_active. */
+	virtual void set_self_active(const bool active) override;
 
 	/**
 	 * Request to update the size of the content after changing the content.
 	 *
 	 * When a resize is required the container first can try to handle it
-	 * itself. If it can't honour the request the function will call @ref
-	 * twindow::invalidate_layout().
+	 * itself. If it can't honor the request the function will call @ref
+	 * window::invalidate_layout().
 	 *
 	 * @note Calling this function on a widget with size == (0, 0) results
 	 * false but doesn't call invalidate_layout, the engine expects to be in
@@ -197,45 +216,90 @@ public:
 
 	/***** ***** ***** ***** inherited ***** ***** ****** *****/
 
-	/** Inherited from tscrollbar_container. */
-	void place(const tpoint& origin, const tpoint& size);
+	/** See @ref widget::place. */
+	virtual void place(const point& origin, const point& size) override;
 
-	/** Inherited from tscrollbar_container. */
-	void layout_children();
+	/** See @ref widget::layout_children. */
+	virtual void layout_children() override;
 
-	/** Inherited from tscrollbar_container. */
-	void child_populate_dirty_list(twindow& caller,
-			const std::vector<twidget*>& call_stack);
+	/** See @ref widget::child_populate_dirty_list. */
+	virtual void
+	child_populate_dirty_list(window& caller,
+							  const std::vector<widget*>& call_stack) override;
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
+	void
+	set_callback_item_change(const std::function<void(size_t)>& callback)
+	{
+		callback_item_changed_ = callback;
+	}
 
-	void set_callback_value_change(void (*callback) (twidget* caller))
-		{ callback_value_changed_ = callback; }
+	void
+	set_callback_value_change(const std::function<void(widget&)>& callback)
+	{
+		callback_value_changed_ = callback;
+	}
 
-	void set_list_builder(tbuilder_grid_ptr list_builder)
-		{ list_builder_ = list_builder; }
+	void set_list_builder(builder_grid_ptr list_builder)
+	{
+		list_builder_ = list_builder;
+	}
 
-protected:
+	void order_by(const generator_base::torder_func& func);
 
-	/***** ***** ***** ***** keyboard functions ***** ***** ***** *****/
+	void set_column_order(unsigned col, const generator_sort_array& func);
 
-	/** Inherited from tscrollbar_container. */
-	void handle_key_up_arrow(SDLMod modifier, bool& handled);
+	template<typename Func>
+	void register_sorting_option(const int col, const Func& f)
+	{
+		set_column_order(col, {{
+			[f](int lhs, int rhs) { return f(lhs) < f(rhs); },
+			[f](int lhs, int rhs) { return f(lhs) > f(rhs); }
+		}});
+	}
 
-	/** Inherited from tscrollbar_container. */
-	void handle_key_down_arrow(SDLMod modifier, bool& handled);
+	enum SORT_ORDER {
+		SORT_NONE,
+		SORT_ASCENDING,
+		SORT_DESCENDING,
+	};
 
-	/** Inherited from tscrollbar_container. */
-	void handle_key_left_arrow(SDLMod modifier, bool& handled);
-
-	/** Inherited from tscrollbar_container. */
-	void handle_key_right_arrow(SDLMod modifier, bool& handled);
-
-private:
+	using order_pair = std::pair<int, SORT_ORDER>;
 
 	/**
+	 * Sorts the listbox by a pre-set sorting option. The corresponding header widget will also be toggled.
+	 * The sorting option should already have been registered by @ref listbox::register_sorting_option().
+	 *
+	 * @param sort_by         Pair of column index and sort direction. The column (first arguemnt)
+	 *                        argument will be sorted in the specified direction (second argument)
+	 *
+	 * @param select_first    If true, the first row post-sort will be selected. If false (default),
+	 *                        the selected row will be maintained post-sort  as per standard sorting
+	 *                        functionality.
+	 */
+	void set_active_sorting_option(const order_pair& sort_by, const bool select_first = false);
+
+	const order_pair get_active_sorting_option();
+
+protected:
+	/***** ***** ***** ***** keyboard functions ***** ***** ***** *****/
+
+	/** Inherited from scrollbar_container. */
+	void handle_key_up_arrow(SDL_Keymod modifier, bool& handled) override;
+
+	/** Inherited from scrollbar_container. */
+	void handle_key_down_arrow(SDL_Keymod modifier, bool& handled) override;
+
+	/** Inherited from scrollbar_container. */
+	void handle_key_left_arrow(SDL_Keymod modifier, bool& handled) override;
+
+	/** Inherited from scrollbar_container. */
+	void handle_key_right_arrow(SDL_Keymod modifier, bool& handled) override;
+
+private:
+	/**
 	 * @todo A listbox must have the following config parameters in the
-	 * instanciation:
+	 * instantiation:
 	 * - fixed row height?
 	 * - fixed column width?
 	 * and if so the following ways to set them
@@ -255,21 +319,29 @@ private:
 	 * @param footer              Builder for the footer.
 	 * @param list_data           The initial data to fill the listbox with.
 	 */
-	void finalize(
-			tbuilder_grid_const_ptr header,
-			tbuilder_grid_const_ptr footer,
-			const std::vector<string_map>& list_data);
+	void finalize(builder_grid_const_ptr header,
+				  builder_grid_const_ptr footer,
+				  const std::vector<std::map<std::string, string_map>>& list_data);
 	/**
 	 * Contains a pointer to the generator.
 	 *
 	 * The pointer is not owned by this class, it's stored in the content_grid_
-	 * of the tscrollbar_container super class and freed when it's grid is
+	 * of the scrollbar_container super class and freed when it's grid is
 	 * freed.
 	 */
-	tgenerator_* generator_;
+	generator_base* generator_;
+
+	const bool is_horizonal_;
 
 	/** Contains the builder for the new items. */
-	tbuilder_grid_const_ptr list_builder_;
+	builder_grid_const_ptr list_builder_;
+
+	/**
+	 * This callback is called when a list item is clicked (toggled).
+	 *
+	 * The function is passed the index of the toggled item.
+	 */
+	std::function<void(size_t)> callback_item_changed_;
 
 	/**
 	 * This callback is called when the value in the listbox changes.
@@ -278,10 +350,12 @@ private:
 	 * there might be too many calls. That might happen if an arrow up didn't
 	 * change the selected item.
 	 */
-	void (*callback_value_changed_) (twidget*);
+	std::function<void(widget&)> callback_value_changed_;
 
 	bool need_layout_;
 
+	typedef std::vector<std::pair<selectable_item*, generator_sort_array > > torder_list;
+	torder_list orders_;
 	/**
 	 * Resizes the content.
 	 *
@@ -297,22 +371,132 @@ private:
 	 *                            * zero leave height as is.
 	 *                            * positive values increase height.
 	 */
-	void resize_content(
-			  const int width_modification
-			, const int height_modification);
+	void resize_content(const int width_modification,
+						const int height_modification,
+						const int width__modification_pos = -1,
+						const int height_modification_pos = -1);
+
+	/**
+	 * Resizes the content.
+	 *
+	 * The resize happens when a new row is added to the contents.
+	 *
+	 * @param row                 The new row added to the listbox.
+	 */
+	void resize_content(const widget& row);
 
 	/** Layouts the children if needed. */
 	void layout_children(const bool force);
 
-	/** Inherited from tscrollbar_container. */
-	virtual void set_content_size(const tpoint& origin, const tpoint& size);
+	/** Inherited from scrollbar_container. */
+	virtual void set_content_size(const point& origin, const point& size) override;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
+
+	void order_by_column(unsigned column, widget& widget);
 };
+
+// }---------- DEFINITION ---------{
+
+struct listbox_definition : public styled_widget_definition
+{
+
+	explicit listbox_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+
+		builder_grid_ptr grid;
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_listbox : public builder_styled_widget
+{
+	explicit builder_listbox(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	scrollbar_container::scrollbar_mode vertical_scrollbar_mode;
+	scrollbar_container::scrollbar_mode horizontal_scrollbar_mode;
+
+	builder_grid_ptr header;
+	builder_grid_ptr footer;
+
+	builder_grid_ptr list_builder;
+
+	/**
+	 * Listbox data.
+	 *
+	 * Contains a vector with the data to set in every cell, it's used to
+	 * serialize the data in the config, so the config is no longer required.
+	 */
+	std::vector<std::map<std::string, string_map>> list_data;
+
+	bool has_minimum_, has_maximum_;
+};
+
+struct builder_horizontal_listbox : public builder_styled_widget
+{
+	explicit builder_horizontal_listbox(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	scrollbar_container::scrollbar_mode vertical_scrollbar_mode;
+	scrollbar_container::scrollbar_mode horizontal_scrollbar_mode;
+
+	builder_grid_ptr list_builder;
+
+	/**
+	 * Listbox data.
+	 *
+	 * Contains a vector with the data to set in every cell, it's used to
+	 * serialize the data in the config, so the config is no longer required.
+	 */
+	std::vector<std::map<std::string, string_map>> list_data;
+
+	bool has_minimum_, has_maximum_;
+};
+
+struct builder_grid_listbox : public builder_styled_widget
+{
+	explicit builder_grid_listbox(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	scrollbar_container::scrollbar_mode vertical_scrollbar_mode;
+	scrollbar_container::scrollbar_mode horizontal_scrollbar_mode;
+
+	builder_grid_ptr list_builder;
+
+	/**
+	 * Listbox data.
+	 *
+	 * Contains a vector with the data to set in every cell, it's used to
+	 * serialize the data in the config, so the config is no longer required.
+	 */
+	std::vector<std::map<std::string, string_map>> list_data;
+
+	bool has_minimum_, has_maximum_;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
 #endif
-

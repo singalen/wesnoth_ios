@@ -1,6 +1,5 @@
-/* $Id: grid.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,55 +16,53 @@
 #define GUI_WIDGETS_GRID_HPP_INCLUDED
 
 #include "gui/widgets/widget.hpp"
-#include "gui/widgets/control.hpp"
 
-#include <cassert>
-
-namespace gui2 {
+namespace gui2
+{
 
 /**
  * Base container class.
  *
  * This class holds a number of widgets and their wanted layout parameters. It
- * also layouts the items in the grid and hanldes their drawing.
+ * also layouts the items in the grid and handles their drawing.
  */
-class tgrid : public virtual twidget
+class grid : public widget
 {
-	friend class tdebug_layout_graph;
-	friend struct tgrid_implementation;
+	friend class debug_layout_graph;
+	friend struct grid_implementation;
 
 public:
+	explicit grid(const unsigned rows = 0, const unsigned cols = 0);
 
-	explicit tgrid(const unsigned rows = 0, const unsigned cols = 0);
-
-	virtual ~tgrid();
+	virtual ~grid();
 
 	/***** ***** ***** ***** LAYOUT FLAGS ***** ***** ***** *****/
-	static const unsigned VERTICAL_SHIFT                 = 0;
-	static const unsigned VERTICAL_GROW_SEND_TO_CLIENT   = 1 << VERTICAL_SHIFT;
-	static const unsigned VERTICAL_ALIGN_TOP             = 2 << VERTICAL_SHIFT;
-	static const unsigned VERTICAL_ALIGN_CENTER          = 3 << VERTICAL_SHIFT;
-	static const unsigned VERTICAL_ALIGN_BOTTOM          = 4 << VERTICAL_SHIFT;
-	static const unsigned VERTICAL_MASK                  = 7 << VERTICAL_SHIFT;
+	static const unsigned VERTICAL_SHIFT = 0;
+	static const unsigned VERTICAL_GROW_SEND_TO_CLIENT = 1 << VERTICAL_SHIFT;
+	static const unsigned VERTICAL_ALIGN_TOP = 2 << VERTICAL_SHIFT;
+	static const unsigned VERTICAL_ALIGN_CENTER = 3 << VERTICAL_SHIFT;
+	static const unsigned VERTICAL_ALIGN_BOTTOM = 4 << VERTICAL_SHIFT;
+	static const unsigned VERTICAL_MASK = 7 << VERTICAL_SHIFT;
 
-	static const unsigned HORIZONTAL_SHIFT               = 3;
-	static const unsigned HORIZONTAL_GROW_SEND_TO_CLIENT = 1 << HORIZONTAL_SHIFT;
-	static const unsigned HORIZONTAL_ALIGN_LEFT          = 2 << HORIZONTAL_SHIFT;
-	static const unsigned HORIZONTAL_ALIGN_CENTER        = 3 << HORIZONTAL_SHIFT;
-	static const unsigned HORIZONTAL_ALIGN_RIGHT         = 4 << HORIZONTAL_SHIFT;
-	static const unsigned HORIZONTAL_MASK                = 7 << HORIZONTAL_SHIFT;
+	static const unsigned HORIZONTAL_SHIFT = 3;
+	static const unsigned HORIZONTAL_GROW_SEND_TO_CLIENT = 1
+														   << HORIZONTAL_SHIFT;
+	static const unsigned HORIZONTAL_ALIGN_LEFT = 2 << HORIZONTAL_SHIFT;
+	static const unsigned HORIZONTAL_ALIGN_CENTER = 3 << HORIZONTAL_SHIFT;
+	static const unsigned HORIZONTAL_ALIGN_RIGHT = 4 << HORIZONTAL_SHIFT;
+	static const unsigned HORIZONTAL_MASK = 7 << HORIZONTAL_SHIFT;
 
-	static const unsigned BORDER_TOP                     = 1 << 6;
-	static const unsigned BORDER_BOTTOM                  = 1 << 7;
-	static const unsigned BORDER_LEFT                    = 1 << 8;
-	static const unsigned BORDER_RIGHT                   = 1 << 9;
-	static const unsigned BORDER_ALL                     =
-		BORDER_TOP | BORDER_BOTTOM | BORDER_LEFT | BORDER_RIGHT;
+	static const unsigned BORDER_TOP = 1 << 6;
+	static const unsigned BORDER_BOTTOM = 1 << 7;
+	static const unsigned BORDER_LEFT = 1 << 8;
+	static const unsigned BORDER_RIGHT = 1 << 9;
+	static const unsigned BORDER_ALL = BORDER_TOP | BORDER_BOTTOM | BORDER_LEFT
+									   | BORDER_RIGHT;
 
 	/***** ***** ***** ***** ROW COLUMN MANIPULATION ***** ***** ***** *****/
 
 	/**
-	 * Addes a row to end of the grid.
+	 * Adds a row to end of the grid.
 	 *
 	 * @param count               Number of rows to add, should be > 0.
 	 *
@@ -85,7 +82,7 @@ public:
 	{
 		assert(row < row_grow_factor_.size());
 		row_grow_factor_[row] = factor;
-		set_dirty();
+		set_is_dirty(true);
 	}
 
 	/**
@@ -98,9 +95,9 @@ public:
 	 */
 	void set_column_grow_factor(const unsigned column, const unsigned factor)
 	{
-		assert(column< col_grow_factor_.size());
+		assert(column < col_grow_factor_.size());
 		col_grow_factor_[column] = factor;
-		set_dirty();
+		set_is_dirty(true);
 	}
 
 	/***** ***** ***** ***** CHILD MANIPULATION ***** ***** ***** *****/
@@ -120,11 +117,14 @@ public:
 	 * @param border_size         The size of the border for the cell, how the
 	 *                            border is applied depends on the flags.
 	 */
-	void set_child(twidget* widget, const unsigned row,
-		const unsigned col, const unsigned flags, const unsigned border_size);
+	void set_child(widget* widget,
+				   const unsigned row,
+				   const unsigned col,
+				   const unsigned flags,
+				   const unsigned border_size);
 
 	/**
-	 * Exchangs a child in the grid.
+	 * Exchanges a child in the grid.
 	 *
 	 * It replaced the child with a certain id with the new widget but doesn't
 	 * touch the other settings of the child.
@@ -136,11 +136,12 @@ public:
 	 *
 	 * returns                    The widget which got removed (the parent of
 	 *                            the widget is cleared). If no widget found
-	 *                            and thus not replace NULL will returned.
+	 *                            and thus not replace nullptr will returned.
 	 */
-	twidget* swap_child(
-		const std::string& id, twidget* widget, const bool recurse,
-		twidget* new_parent = NULL);
+	widget* swap_child(const std::string& id,
+						widget* w,
+						const bool recurse,
+						widget* new_parent = nullptr);
 
 	/**
 	 * Removes and frees a widget in a cell.
@@ -163,7 +164,7 @@ public:
 	/**
 	 * Activates all children.
 	 *
-	 * If a child inherits from tcontrol or is a tgrid it will call
+	 * If a child inherits from styled_widget or is a grid it will call
 	 * set_active() for the child otherwise it ignores the widget.
 	 *
 	 * @param active              Parameter for set_active.
@@ -172,47 +173,52 @@ public:
 
 
 	/** Returns the widget in the selected cell. */
-	const twidget* widget(const unsigned row, const unsigned col) const
-		{ return child(row, col).widget(); }
+	const widget* get_widget(const unsigned row, const unsigned col) const
+	{
+		return get_child(row, col).get_widget();
+	}
 
 	/** Returns the widget in the selected cell. */
-	twidget* widget(const unsigned row, const unsigned col)
-		{ return child(row, col).widget(); }
+	widget* get_widget(const unsigned row, const unsigned col)
+	{
+		return get_child(row, col).get_widget();
+	}
 
+	virtual bool can_mouse_focus() const override { return false; }
 	/***** ***** ***** ***** layout functions ***** ***** ***** *****/
 
-	/** Inherited from twidget. */
-	void layout_init(const bool full_initialization);
+	/** See @ref widget::layout_initialise. */
+	virtual void layout_initialise(const bool full_initialisation) override;
 
 	/**
 	 * Tries to reduce the width of a container.
 	 *
-	 * @see @ref layout_algorihm for more information.
+	 * See @ref layout_algorithm for more information.
 	 *
 	 * @param maximum_width       The wanted maximum width.
 	 */
 	void reduce_width(const unsigned maximum_width);
 
-	/** Inherited from twidget. */
-	void request_reduce_width(const unsigned maximum_width);
+	/** See @ref widget::request_reduce_width. */
+	virtual void request_reduce_width(const unsigned maximum_width) override;
 
-	/** Inherited from twidget. */
-	void demand_reduce_width(const unsigned maximum_width);
+	/** See @ref widget::demand_reduce_width. */
+	virtual void demand_reduce_width(const unsigned maximum_width) override;
 
 	/**
 	 * Tries to reduce the height of a container.
 	 *
-	 * @see @ref layout_algorihm for more information.
+	 * See @ref layout_algorithm for more information.
 	 *
 	 * @param maximum_height      The wanted maximum height.
 	 */
 	void reduce_height(const unsigned maximum_height);
 
-	/** Inherited from twidget. */
-	void request_reduce_height(const unsigned maximum_height);
+	/** See @ref widget::request_reduce_height. */
+	virtual void request_reduce_height(const unsigned maximum_height) override;
 
-	/** Inherited from twidget. */
-	void demand_reduce_height(const unsigned maximum_height);
+	/** See @ref widget::demand_reduce_height. */
+	virtual void demand_reduce_height(const unsigned maximum_height) override;
 
 	/**
 	 * Recalculates the best size.
@@ -222,66 +228,73 @@ public:
 	 *
 	 * @returns                   The newly calculated size.
 	 */
-	tpoint recalculate_best_size();
+	point recalculate_best_size();
 
 private:
-
-	/** Inherited from twidget. */
-	tpoint calculate_best_size() const;
-public:
-
-	/** Inherited from twidget. */
-	bool can_wrap() const;
+	/** See @ref widget::calculate_best_size. */
+	virtual point calculate_best_size() const override;
 
 public:
-	/** Inherited from twidget. */
-	void place(const tpoint& origin, const tpoint& size);
+	/** See @ref widget::can_wrap. */
+	virtual bool can_wrap() const override;
+
+public:
+	/** See @ref widget::place. */
+	virtual void place(const point& origin, const point& size) override;
 
 	/***** ***** ***** ***** Inherited ***** ***** ***** *****/
 
-	/** Inherited from twidget. */
-	void set_origin(const tpoint& origin);
+	/** See @ref widget::set_origin. */
+	virtual void set_origin(const point& origin) override;
 
-	/** Inherited from twidget. */
-	void set_visible_area(const SDL_Rect& area);
+	/** See @ref widget::set_visible_rectangle. */
+	virtual void set_visible_rectangle(const SDL_Rect& rectangle) override;
 
-	/** Inherited from twidget. */
-	void layout_children();
+	/** See @ref widget::layout_children. */
+	virtual void layout_children() override;
 
-	/** Inherited from twidget. */
-	void child_populate_dirty_list(twindow& caller,
-			const std::vector<twidget*>& call_stack);
+	/** See @ref widget::child_populate_dirty_list. */
+	virtual void
+	child_populate_dirty_list(window& caller,
+							  const std::vector<widget*>& call_stack) override;
 
-	/** Inherited from twidget. */
-	twidget* find_at(const tpoint& coordinate, const bool must_be_active);
+	/** See @ref widget::find_at. */
+	virtual widget* find_at(const point& coordinate,
+							 const bool must_be_active) override;
 
-	/** Inherited from twidget. */
-	const twidget* find_at(const tpoint& coordinate,
-			const bool must_be_active) const;
+	/** See @ref widget::find_at. */
+	virtual const widget* find_at(const point& coordinate,
+								   const bool must_be_active) const override;
 
-	/** Inherited from twidget.*/
-	twidget* find(const std::string& id, const bool must_be_active);
+	/** See @ref widget::find. */
+	widget* find(const std::string& id, const bool must_be_active) override;
 
-	/** Inherited from twidget.*/
-	const twidget* find(const std::string& id,
-			const bool must_be_active) const;
+	/** See @ref widget::find. */
+	const widget* find(const std::string& id,
+						const bool must_be_active) const override;
 
-	/** Inherited from twidget.*/
-	bool has_widget(const twidget* widget) const;
+	/** See @ref widget::has_widget. */
+	virtual bool has_widget(const widget& widget) const override;
 
-	/** Inherited from tcontrol. */
-	bool disable_click_dismiss() const;
+	/** See @ref widget::disable_click_dismiss. */
+	bool disable_click_dismiss() const override;
 
-	/** Inherited from twidget. */
-	virtual iterator::twalker_* create_walker();
+	/** See @ref widget::create_walker. */
+	virtual iteration::walker_base* create_walker() override;
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
 	void set_rows(const unsigned rows);
-	unsigned int get_rows() const { return rows_; }
+	unsigned int get_rows() const
+	{
+		return rows_;
+	}
 
 	void set_cols(const unsigned cols);
-	unsigned int get_cols() const { return cols_; }
+	unsigned int get_cols() const
+	{
+		return cols_;
+	}
 
 	/**
 	 * Wrapper to set_rows and set_cols.
@@ -293,21 +306,20 @@ public:
 
 private:
 	/** Child item of the grid. */
-	class tchild
+	class child
 	{
-		friend struct tgrid_implementation;
-	public:
-		tchild() :
-			flags_(0),
-			border_size_(0),
-			widget_(NULL)
+		friend struct grid_implementation;
 
-			// Fixme make a class wo we can store some properties in the cache
-			// regarding size etc.
-			{}
+	public:
+		child() : flags_(0), border_size_(0), widget_(nullptr)
+
+		// Fixme make a class where we can store some properties in the cache
+		// regarding size etc.
+		{
+		}
 
 		/** Returns the best size for the cell. */
-		tpoint get_best_size() const;
+		point get_best_size() const;
 
 		/**
 		 * Places the widget in the cell.
@@ -315,29 +327,51 @@ private:
 		 * @param origin          The origin (x, y) for the widget.
 		 * @param size            The size for the widget.
 		 */
-		void place(tpoint origin, tpoint size);
+		void place(point origin, point size);
 
-		/** Forwards layout_init() to the cell. */
-		void layout_init(const bool full_initialization);
+		/** Forwards @ref grid::layout_initialise to the cell. */
+		void layout_initialise(const bool full_initialisation);
 
 		/** Returns the can_wrap for the cell. */
 		bool can_wrap() const
-			{ return widget_ ? widget_->can_wrap() : false; }
+		{
+			return widget_ ? widget_->can_wrap() : false;
+		}
 
 		/** Returns the id of the widget/ */
 		const std::string& id() const;
 
-		unsigned get_flags() const { return flags_; }
-		void set_flags(const unsigned flags) { flags_ = flags; }
+		unsigned get_flags() const
+		{
+			return flags_;
+		}
+		void set_flags(const unsigned flags)
+		{
+			flags_ = flags;
+		}
 
-		unsigned get_border_size() const { return border_size_; }
+		unsigned get_border_size() const
+		{
+			return border_size_;
+		}
 		void set_border_size(const unsigned border_size)
-			{  border_size_ = border_size; }
+		{
+			border_size_ = border_size;
+		}
 
-		const twidget* widget() const { return widget_; }
-		twidget* widget() { return widget_; }
+		const widget* get_widget() const
+		{
+			return widget_;
+		}
+		widget* get_widget()
+		{
+			return widget_;
+		}
 
-		void set_widget(twidget* widget) { widget_ = widget; }
+		void set_widget(widget* widget)
+		{
+			widget_ = widget;
+		}
 
 	private:
 		/** The flags for the border and cell setup. */
@@ -355,42 +389,62 @@ private:
 		 * Once the widget is assigned to the grid we own the widget and are
 		 * responsible for it's destruction.
 		 */
-		twidget* widget_;
+		widget* widget_;
 
 		/** Returns the space needed for the border. */
-		tpoint border_space() const;
+		point border_space() const;
 
-	}; // class tchild
+	}; // class child
 
 public:
-	/** Iterator for the tchild items. */
+	/** Iterator for the child items. */
 	class iterator
 	{
 
 	public:
+		iterator(std::vector<child>::iterator itor) : itor_(itor)
+		{
+		}
 
-		iterator(std::vector<tchild>::iterator itor) :
-			itor_(itor)
-			{}
-
-		iterator operator++() { return iterator(++itor_); }
-		iterator operator--() { return iterator(--itor_); }
-		twidget* operator->() { return itor_->widget(); }
-		twidget* operator*() { return itor_->widget(); }
+		iterator operator++()
+		{
+			return iterator(++itor_);
+		}
+		iterator operator--()
+		{
+			return iterator(--itor_);
+		}
+		widget* operator->()
+		{
+			return itor_->get_widget();
+		}
+		widget* operator*()
+		{
+			return itor_->get_widget();
+		}
 
 		bool operator==(const iterator& i) const
-			{ return i.itor_ == this->itor_; }
+		{
+			return i.itor_ == this->itor_;
+		}
 
 		bool operator!=(const iterator& i) const
-			{ return i.itor_ != this->itor_; }
+		{
+			return i.itor_ != this->itor_;
+		}
 
 	private:
-		std::vector<tchild>::iterator itor_;
-
+		std::vector<child>::iterator itor_;
 	};
 
-	iterator begin() { return iterator(children_.begin()); }
-	iterator end() { return iterator(children_.end()); }
+	iterator begin()
+	{
+		return iterator(children_.begin());
+	}
+	iterator end()
+	{
+		return iterator(children_.end());
+	}
 
 private:
 	/** The number of grid rows. */
@@ -419,18 +473,23 @@ private:
 	 * All children are stored in a 1D vector and the formula to access a cell
 	 * is: rows_ * col + row. All other vectors use the same access formula.
 	 */
-	std::vector<tchild> children_;
-	const tchild& child(const unsigned row, const unsigned col) const
-		{ return children_[rows_ * col + row]; }
-	tchild& child(const unsigned row, const unsigned col)
-		{ return children_[rows_ * col + row]; }
+	std::vector<child> children_;
+	const child& get_child(const unsigned row, const unsigned col) const
+	{
+		return children_[rows_ * col + row];
+	}
+	child& get_child(const unsigned row, const unsigned col)
+	{
+		return children_[rows_ * col + row];
+	}
 
 	/** Layouts the children in the grid. */
-	void layout(const tpoint& origin);
+	void layout(const point& origin);
 
-	/** Inherited from twidget. */
-	void impl_draw_children(surface& frame_buffer);
-
+	/** See @ref widget::impl_draw_children. */
+	virtual void impl_draw_children(surface& frame_buffer,
+									int x_offset,
+									int y_offset) override;
 };
 
 /**
@@ -442,9 +501,8 @@ private:
  * @param grid                    The grid to add the child to.
  * @param widget                  The widget to add as child to the grid.
  */
-void set_single_child(tgrid& grid, twidget* widget);
+void set_single_child(grid& grid, widget* widget);
 
 } // namespace gui2
 
 #endif
-

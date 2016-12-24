@@ -1,6 +1,5 @@
-/* $Id: unit_attack.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -15,8 +14,14 @@
 
 #define GETTEXT_DOMAIN "wesnoth-lib"
 
+#include "attack_prediction_display.hpp"
+
 #include "gui/dialogs/unit_attack.hpp"
 
+#include "font/text_formatting.hpp"
+#include "gui/auxiliary/find_widget.hpp"
+#include "gui/widgets/button.hpp"
+#include "gui/widgets/label.hpp"
 #include "gui/widgets/image.hpp"
 #ifdef GUI2_EXPERIMENTAL_LISTBOX
 #include "gui/widgets/list.hpp"
@@ -24,12 +29,24 @@
 #include "gui/widgets/listbox.hpp"
 #endif
 #include "gui/widgets/settings.hpp"
+#include "gui/widgets/unit_preview_pane.hpp"
 #include "gui/widgets/window.hpp"
-#include "unit.hpp"
+#include "game_config.hpp"
+#include "game_display.hpp"
+#include "gettext.hpp"
+#include "help/help.hpp"
+#include "language.hpp"
+#include "resources.hpp"
+#include "color.hpp"
+#include "team.hpp"
+#include "units/unit.hpp"
 
-#include <boost/foreach.hpp>
+#include "utils/functional.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /*WIKI
  * @page = GUIWindowDefinitionWML
@@ -40,29 +57,29 @@ namespace gui2 {
  * This shows the dialog for attacking units.
  *
  * @begin{table}{dialog_widgets}
- * attacker_portrait & & image   & o & Shows the portrait of the attacking unit. $
+ *                                     $
  * attacker_icon     & & image   & o & Shows the icon of the attacking unit. $
- * attacker_name     & & control & o & Shows the name of the attacking unit. $
+ * attacker_name     & & styled_widget & o & Shows the name of the attacking unit. $
  *
- * defender_portrait & & image   & o & Shows the portrait of the defending unit. $
+ * defender_portrait & & image   & o & Shows the portrait of the defending unit.
+ *                                     $
  * defender_icon     & & image   & o & Shows the icon of the defending unit. $
- * defender_name     & & control & o & Shows the name of the defending unit. $
+ * defender_name     & & styled_widget & o & Shows the name of the defending unit. $
  *
  *
- * weapon_list       & & listbox & m & The list with weapons to choos from. $
- * -attacker_weapon  & & control & o & The weapon for the attacker to use. $
- * -defender_weapon  & & control & o & The weapon for the defender to use. $
+ * weapon_list       & & listbox & m & The list with weapons to choose from. $
+ * -attacker_weapon  & & styled_widget & o & The weapon for the attacker to use. $
+ * -defender_weapon  & & styled_widget & o & The weapon for the defender to use. $
  *
  * @end{table}
  */
 
 REGISTER_DIALOG(unit_attack)
 
-tunit_attack::tunit_attack(
-		  const unit_map::iterator& attacker_itor
-		, const unit_map::iterator& defender_itor
-		, const std::vector<battle_context>& weapons
-		, const int best_weapon)
+unit_attack::unit_attack(const unit_map::iterator& attacker_itor,
+						   const unit_map::iterator& defender_itor,
+						   const std::vector<battle_context>& weapons,
+						   const int best_weapon)
 	: selected_weapon_(-1)
 	, attacker_itor_(attacker_itor)
 	, defender_itor_(defender_itor)
@@ -71,87 +88,113 @@ tunit_attack::tunit_attack(
 {
 }
 
-template<class T>
-static void set_label(
-		  twindow& window
-		, const std::string& id
-		, const std::string& label)
+void unit_attack::damage_calc_callback(window& window)
 {
-	T* widget = find_widget<T>(&window, id, false, false);
-	if(widget) {
-		widget->set_label(label);
-	}
+	const size_t index
+		= find_widget<listbox>(&window, "weapon_list", false).get_selected_row();
+
+	battle_prediction_pane battle_pane(weapons_[index], (*attacker_itor_).get_location(), (*defender_itor_).get_location());
+	std::vector<gui::preview_pane*> preview_panes = {&battle_pane};
+
+	gui::show_dialog(resources::screen->video(), nullptr, _("Damage Calculations"), "", gui::OK_ONLY, nullptr, &preview_panes);
 }
 
-static void set_attacker_info(twindow& w, unit& u)
+void unit_attack::pre_show(window& window)
 {
-	set_label<timage>(w, "attacker_portrait", u.absolute_image());
-	set_label<timage>(w, "attacker_icon", u.absolute_image());
-	set_label<tcontrol>(w, "attacker_name", u.name());
-}
+	connect_signal_mouse_left_click(
+			find_widget<button>(&window, "damage_calculation", false),
+			std::bind(&unit_attack::damage_calc_callback, this, std::ref(window)));
 
-static void set_defender_info(twindow& w, unit& u)
-{
-	set_label<timage>(w, "defender_portrait", u.absolute_image());
-	set_label<timage>(w, "defender_icon", u.absolute_image());
-	set_label<tcontrol>(w, "defender_name", u.name());
-}
+	find_widget<unit_preview_pane>(&window, "attacker_pane", false)
+		.set_displayed_unit(*attacker_itor_);
 
-static void set_weapon_info(twindow& window
-		, const std::vector<battle_context>& weapons
-		, const int best_weapon)
-{
-	tlistbox& weapon_list =
-			find_widget<tlistbox>(&window, "weapon_list", false);
+	find_widget<unit_preview_pane>(&window, "defender_pane", false)
+		.set_displayed_unit(*defender_itor_);
+
+	selected_weapon_ = -1;
+
+	listbox& weapon_list = find_widget<listbox>(&window, "weapon_list", false);
 	window.keyboard_capture(&weapon_list);
 
 	const config empty;
-	attack_type no_weapon(empty);
+	const attack_type no_weapon(empty);
 
-	BOOST_FOREACH(const battle_context& weapon, weapons) {
-		const battle_context_unit_stats& attacker =
-				weapon.get_attacker_stats();
+	for(const auto & weapon : weapons_) {
+		const battle_context_unit_stats& attacker = weapon.get_attacker_stats();
+		const battle_context_unit_stats& defender = weapon.get_defender_stats();
 
-		const battle_context_unit_stats& defender =
-				weapon.get_defender_stats();
+		const attack_type& attacker_weapon =
+			*attacker.weapon;
+		const attack_type& defender_weapon = defender.weapon ?
+			*defender.weapon : no_weapon;
 
-		const attack_type& attacker_weapon = attack_type(*attacker.weapon);
-		const attack_type& defender_weapon = attack_type(
-				defender.weapon ? *defender.weapon : no_weapon);
+		// Don't show if the atacker's weapon has at least one active "disable" special.
+		if(attacker_weapon.get_special_bool("disable")) {
+			continue;
+		}
+
+		const color_t a_cth_color = game_config::red_to_green(attacker.chance_to_hit);
+		const color_t d_cth_color = game_config::red_to_green(defender.chance_to_hit);
+
+		const std::string attw_name = !attacker_weapon.name().empty() ? attacker_weapon.name() : " ";
+		const std::string defw_name = !defender_weapon.name().empty() ? defender_weapon.name() : " ";
+
+		std::string range = attacker_weapon.range().empty() ? defender_weapon.range() : attacker_weapon.range();
+		if (!range.empty()) {
+			range = string_table["range_" + range];
+		}
+
+		const std::string& attw_apecials =
+			!attacker_weapon.weapon_specials().empty() ? " " + attacker_weapon.weapon_specials() : "";
+		const std::string& defw_specials =
+			!defender_weapon.weapon_specials().empty() ? " " + defender_weapon.weapon_specials() : "";
+
+		std::stringstream attacker_stats, defender_stats;
+
+		// Use attacker/defender.num_blows instead of attacker/defender_weapon.num_attacks() because the latter does not consider the swarm weapon special
+		attacker_stats << "<b>" << attw_name << "</b>" << "\n"
+			<< attacker.damage << font::weapon_numbers_sep << attacker.num_blows
+			<< attw_apecials << "\n"
+			<< font::span_color(a_cth_color) << attacker.chance_to_hit << "%</span>";
+
+		defender_stats << "<b>" << defw_name << "</b>" << "\n"
+			<< defender.damage << font::weapon_numbers_sep << defender.num_blows
+			<< defw_specials << "\n"
+			<< font::span_color(d_cth_color) << defender.chance_to_hit << "%</span>";
 
 		std::map<std::string, string_map> data;
 		string_map item;
 
-		item["label"] = attacker_weapon.name();
-		data.insert(std::make_pair("attacker_weapon", item));
+		item["use_markup"] = "true";
 
-		item["label"] = defender_weapon.name();
-		data.insert(std::make_pair("defender_weapon", item));
+		item["label"] = attacker_weapon.icon();
+		data.emplace("attacker_weapon_icon", item);
+
+		item["label"] = attacker_stats.str();
+		data.emplace("attacker_weapon", item);
+
+		item["label"] = "<span color='#a69275'>" + font::unicode_em_dash + " " + range + " " + font::unicode_em_dash + "</span>";
+		data.emplace("range", item);
+
+		item["label"] = defender_stats.str();
+		data.emplace("defender_weapon", item);
+
+		item["label"] = defender_weapon.icon();
+		data.emplace("defender_weapon_icon", item);
 
 		weapon_list.add_row(data);
-
 	}
 
-	assert(best_weapon < static_cast<int>(weapon_list.get_item_count()));
-	weapon_list.select_row(best_weapon);
+	const int last_item = weapon_list.get_item_count() - 1;
+	weapon_list.select_row(std::min(best_weapon_, last_item));
 }
 
-void tunit_attack::pre_show(CVideo& /*video*/, twindow& window)
+void unit_attack::post_show(window& window)
 {
-	set_attacker_info(window, *attacker_itor_);
-	set_defender_info(window, *defender_itor_);
-
-	selected_weapon_ = -1;
-	set_weapon_info(window, weapons_, best_weapon_);
-}
-
-void tunit_attack::post_show(twindow& window)
-{
-	if(get_retval() == twindow::OK) {
-		selected_weapon_ = find_widget<tlistbox>(&window, "weapon_list", false)
-				.get_selected_row();
+	if(get_retval() == window::OK) {
+		selected_weapon_ = find_widget<listbox>(&window, "weapon_list", false).get_selected_row();
 	}
 }
 
+} // namespace dialogs
 } // namespace gui2
-

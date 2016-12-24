@@ -1,6 +1,5 @@
-/* $Id: button.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,7 +16,8 @@
 
 #include "widget.hpp"
 
-#include "../exceptions.hpp"
+#include "exceptions.hpp"
+
 
 namespace gui {
 
@@ -30,13 +30,14 @@ public:
             {}
     };
 
-	enum TYPE { TYPE_PRESS, TYPE_CHECK, TYPE_TURBO, TYPE_IMAGE };
+	enum TYPE { TYPE_PRESS, TYPE_CHECK, TYPE_TURBO, TYPE_IMAGE, TYPE_RADIO };
 
 	enum SPACE_CONSUMPTION { DEFAULT_SPACE, MINIMUM_SPACE };
 
 	button(CVideo& video, const std::string& label, TYPE type=TYPE_PRESS,
 	       std::string button_image="", SPACE_CONSUMPTION spacing=DEFAULT_SPACE,
-		   const bool auto_join=true);
+		   const bool auto_join=true, std::string overlay_image="");
+
 
 	/** Default implementation, but defined out-of-line for efficiency reasons. */
 	virtual ~button();
@@ -45,6 +46,9 @@ public:
 	bool checked() const;
 
 	void set_label(const std::string& val);
+	void set_image(const std::string& image_file_base);
+	void set_overlay(const std::string& image_file_base);
+	void set_image_path_suffix(const std::string& suffix) { button_image_path_suffix_ = suffix; load_images(); }
 
 	bool pressed();
 	bool hit(int x, int y) const;
@@ -62,15 +66,19 @@ protected:
 
 private:
 
+	void load_images();
+
 	void calculate_size();
 
-	std::string label_;
-	surface image_, pressedImage_, activeImage_, pressedActiveImage_;
+	std::string label_text_;
+
+	surface image_, pressedImage_, activeImage_, pressedActiveImage_,
+		touchedImage_, disabledImage_, pressedDisabledImage_,
+		overlayImage_, overlayPressedImage_, overlayPressedDisabledImage_, overlayDisabledImage_,
+		overlayActiveImage_;
 	SDL_Rect textRect_;
 
-	bool button_;
-
-	enum STATE { UNINIT, NORMAL, ACTIVE, PRESSED, PRESSED_ACTIVE };
+	enum STATE { UNINIT, NORMAL, ACTIVE, PRESSED, PRESSED_ACTIVE, TOUCHED_NORMAL, TOUCHED_PRESSED };
 	STATE state_;
 
 	bool pressed_;
@@ -78,6 +86,10 @@ private:
 	SPACE_CONSUMPTION spacing_;
 
 	int base_height_, base_width_;
+
+	std::string button_image_name_;
+	std::string button_overlay_image_name_;
+	std::string button_image_path_suffix_;
 
 }; //end class button
 

@@ -1,6 +1,5 @@
-/* $Id: statistics.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,7 +20,6 @@
 class config;
 class config_writer;
 class unit;
-//#include "actions.hpp"
 #include <string>
 #include <map>
 #include <vector>
@@ -101,6 +99,7 @@ namespace statistics
 	void recall_unit(const unit& u);
 	void un_recall_unit(const unit& u);
 	void un_recruit_unit(const unit& u);
+	int un_recall_unit_cost(const unit& u);
 
 	void advance_unit(const unit& u);
 
@@ -110,8 +109,12 @@ namespace statistics
 	void fresh_stats();
 	void clear_current_scenario();
 
-	void reset_turn_stats(std::string save_id);
-	stats calculate_stats(int category, std::string save_id);
+	void reset_turn_stats(const std::string & save_id);
+	stats calculate_stats(const std::string & save_id);
+	/// Stats (and name) for each scenario. The pointers are never nullptr.
+	typedef std::vector< std::pair<const std::string *, const stats *> > levels;
+	/// Returns a list of names and stats for each scenario in the current campaign.
+	levels level_stats(const std::string & save_id);
 } // end namespace statistics
 
 #endif

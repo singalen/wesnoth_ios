@@ -1,7 +1,6 @@
-/* $Id: preprocessor.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
    Copyright (C) 2003 by David White <dave@whitevine.net>
-   Copyright (C) 2005 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+   Copyright (C) 2005 - 2016 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -23,7 +22,7 @@
 #include <map>
 #include <vector>
 
-#include "game_errors.hpp"
+#include "exceptions.hpp"
 
 class config_writer;
 class config;
@@ -33,13 +32,14 @@ typedef std::map< std::string, preproc_define > preproc_map;
 
 struct preproc_define
 {
-	preproc_define() : value(), arguments(), textdomain(), linenum(0), location() {}
-	explicit preproc_define(std::string const &val) : value(val), arguments(), textdomain(), linenum(0), location() {}
-	preproc_define(std::string const &val, std::vector< std::string > const &args,
-	               std::string const &domain, int line, std::string const &loc)
-		: value(val), arguments(args), textdomain(domain), linenum(line), location(loc) {}
+	preproc_define() : value(), arguments(), optional_arguments(), textdomain(), linenum(0), location() {}
+	explicit preproc_define(const std::string& val) : value(val), arguments(), optional_arguments(), textdomain(), linenum(0), location() {}
+	preproc_define(const std::string& val, const std::vector< std::string > &args, const std::map< std::string, std::string> &optargs,
+	               const std::string& domain, int line, const std::string& loc)
+		: value(val), arguments(args), optional_arguments(optargs), textdomain(domain), linenum(line), location(loc) {}
 	std::string value;
 	std::vector< std::string > arguments;
+	std::map< std::string, std::string> optional_arguments;
 	std::string textdomain;
 	int linenum;
 	std::string location;
@@ -72,7 +72,7 @@ std::ostream& operator<<(std::ostream& stream, const preproc_map::value_type& de
  *
  * @returns                       The resulting preprocessed file data.
  */
-std::istream *preprocess_file(std::string const &fname, preproc_map *defines = NULL);
+std::istream *preprocess_file(const std::string& fname, preproc_map *defines = nullptr);
 
 void preprocess_resource(const std::string& res_name, preproc_map *defines_map,
 			bool write_cfg=false, bool write_plain_cfg=false, std::string target_directory="");

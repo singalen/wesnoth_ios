@@ -1,6 +1,5 @@
-/* $Id: key.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,7 +15,7 @@
 #ifndef KEY_HPP_INCLUDED
 #define KEY_HPP_INCLUDED
 
-#include "SDL.h"
+#include <cstdint>
 
 /**
  * Class that keeps track of all the keys on the keyboard.
@@ -27,16 +26,11 @@
  */
 class CKey
 {
-	Uint8 *key_list;
+	const uint8_t *key_list;
 
 public:
 	CKey();
-	bool operator[](int k) const { 
-//        return key_list[k] > 0;  dailin
-        int keycode = k;
-        int scancode = SDL_GetScancodeFromKey(keycode);
-        return int(key_list[scancode]) > 0;
-    }
+	bool operator[](int k) const;
 };
 
 #endif

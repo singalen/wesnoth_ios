@@ -1,6 +1,5 @@
-/* $Id: walker.hpp 49247 2011-04-17 07:34:51Z mordante $ */
 /*
-   Copyright (C) 2011 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2011 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,28 +15,30 @@
 #ifndef GUI_WIDGETS_AUXILIARY_ITERATOR_WALKER_HPP_INCLUDED
 #define GUI_WIDGETS_AUXILIARY_ITERATOR_WALKER_HPP_INCLUDED
 
-namespace gui2 {
+namespace gui2
+{
 
-class twidget;
+class widget;
 
-namespace iterator {
+namespace iteration
+{
 
 /** The walker abstract base class. */
-class twalker_
+class walker_base
 {
 public:
-
-	virtual ~twalker_() {}
+	virtual ~walker_base()
+	{
+	}
 
 	/** The level to walk at. */
-	enum tlevel
-	{
+	enum level {
 		/** Visit the widget itself. */
-		  widget
+		self,
 		/** Visit its nested grid. */
-		, grid
+		internal,
 		/** Visit the children of its nested grid. */
-		, child
+		child
 	};
 
 	/**
@@ -45,8 +46,7 @@ public:
 	 *
 	 * The enum is used to return the state of @ref next.
 	 */
-	enum tstate
-	{
+	enum state_t {
 		/**
 		 * When calling next the following it has the following results.
 		 *
@@ -55,7 +55,7 @@ public:
 		 * @post the next widget became the current one.
 		 * @post at_end == false
 		 */
-		  valid
+		valid
 
 		/**
 		 * When calling next the following it has the following results.
@@ -65,7 +65,8 @@ public:
 		 * @post there is no longer a current widget.
 		 * @post at_end == true
 		 */
-		, invalid
+		,
+		invalid
 
 		/**
 		 * When calling next the following it has the following results.
@@ -74,8 +75,8 @@ public:
 		 *
 		 * @post at_end == true
 		 */
-		, fail
-
+		,
+		fail
 	};
 
 	/**
@@ -86,7 +87,7 @@ public:
 	 *
 	 * @returns                   The status of the operation.
 	 */
-	virtual tstate next(const tlevel level) = 0;
+	virtual state_t next(const level level) = 0;
 
 	/**
 	 * Returns whether the current widget is valid.
@@ -97,25 +98,24 @@ public:
 	 *
 	 * @returns                   Whether the current widget is valid.
 	 */
-	virtual bool at_end(const tlevel level) const = 0;
+	virtual bool at_end(const level level) const = 0;
 
 	/**
 	 * Returns a pointer to the current widget.
 	 *
-	 * @pre @ref at_end(level) == false
+	 * @pre                       The following assertion holds:
+	 *                            @code at_end(level) == false @endcode
 	 *
 	 * @param level               Determines from which level should the
 	 *                            current widget be returned.
 	 *
 	 * @returns                   Pointer to the current widget.
 	 */
-	virtual gui2::twidget* get(const tlevel level) = 0;
+	virtual gui2::widget* get(const level level) = 0;
 };
 
-} // namespace iterator
+} // namespace iteration
 
 } // namespace gui2
 
 #endif
-
-

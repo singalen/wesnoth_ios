@@ -1,6 +1,5 @@
-/* $Id: sample_user_handler.cpp 55168 2012-08-27 07:11:38Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Thomas Baumhauer <thomas.baumhauer@NOSPAMgmail.com>
+   Copyright (C) 2008 - 2016 by Thomas Baumhauer <thomas.baumhauer@NOSPAMgmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -13,11 +12,11 @@
    See the COPYING file for more details.
 */
 
-#include "sample_user_handler.hpp"
+#include "server/sample_user_handler.hpp"
 
 #include "config.hpp"
+#include "lexical_cast.hpp"
 #include "serialization/string_utils.hpp"
-#include "util.hpp"
 
 #include <iostream>
 
@@ -186,7 +185,7 @@ void suh::clean_up() {
 		return;
 	}
 
-	time_t now = time(NULL);
+	time_t now = time(nullptr);
 
 	//A minute has 60 seconds, an hour 60 minutes and
 	//a day 24 hours.
@@ -206,7 +205,7 @@ bool suh::login(const std::string& name, const std::string& password, const std:
 }
 
 void suh::user_logged_in(const std::string& name) {
-	set_lastlogin(name, time(NULL));
+	set_lastlogin(name, time(nullptr));
 }
 
 void suh::password_reminder(const std::string& name) {

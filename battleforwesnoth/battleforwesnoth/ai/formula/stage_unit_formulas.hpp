@@ -1,6 +1,5 @@
-/* $Id: stage_unit_formulas.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,7 +21,7 @@
 #ifndef AI_FORMULA_STAGE_UNIT_FORMULAS_HPP_INCLUDED
 #define AI_FORMULA_STAGE_UNIT_FORMULAS_HPP_INCLUDED
 
-#include "../composite/stage.hpp"
+#include "ai/composite/stage.hpp"
 
 
 #ifdef _MSC_VER
@@ -48,7 +47,6 @@ public:
         config to_config() const;
 
 private:
-        const config &cfg_;
 	formula_ai &fai_;
 
 };

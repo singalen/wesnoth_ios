@@ -1,6 +1,5 @@
-/* $Id: iterator.cpp 49247 2011-04-17 07:34:51Z mordante $ */
 /*
-   Copyright (C) 2011 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2011 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,12 +16,14 @@
 
 #include "gui/auxiliary/iterator/iterator.hpp"
 
-namespace gui2 {
+namespace gui2
+{
 
-namespace iterator {
+namespace iteration
+{
 
 
-} // namespace iterator
+} // namespace iteration
 
 } // namespace gui2
 
@@ -45,21 +46,21 @@ namespace iterator {
  *
  * @section gui2_iterator_level Level
  *
- * The levels are defined in @ref gui2::iterator::twalker_::tlevel. The
+ * The levels are defined in @ref gui2::iteration::walker_base::level. The
  * level allows the user to only visit a part of the widget tree.
  *
- * @note At the moment when gui2::iterator::twalker_::widget is skipped the
- * child class also skips its children. This behaviour might change.
+ * @note At the moment when gui2::iteration::walker_base::widget is skipped the
+ * child class also skips its children. This behavior might change.
  *
  *
  * @section gui2_iterator_walker Walker
  *
- * The is a group of classes inheriting from @ref gui2::iterator::twalker_
- * the objects are created from @ref gui2::twidget::create_walker. The
+ * The is a group of classes inheriting from @ref gui2::iteration::walker_base
+ * the objects are created from @ref gui2::widget::create_walker. The
  * walker allows to visit the several levels of the widget. This means
  * several widgets need to override the function in a subclass. For example
  * most @em simple widgets don't have a grid or children so they can use the
- * walker created from @ref gui2::tcontrol. But containers need to create a
+ * walker created from @ref gui2::styled_widget. But containers need to create a
  * different walker.
  *
  *
@@ -67,8 +68,8 @@ namespace iterator {
  *
  * This policy simply defines whether or not to visit the widgets at a
  * certain level. There are two visit policies:
- * - @ref gui2::iterator::policy::visit::tvisit visits the widget at the level.
- * - @ref gui2::iterator::policy::visit::tskip skips the widget at the level.
+ * - @ref gui2::iteration::policy::visit::visit_level visits the widget at the level.
+ * - @ref gui2::iteration::policy::visit::skip_level skips the widget at the level.
  *
  * There are no more visit policies expected for the future. These policies
  * are normally not used directly, but set from the @ref
@@ -81,8 +82,8 @@ namespace iterator {
  * first, this level before diving down etc. @ref tests/gui/iterator.cpp
  * shows more information.
  * The following policies have been defined:
- * - @ref gui2::iterator::policy::order::ttop_down
- * - @ref gui2::iterator::policy::order::tbottom_up
+ * - @ref gui2::iteration::policy::order::top_down
+ * - @ref gui2::iteration::policy::order::bottom_up
  *
  * The next sections describe in which order the widgets are visited. In the
  * description we use the following widget tree.
@@ -95,7 +96,7 @@ namespace iterator {
  *
  * The types are:
  * - grid 0, 1
- * - control 2, 3, 4, 6, 7, 8
+ * - styled_widget 2, 3, 4, 6, 7, 8
  *
  * The examples assume all levels will be visited.
  *
@@ -116,7 +117,7 @@ namespace iterator {
  *
  * When the iterator is created the iterator tries to go down all the child
  * widgets to get at the bottom level. That widget will be visited first. Then
- * it will first visit all sibblings before going up the the next layer.
+ * it will first visit all siblings before going up the the next layer.
  *
  * @todo Write the entire visiting algorithm.
  *
@@ -132,13 +133,13 @@ namespace iterator {
  *
  * When during the iteration a widget is added to or removed from the
  * widget-tree being walked the iterator becomes invalid. Using the iterator
- * when it is invalid results in Undefined Behaviour.
+ * when it is invalid results in Undefined Behavior.
  *
  * When it's certain there's at least one widget to visit a simple do while loop
  * can be used. It the policy visits the widget, it's certain there is at least
  * one widget to visit. Below some sample code:
 @code
-titerator<policy> itor(root);
+iterator<policy> itor(root);
 assert(!itor.at_end());
 do {
 	...
@@ -148,7 +149,7 @@ do {
  *
  * When there might be no widget to visit a simple for loop can be used:
 @code
-for(titerator<policy> itor(root); !itor.at_end(); ++itor) {
+for(iterator<policy> itor(root); !itor.at_end(); ++itor) {
 	...
 	...
 }
@@ -185,4 +186,3 @@ for(titerator<policy> itor(root); !itor.at_end(); ++itor) {
  *
  * [GoF] http://en.wikipedia.org/wiki/Design_Patterns_%28book%29
  */
-

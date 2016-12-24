@@ -1,6 +1,5 @@
-/* $Id: scrollbar.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,19 +16,19 @@
 
 #include "gui/widgets/scrollbar.hpp"
 
-#include "gui/auxiliary/log.hpp"
+#include "gui/core/log.hpp"
 #include "gui/widgets/window.hpp" // Needed for invalidate_layout()
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
+#include "utils/functional.hpp"
 
 #define LOG_SCOPE_HEADER get_control_type() + " [" + id() + "] " + __func__
 #define LOG_HEADER LOG_SCOPE_HEADER + ':'
 
-namespace gui2 {
+namespace gui2
+{
 
-tscrollbar_::tscrollbar_()
-	: tcontrol(COUNT)
+scrollbar_base::scrollbar_base()
+	: styled_widget(COUNT)
 	, state_(ENABLED)
 	, item_count_(0)
 	, item_position_(0)
@@ -40,81 +39,97 @@ tscrollbar_::tscrollbar_()
 	, positioner_offset_(0)
 	, positioner_length_(0)
 {
-	connect_signal<event::MOUSE_ENTER>(boost::bind(
-				&tscrollbar_::signal_handler_mouse_enter, this, _2, _3, _4));
-	connect_signal<event::MOUSE_MOTION>(boost::bind(
-				  &tscrollbar_::signal_handler_mouse_motion
-				, this
-				, _2
-				, _3
-				, _4
-				, _5));
-	connect_signal<event::MOUSE_LEAVE>(boost::bind(
-				&tscrollbar_::signal_handler_mouse_leave, this, _2, _3));
-	connect_signal<event::LEFT_BUTTON_DOWN>(boost::bind(
-				&tscrollbar_::signal_handler_left_button_down, this, _2, _3));
-	connect_signal<event::LEFT_BUTTON_UP>(boost::bind(
-				&tscrollbar_::signal_handler_left_button_up, this, _2, _3));
+	connect_signal<event::MOUSE_ENTER>(std::bind(
+			&scrollbar_base::signal_handler_mouse_enter, this, _2, _3, _4));
+	connect_signal<event::MOUSE_MOTION>(std::bind(
+			&scrollbar_base::signal_handler_mouse_motion, this, _2, _3, _4, _5));
+	connect_signal<event::MOUSE_LEAVE>(std::bind(
+			&scrollbar_base::signal_handler_mouse_leave, this, _2, _3));
+	connect_signal<event::LEFT_BUTTON_DOWN>(std::bind(
+			&scrollbar_base::signal_handler_left_button_down, this, _2, _3));
+	connect_signal<event::LEFT_BUTTON_UP>(std::bind(
+			&scrollbar_base::signal_handler_left_button_up, this, _2, _3));
 }
 
-void tscrollbar_::scroll(const tscroll scroll)
+void scrollbar_base::scroll(const scroll_mode scroll)
 {
 	switch(scroll) {
-		case BEGIN :
+		case BEGIN:
 			set_item_position(0);
 			break;
 
-		case ITEM_BACKWARDS :
+		case ITEM_BACKWARDS:
 			if(item_position_) {
 				set_item_position(item_position_ - 1);
 			}
 			break;
 
-		case HALF_JUMP_BACKWARDS :
-			set_item_position(item_position_ > (visible_items_ / 2) ?
-				item_position_ - (visible_items_ / 2) : 0);
+		case HALF_JUMP_BACKWARDS:
+			set_item_position(item_position_ > (visible_items_ / 2)
+									  ? item_position_ - (visible_items_ / 2)
+									  : 0);
 			break;
 
-		case JUMP_BACKWARDS :
-			set_item_position(item_position_ > visible_items_ ?
-				item_position_ - visible_items_  : 0);
+		case JUMP_BACKWARDS:
+			set_item_position(item_position_ > visible_items_
+									  ? item_position_ - visible_items_
+									  : 0);
 			break;
 
-		case END :
+		case END:
 			set_item_position(item_count_ - 1);
 			break;
 
-		case ITEM_FORWARD :
+		case ITEM_FORWARD:
 			set_item_position(item_position_ + 1);
 			break;
 
-		case HALF_JUMP_FORWARD :
-			set_item_position(item_position_ +  (visible_items_ / 2));
+		case HALF_JUMP_FORWARD:
+			set_item_position(item_position_ + (visible_items_ / 2));
 			break;
 
-		case JUMP_FORWARD :
-			set_item_position(item_position_ +  visible_items_ );
+		case JUMP_FORWARD:
+			set_item_position(item_position_ + visible_items_);
 			break;
 
-		default :
+		default:
 			assert(false);
-		}
+	}
+
+	fire(event::NOTIFY_MODIFIED, *this, nullptr);
 }
 
-void tscrollbar_::place(const tpoint& origin, const tpoint& size)
+void scrollbar_base::place(const point& origin, const point& size)
 {
 	// Inherited.
-	tcontrol::place(origin, size);
+	styled_widget::place(origin, size);
 
 	recalculate();
 }
 
-void tscrollbar_::set_item_position(const unsigned item_position)
+void scrollbar_base::set_active(const bool active)
+{
+	if(get_active() != active) {
+		set_state(active ? ENABLED : DISABLED);
+	}
+}
+
+bool scrollbar_base::get_active() const
+{
+	return state_ != DISABLED;
+}
+
+unsigned scrollbar_base::get_state() const
+{
+	return state_;
+}
+
+void scrollbar_base::set_item_position(const unsigned item_position)
 {
 	// Set the value always execute since we update a part of the state.
 	item_position_ = item_position > item_count_ - visible_items_
-			? item_count_ - visible_items_
-			: item_position;
+							 ? item_count_ - visible_items_
+							 : item_position;
 
 	item_position_ = (item_position_ + step_size_ - 1) / step_size_;
 
@@ -123,31 +138,34 @@ void tscrollbar_::set_item_position(const unsigned item_position)
 	}
 
 	// Determine the pixel offset of the item position.
-	positioner_offset_ = static_cast<unsigned>(item_position_ * pixels_per_step_);
+	positioner_offset_
+			= static_cast<unsigned>(item_position_ * pixels_per_step_);
 
 	update_canvas();
 
 	assert(item_position_ <= item_count_ - visible_items_);
 }
 
-void tscrollbar_::update_canvas() {
+void scrollbar_base::update_canvas()
+{
 
-	BOOST_FOREACH(tcanvas& tmp, canvas()) {
+	for(auto & tmp : get_canvas())
+	{
 		tmp.set_variable("positioner_offset", variant(positioner_offset_));
 		tmp.set_variable("positioner_length", variant(positioner_length_));
 	}
-	set_dirty();
+	set_is_dirty(true);
 }
 
-void tscrollbar_::set_state(const tstate state)
+void scrollbar_base::set_state(const state_t state)
 {
 	if(state != state_) {
 		state_ = state;
-		set_dirty(true);
+		set_is_dirty(true);
 	}
 }
 
-void tscrollbar_::recalculate()
+void scrollbar_base::recalculate()
 {
 	// We can be called before the size has been set up in that case we can't do
 	// the proper recalcultion so stop before we die with an assert.
@@ -156,8 +174,8 @@ void tscrollbar_::recalculate()
 	}
 
 	// Get the available size for the slider to move.
-	const int available_length =
-		get_length() - offset_before() - offset_after();
+	const int available_length = get_length() - offset_before()
+								 - offset_after();
 
 	assert(available_length > 0);
 
@@ -178,28 +196,28 @@ void tscrollbar_::recalculate()
 	 * case. (This hack also added the gui/widgets/window.hpp include.)
 	 */
 	if(!visible_items_) {
-		twindow* window = get_window();
+		window* window = get_window();
 		assert(window);
 		window->invalidate_layout();
 		ERR_GUI_G << LOG_HEADER
-				<< " Can't recalculate size, force a window layout phase.\n";
+				  << " Can't recalculate size, force a window layout phase.\n";
 		return;
 	}
 
 	assert(step_size_);
 	assert(visible_items_);
 
-	const unsigned steps = (item_count_ - visible_items_ + step_size_ - 1) / step_size_;
+	const unsigned steps = (item_count_ - visible_items_ - step_size_)
+						   / step_size_;
 
 	positioner_length_ = available_length * visible_items_ / item_count_;
 	recalculate_positioner();
 
 	// Make sure we can also show the last step, so add one more step.
-	pixels_per_step_ =
-		(available_length - positioner_length_)
-		/ static_cast<float>(steps + 1);
+	pixels_per_step_ = (available_length - positioner_length_)
+					   / static_cast<float>(steps + 1);
 
-	set_item_position(item_position_);
+	set_item_position(item_position_ * step_size_);
 #if 0
 	std::cerr << "Scrollbar recalculate overview:\n"
 		<< "item_count_ " << item_count_
@@ -219,7 +237,7 @@ void tscrollbar_::recalculate()
 #endif
 }
 
-void tscrollbar_::recalculate_positioner()
+void scrollbar_base::recalculate_positioner()
 {
 	const unsigned minimum = minimum_positioner_length();
 	const unsigned maximum = maximum_positioner_length();
@@ -233,7 +251,7 @@ void tscrollbar_::recalculate_positioner()
 	}
 }
 
-void tscrollbar_::move_positioner(const int distance)
+void scrollbar_base::move_positioner(const int distance)
 {
 	if(distance < 0 && -distance > static_cast<int>(positioner_offset_)) {
 		positioner_offset_ = 0;
@@ -241,14 +259,15 @@ void tscrollbar_::move_positioner(const int distance)
 		positioner_offset_ += distance;
 	}
 
-	const unsigned length = get_length() - offset_before() - offset_after() - positioner_length_;
+	const unsigned length = get_length() - offset_before() - offset_after()
+							- positioner_length_;
 
 	if(positioner_offset_ > length) {
 		positioner_offset_ = length;
 	}
 
-	unsigned position =
-		static_cast<unsigned>(positioner_offset_ / pixels_per_step_);
+	unsigned position
+			= static_cast<unsigned>(positioner_offset_ / pixels_per_step_);
 
 	// Note due to floating point rounding the position might be outside the
 	// available positions so set it back.
@@ -261,9 +280,9 @@ void tscrollbar_::move_positioner(const int distance)
 
 		child_callback_positioner_moved();
 
-		fire(event::NOTIFY_MODIFIED, *this, NULL);
+		fire(event::NOTIFY_MODIFIED, *this, nullptr);
 
-//		positioner_moved_notifier_.notify();
+		// positioner_moved_notifier_.notify();
 	}
 #if 0
 	std::cerr << "Scrollbar move overview:\n"
@@ -284,17 +303,19 @@ void tscrollbar_::move_positioner(const int distance)
 	update_canvas();
 }
 
-void tscrollbar_::load_config_extra()
+void scrollbar_base::load_config_extra()
 {
 	// These values won't change so set them here.
-	BOOST_FOREACH(tcanvas& tmp, canvas()) {
+	for(auto & tmp : get_canvas())
+	{
 		tmp.set_variable("offset_before", variant(offset_before()));
 		tmp.set_variable("offset_after", variant(offset_after()));
 	}
 }
 
-void tscrollbar_::signal_handler_mouse_enter(
-		const event::tevent event, bool& handled, bool& halt)
+void scrollbar_base::signal_handler_mouse_enter(const event::ui_event event,
+											 bool& handled,
+											 bool& halt)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -302,69 +323,70 @@ void tscrollbar_::signal_handler_mouse_enter(
 	signal_handler_mouse_motion(event, handled, halt, get_mouse_position());
 }
 
-void tscrollbar_::signal_handler_mouse_motion(
-		  const event::tevent event
-		, bool& handled
-		, bool& halt
-		, const tpoint& coordinate)
+void scrollbar_base::signal_handler_mouse_motion(const event::ui_event event,
+											  bool& handled,
+											  bool& halt,
+											  const point& coordinate)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << " at " << coordinate << ".\n";
 
-	tpoint mouse = coordinate;
+	point mouse = coordinate;
 	mouse.x -= get_x();
 	mouse.y -= get_y();
 
 	switch(state_) {
-		case ENABLED :
+		case ENABLED:
 			if(on_positioner(mouse)) {
-				set_state(FOCUSSED);
+				set_state(FOCUSED);
 			}
 
 			break;
 
-		case PRESSED : {
+		case PRESSED: {
+			if(in_orthogonal_range(mouse)) {
 				const int distance = get_length_difference(mouse_, mouse);
 				mouse_ = mouse;
 				move_positioner(distance);
 			}
-			break;
 
-		case FOCUSSED :
+		} break;
+
+		case FOCUSED:
 			if(!on_positioner(mouse)) {
 				set_state(ENABLED);
 			}
 			break;
 
-		case DISABLED :
+		case DISABLED:
 			// Shouldn't be possible, but seems to happen in the lobby
 			// if a resize layout happens during dragging.
 			halt = true;
 			break;
 
-		default :
+		default:
 			assert(false);
 	}
 	handled = true;
 }
 
-void tscrollbar_::signal_handler_mouse_leave(
-		const event::tevent event, bool& handled)
+void scrollbar_base::signal_handler_mouse_leave(const event::ui_event event,
+											 bool& handled)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
-	if(state_ == FOCUSSED) {
+	if(state_ == FOCUSED) {
 		set_state(ENABLED);
 	}
 	handled = true;
 }
 
 
-void tscrollbar_::signal_handler_left_button_down(
-		const event::tevent event, bool& handled)
+void scrollbar_base::signal_handler_left_button_down(const event::ui_event event,
+												  bool& handled)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
-	tpoint mouse = get_mouse_position();
+	point mouse = get_mouse_position();
 	mouse.x -= get_x();
 	mouse.y -= get_y();
 
@@ -379,12 +401,12 @@ void tscrollbar_::signal_handler_left_button_down(
 
 	if(bar == -1) {
 		scroll(HALF_JUMP_BACKWARDS);
-		fire(event::NOTIFY_MODIFIED, *this, NULL);
-//		positioner_moved_notifier_.notify();
+		fire(event::NOTIFY_MODIFIED, *this, nullptr);
+		// positioner_moved_notifier_.notify();
 	} else if(bar == 1) {
 		scroll(HALF_JUMP_FORWARD);
-		fire(event::NOTIFY_MODIFIED, *this, NULL);
-//		positioner_moved_notifier_.notify();
+		fire(event::NOTIFY_MODIFIED, *this, nullptr);
+		// positioner_moved_notifier_.notify();
 	} else {
 		assert(bar == 0);
 	}
@@ -392,12 +414,12 @@ void tscrollbar_::signal_handler_left_button_down(
 	handled = true;
 }
 
-void tscrollbar_::signal_handler_left_button_up(
-		const event::tevent event, bool& handled)
+void scrollbar_base::signal_handler_left_button_up(const event::ui_event event,
+												bool& handled)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
-	tpoint mouse = get_mouse_position();
+	point mouse = get_mouse_position();
 	mouse.x -= get_x();
 	mouse.y -= get_y();
 
@@ -409,7 +431,7 @@ void tscrollbar_::signal_handler_left_button_up(
 	get_window()->mouse_capture(false);
 
 	if(on_positioner(mouse)) {
-		set_state(FOCUSSED);
+		set_state(FOCUSED);
 	} else {
 		set_state(ENABLED);
 	}
@@ -418,4 +440,3 @@ void tscrollbar_::signal_handler_left_button_up(
 }
 
 } // namespace gui2
-

@@ -1,6 +1,5 @@
-/* $Id: network_asio.hpp 54110 2012-05-06 19:44:57Z loonycyborg $ */
 /*
-   Copyright (C) 2011 by Sergey Popov <loonycyborg@gmail.com>
+   Copyright (C) 2011 - 2016 by Sergey Popov <loonycyborg@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,12 +16,22 @@
 #define NETWORK_ASIO_HPP_INCLUDED
 
 #ifdef _WIN32
-#define BOOST_ASIO_DISABLE_IOCP
+# define BOOST_ASIO_DISABLE_IOCP
+# ifdef INADDR_ANY
+#  undef INADDR_ANY
+# endif
+# ifdef INADDR_BROADCAST
+#  undef INADDR_BROADCAST
+# endif
+# ifdef INADDR_NONE
+#  undef INADDR_NONE
+# endif
 #endif
+
 #include <boost/asio.hpp>
-#include <boost/optional.hpp>
 #include "exceptions.hpp"
-#include "config.hpp"
+
+class config;
 
 namespace network_asio {
 
@@ -62,7 +71,7 @@ class connection
 		);
 	union {
 		char binary[4];
-		boost::uint32_t num;
+		uint32_t num;
 	} handshake_response_;
 
 	std::size_t is_write_complete(
@@ -82,7 +91,7 @@ class connection
 		std::size_t bytes_transferred,
 		config& response
 		);
-	boost::uint32_t payload_size_;
+	uint32_t payload_size_;
 	std::size_t bytes_to_write_;
 	std::size_t bytes_written_;
 	std::size_t bytes_to_read_;

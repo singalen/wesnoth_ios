@@ -1,6 +1,5 @@
-/* $Id: stage_side_formulas.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,13 +18,12 @@
  */
 
 
-#include "stage_side_formulas.hpp"
-#include "ai.hpp"
+#include "ai/formula/stage_side_formulas.hpp"
+#include "ai/formula/ai.hpp"
 
-#include "../../formula.hpp"
-#include "../../formula_function.hpp"
-#include "../../log.hpp"
-#include <boost/lexical_cast.hpp>
+#include "formula/formula.hpp"
+#include "formula/function.hpp"
+#include "log.hpp"
 
 static lg::log_domain log_ai("ai/stage/side_formulas");
 #define LOG_AI LOG_STREAM(info, log_ai)
@@ -48,7 +46,6 @@ stage_side_formulas::~stage_side_formulas()
 bool stage_side_formulas::do_play_stage()
 {
 	game_logic::map_formula_callable callable(&fai_);
-	callable.add_ref();
 	try {
 		if (move_formula_) {
 			while( !fai_.make_action(move_formula_,callable).is_empty() ) { }

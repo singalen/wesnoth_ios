@@ -1,7 +1,6 @@
-/* $Id: sound_music_track.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
-   Copyright (C) 2009 - 2012 by Ignacio R. Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
+   Copyright (C) 2009 - 2016 by Ignacio R. Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -32,18 +31,20 @@ public:
 	music_track();
 	music_track(const config& node);
 	music_track(const std::string& v_name);
-	void write(config& parent_node, bool append);
+	void write(config& parent_node, bool append) const;
 
 	bool valid() const { return file_path_.empty() != true; }
 
 	bool append() const { return append_; }
 	bool immediate() const { return immediate_; }
+	bool shuffle() const { return shuffle_; }
 	bool play_once() const { return once_; }
 	int ms_before() const { return ms_before_; }
 	int ms_after()  const { return ms_after_;  }
 
 	const std::string& file_path() const { return file_path_; }
 	const std::string& id() const { return id_; }
+	const std::string& title() const { return title_; }
 
 	void set_play_once(bool v) { once_ = v; }
 
@@ -52,12 +53,14 @@ private:
 
 	std::string id_;
 	std::string file_path_;
+	std::string title_;
 
 	int ms_before_, ms_after_;
 
 	bool once_;
 	bool append_;
 	bool immediate_;
+	bool shuffle_;
 };
 
 } /* end namespace sound */

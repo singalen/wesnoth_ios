@@ -1,6 +1,5 @@
-/* $Id: game_end_exceptions.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2006 - 2016 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
    wesnoth playturn Copyright (C) 2003 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -24,108 +23,96 @@
 #define GAME_END_EXCEPTIONS_HPP_INCLUDED
 
 #include "lua_jailbreak_exception.hpp"
+
+#include "utils/make_enum.hpp"
+
 #include <string>
+#include <exception>
 
-#include "config.hpp"
-#include "game_config.hpp"
+class config;
 
-enum LEVEL_RESULT {
-	NONE,
-	VICTORY,
-	DEFEAT,
-	QUIT,
-	OBSERVER_END,
-	SKIP_TO_LINGER
-};
+MAKE_ENUM(LEVEL_RESULT,
+	(VICTORY,      "victory")
+	(DEFEAT,       "defeat")
+	(QUIT,         "quit")
+	(OBSERVER_END, "observer_end")
+)
 
 /**
- * Exception used to signal the end of a player turn.
+ * Exception used to escape form the ai or ui code to playsingle_controller::play_side.
+ * Never thrown during replays.
  */
-class end_turn_exception
-	: public tlua_jailbreak_exception
+class return_to_play_side_exception : public lua_jailbreak_exception, public std::exception
 {
 public:
 
-	end_turn_exception(unsigned r = 0)
-		: tlua_jailbreak_exception()
-		, redo(r)
+	return_to_play_side_exception()
+		: lua_jailbreak_exception()
+		, std::exception()
 	{
 	}
-
-	unsigned redo;
-
+	const char * what() const throw() { return "return_to_play_side_exception"; }
 private:
 
-	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(end_turn_exception)
+	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(return_to_play_side_exception)
 };
 
-/**
- * Exception used to signal the end of a scenario.
- */
-class end_level_exception
-	: public tlua_jailbreak_exception
+class quit_game_exception
+	: public lua_jailbreak_exception
+	, public std::exception
 {
 public:
 
-	end_level_exception(LEVEL_RESULT res)
-		: tlua_jailbreak_exception()
-		, result(res)
+	quit_game_exception()
+		: lua_jailbreak_exception()
+		, std::exception()
 	{
 	}
-
-	LEVEL_RESULT result;
-
+	const char * what() const throw() { return "quit_game_exception"; }
 private:
-
-	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(end_level_exception)
+	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(quit_game_exception)
 };
 
+/**
+ * The non-persistent part of end_level_data
+ */
+struct transient_end_level{
+
+	transient_end_level();
+
+	bool carryover_report;             /**< Should a summary of the scenario outcome be displayed? */
+	bool linger_mode;                  /**< Should linger mode be invoked? */
+	std::string custom_endlevel_music; /**< Custom short music played at the end. */
+	bool reveal_map;                   /**< Should we reveal map when game is ended? (Multiplayer only) */
+	
+	void write(config& cfg) const;
+};
 
 /**
  * Additional information on the game outcome which can be provided by WML.
  */
 struct end_level_data
 {
-	end_level_data()
-		: carryover_report(true)
-		, prescenario_save(true)
-		, replay_save(true)
-		, linger_mode(true)
-		, gold_bonus(true)
-		, carryover_percentage(game_config::gold_carryover_percentage)
-		, carryover_add(false)
-		, custom_endlevel_music()
-		, reveal_map(true)
-		, disabled(false)
-	{}
+	end_level_data();
 
-	bool carryover_report;             /**< Should a summary of the scenario outcome be displayed? */
+
 	bool prescenario_save;             /**< Should a prescenario be created the next game? */
 	bool replay_save;                  /**< Should a replay save be made? */
-	bool linger_mode;                  /**< Should linger mode be invoked? */
-	bool gold_bonus;                   /**< Should early-finish bonus be applied? */
-	int carryover_percentage;          /**< How much gold is carried over to next scenario. */
-	bool carryover_add;                /**< Add or replace next scenario's minimum starting gold. */
-	std::string custom_endlevel_music; /**< Custom short music played at the end. */
-	bool reveal_map;                   /**< Should we reveal map when game is ended? (Multiplayer only) */
-	bool disabled;                     /**< Limits execution of tag [endlevel] to a single time > */
+	bool proceed_to_next_level;        /**< whether to proceed to the next scenario, equals is_victory in sp. We need to save this in saves during linger mode. > */
+	bool is_victory;
+	transient_end_level transient;
+	void write(config& cfg) const;
 
-	void write(config& cfg) const {
-		cfg["prescenario_save"] = prescenario_save;
-		cfg["replay_save"] = replay_save;
-		cfg["bonus"] = gold_bonus;
-		cfg["carryover_percentage"] = carryover_percentage;
-		cfg["carryover_add"] = carryover_add;
-	}
+	void read(const config& cfg);
 
-	void read(const config& cfg) {
-		prescenario_save = cfg["prescenario_save"].to_bool(true);
-		replay_save = cfg["replay_save"].to_bool(true);
-		gold_bonus = cfg["bonus"].to_bool(true);
-		carryover_percentage = cfg["carryover_percentage"].to_int(game_config::gold_carryover_percentage);
-		carryover_add = cfg["carryover_add"].to_bool(false);
-	}
-
+	config to_config() const;
+	config to_config_full() const; //< Includes the transient data
 };
-
+inline void throw_quit_game_exception()
+{
+	// Distinguish 'Quit' from 'Regular' end_level_exceptions to solve the following problem:
+	//   If a player quits the game during an event after an [endlevel] occurs, the game won't
+	//   Quit but continue with the [endlevel] instead.
+	throw quit_game_exception();
+}
 #endif /* ! GAME_END_EXCEPTIONS_HPP_INCLUDED */

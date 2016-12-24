@@ -1,6 +1,5 @@
-/* $Id: event_executor.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2007 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2007 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,58 +15,77 @@
 #ifndef GUI_WIDGETS_EVENT_EXECUTOR_HPP_INCLUDED
 #define GUI_WIDGETS_EVENT_EXECUTOR_HPP_INCLUDED
 
-#include "SDL.h"
+namespace gui2
+{
 
-namespace gui2 {
-
-class tevent_handler;
+class event_handler;
 
 /**
  * Event execution calls.
  *
  * Base class with all possible events, most widgets can ignore most of these,
  * but they are available. In order to use an event simply override the
- * execution function and implement the wanted behaviour. The default behaviour
+ * execution function and implement the wanted behavior. The default behavior
  * defined here is to do nothing.
  *
- * For more info about the event handling have a look at the tevent_handler
+ * For more info about the event handling have a look at the event_handler
  * class which 'translates' sdl events into 'widget' events.
  */
-class tevent_executor
+class event_executor
 {
 public:
-	tevent_executor() :
-		wants_mouse_hover_(false),
-		wants_mouse_left_double_click_(false),
-		wants_mouse_middle_double_click_(false),
-		wants_mouse_right_double_click_(false)
-		{}
+	event_executor()
+		: wants_mouse_hover_(false)
+		, wants_mouse_left_double_click_(false)
+		, wants_mouse_middle_double_click_(false)
+		, wants_mouse_right_double_click_(false)
+	{
+	}
 
-	virtual ~tevent_executor() {}
+	virtual ~event_executor()
+	{
+	}
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
 	void set_wants_mouse_hover(const bool hover = true)
-		{ wants_mouse_hover_ = hover; }
-	bool wants_mouse_hover() const { return wants_mouse_hover_; }
+	{
+		wants_mouse_hover_ = hover;
+	}
+	bool wants_mouse_hover() const
+	{
+		return wants_mouse_hover_;
+	}
 
 	void set_wants_mouse_left_double_click(const bool click = true)
-		{ wants_mouse_left_double_click_ = click; }
+	{
+		wants_mouse_left_double_click_ = click;
+	}
 	bool wants_mouse_left_double_click() const
-		{ return wants_mouse_left_double_click_; }
+	{
+		return wants_mouse_left_double_click_;
+	}
 
 	void set_wants_mouse_middle_double_click(const bool click = true)
-		{ wants_mouse_middle_double_click_ = click; }
+	{
+		wants_mouse_middle_double_click_ = click;
+	}
 	bool wants_mouse_middle_double_click() const
-		{ return wants_mouse_middle_double_click_; }
+	{
+		return wants_mouse_middle_double_click_;
+	}
 
-	tevent_executor& set_wants_mouse_right_double_click(const bool click = true)
-		{ wants_mouse_right_double_click_ = click; return *this; }
+	event_executor& set_wants_mouse_right_double_click(const bool click = true)
+	{
+		wants_mouse_right_double_click_ = click;
+		return *this;
+	}
 	bool wants_mouse_right_double_click() const
-		{ return wants_mouse_right_double_click_; }
+	{
+		return wants_mouse_right_double_click_;
+	}
 
 private:
-
 	/** Does the widget want a hover event? See mouse_hover. */
 	bool wants_mouse_hover_;
 

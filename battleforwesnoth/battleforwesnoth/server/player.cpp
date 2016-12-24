@@ -1,6 +1,5 @@
-/* $Id: player.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -13,11 +12,11 @@
    See the COPYING file for more details.
 */
 
-#include "../global.hpp"
+#include "global.hpp"
 
-#include "player.hpp"
+#include "server/player.hpp"
+#include "lexical_cast.hpp"
 #include "serialization/string_utils.hpp"
-#include "util.hpp"
 
 wesnothd::player::player(const std::string& n, simple_wml::node& cfg,
                          bool registered, const size_t max_messages,
@@ -81,7 +80,7 @@ void wesnothd::player::mark_registered(bool registered)
 
 bool wesnothd::player::is_message_flooding()
 {
-	const time_t now = time(NULL);
+	const time_t now = time(nullptr);
 	if (flood_start_ == 0) {
 		flood_start_ = now;
 		return false;

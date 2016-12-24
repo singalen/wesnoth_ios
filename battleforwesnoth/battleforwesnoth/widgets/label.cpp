@@ -1,6 +1,5 @@
-/* $Id: label.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -17,12 +16,14 @@
 
 #include "global.hpp"
 
+#include "font/text.hpp"
 #include "widgets/label.hpp"
-#include "marked-up_text.hpp"
+#include "font/marked-up_text.hpp"
+#include "video.hpp"
 
 namespace gui {
 
-label::label(CVideo& video, const std::string& text, int size, const SDL_Color& color, const bool auto_join) : widget(video, auto_join), text_(text), size_(size), color_(color)
+label::label(CVideo& video, const std::string& text, int size, const color_t& color, const bool auto_join) : widget(video, auto_join), text_(text), size_(size), color_(color)
 {
 	update_label_size();
 }
@@ -43,14 +44,14 @@ const std::string& label::get_text() const
 	return text_;
 }
 
-const SDL_Color& label::set_color(const SDL_Color& color)
+const color_t& label::set_color(const color_t& color)
 {
 	color_ = color;
 	set_dirty();
 	return get_color();
 }
 
-const SDL_Color& label::get_color() const
+const color_t& label::get_color() const
 {
 	return (enabled()) ? color_ : font::DISABLED_COLOR;
 }
@@ -67,6 +68,7 @@ void label::update_label_size()
 	SDL_Rect area = font::text_area(text_, size_);
 	set_measurements(area.w, area.h);
 }
+
 
 
 }

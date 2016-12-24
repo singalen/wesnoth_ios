@@ -1,6 +1,5 @@
-/* $Id: engine.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,10 +17,10 @@
  * @file
  */
 
-#include "engine.hpp"
-#include "contexts.hpp"
+#include "ai/composite/engine.hpp"
+#include "ai/composite/contexts.hpp"
 
-#include "../../log.hpp"
+#include "log.hpp"
 
 namespace ai {
 
@@ -32,7 +31,7 @@ static lg::log_domain log_ai_engine("ai/engine");
 
 engine::engine( readonly_context &context, const config &cfg )
 	: ai_(context)
-	, ai_context_(NULL)
+	, ai_context_(nullptr)
 	, engine_(cfg["engine"])
 	, id_(cfg["id"])
 	, name_(cfg["name"])
@@ -44,6 +43,10 @@ engine::~engine()
 {
 }
 
+bool engine::is_ok() const
+{
+	return true;
+}
 
 void engine::parse_aspect_from_config( readonly_context &context, const config &cfg, const std::string &id, std::back_insert_iterator< std::vector< aspect_ptr > > b )
 {
@@ -143,6 +146,16 @@ config engine::to_config() const
 readonly_context& engine::get_readonly_context()
 {
 	return ai_;
+}
+	
+// This is defined in the source file so that it can easily access the logger
+bool engine_factory::is_duplicate(const std::string& name)
+{
+	if (get_list().find(name) != get_list().end()) {
+		ERR_AI_ENGINE << "Error: Attempt to double-register engine " << name << std::endl;
+		return true;
+	}
+	return false;
 }
 
 

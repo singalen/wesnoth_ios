@@ -1,6 +1,5 @@
-/* $Id: transient_message.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2009 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,27 +15,34 @@
 #ifndef GUI_DIALOGS_TRANSIENT_MESSAGE_HPP_INCLUDED
 #define GUI_DIALOGS_TRANSIENT_MESSAGE_HPP_INCLUDED
 
-#include "gui/dialogs/dialog.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /** Shows a transient message. */
-class ttransient_message
-	: public tdialog
+class transient_message : public modal_dialog
 {
 public:
-
-	ttransient_message(const std::string& title
-			, const bool title_use_markup
-			, const std::string& message
-			, const bool message_use_markup
-			, const std::string& image);
+	transient_message(const std::string& title,
+					   const bool title_use_markup,
+					   const std::string& message,
+					   const bool message_use_markup,
+					   const std::string& image);
 
 private:
+	bool hide_title_;
+	bool hide_image_;
 
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
+
+	/** Inherited from modal_dialog. */
+	virtual void pre_show(window& window);
 };
+} // namespace dialogs
 
 /**
  * Shows a transient message to the user.
@@ -54,13 +60,16 @@ private:
  * @param image               An image to show in the dialog.
  * @param message_use_markup  Use markup for the message?
  * @param title_use_markup    Use markup for the title?
+ * @param restore_background  Restore the background to the state it was before
+ * 							  the message appeared
  */
-void show_transient_message(CVideo& video
-		, const std::string& title
-		, const std::string& message
-		, const std::string& image = std::string()
-		, const bool message_use_markup = false
-		, const bool title_use_markup = false);
+void show_transient_message(CVideo& video,
+							const std::string& title,
+							const std::string& message,
+							const std::string& image = std::string(),
+							const bool message_use_markup = false,
+							const bool title_use_markup = false,
+							const bool restore_background = false);
 
 /**
  * Shows a transient error message to the user.
@@ -74,12 +83,11 @@ void show_transient_message(CVideo& video
  * @param image               An image to show in the dialog.
  * @param message_use_markup  Use markup for the message?
  */
-void show_transient_error_message(CVideo& video
-		, const std::string& message
-		, const std::string& image = std::string()
-		, const bool message_use_markup = false);
+void show_transient_error_message(CVideo& video,
+								  const std::string& message,
+								  const std::string& image = std::string(),
+								  const bool message_use_markup = false);
 
 } // namespace gui2
 
 #endif
-

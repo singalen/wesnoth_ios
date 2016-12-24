@@ -1,6 +1,5 @@
-/* $Id: value_translator.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -20,14 +19,15 @@
 #ifndef VALUE_TRANSLATOR_HPP_INCLUDED
 #define VALUE_TRANSLATOR_HPP_INCLUDED
 
-#include "engine.hpp"
-#include "stage.hpp"
+#include "ai/composite/engine.hpp"
+#include "ai/composite/stage.hpp"
 
-#include "../manager.hpp"
-#include "../../terrain_filter.hpp"
-#include "../../util.hpp"
-#include "../../serialization/string_utils.hpp"
-#include "../../resources.hpp"
+#include "ai/manager.hpp"
+#include "terrain/filter.hpp"
+#include "lexical_cast.hpp"
+#include "serialization/string_utils.hpp"
+#include "resources.hpp"
+#include "ai/lua/aspect_advancements.hpp"
 
 namespace ai {
 
@@ -47,7 +47,7 @@ public:
 
 	static void value_to_cfg(const T &value, config &cfg)
 	{
-		cfg["value"] = str_cast(value);
+		cfg["value"] = lexical_cast<std::string>(value);
 	}
 
 	static config value_to_cfg(const T &value)
@@ -146,43 +146,16 @@ public:
 };
 
 template<>
-class config_value_translator<ministage> {
-public:
-
-	static ministage cfg_to_value(const config &cfg)
-	{
-		return ministage(cfg.child_or_empty("value"));
-	}
-
-	static void cfg_to_value(const config &cfg, ministage &value)
-	{
-		value = cfg_to_value(cfg);
-	}
-
-	static void value_to_cfg(const ministage &value, config &cfg)
-	{
-		cfg.add_child("value",value.to_config());
-	}
-
-	static config value_to_cfg(const ministage &value)
-	{
-		config cfg;
-		value_to_cfg(value,cfg);
-		return cfg;
-	}
-};
-
-template<>
 class config_value_translator<terrain_filter> {
 public:
 
 	static terrain_filter cfg_to_value(const config &cfg)
 	{
 		if (const config &v = cfg.child("value")) {
-			return terrain_filter(vconfig(v), *resources::units);
+			return terrain_filter(vconfig(v), resources::filter_con);
 		}
 		static config c("not");
-		return terrain_filter(vconfig(c),*resources::units);
+		return terrain_filter(vconfig(c),resources::filter_con);
 	}
 
 	static void cfg_to_value(const config &cfg, terrain_filter &value)
@@ -202,6 +175,35 @@ public:
 		return cfg;
 	}
 };
+
+template<>
+class config_value_translator<unit_advancements_aspect> {
+public:
+
+	static unit_advancements_aspect cfg_to_value(const config &cfg)
+	{
+		return unit_advancements_aspect(cfg["value"]);
+	}
+
+	static void cfg_to_value(const config &cfg, unit_advancements_aspect &value)
+	{
+		value = cfg_to_value(cfg);
+	}
+
+	static void value_to_cfg(const unit_advancements_aspect &value, config &cfg)
+	{
+		cfg["value"] = value.get_value();
+
+	}
+
+	static config value_to_cfg(const unit_advancements_aspect &value)
+	{
+		config cfg;
+		value_to_cfg(value,cfg);
+		return cfg;
+	}
+};
+
 
 
 // variant value translator
@@ -232,34 +234,6 @@ public:
 		T value = T();
 		variant_to_value(var,value);
 		return value;
-	}
-};
-
-template<>
-class variant_value_translator<ministage> {
-public:
-
-	static void variant_to_value(const variant &/*var*/, ministage &/*value*/)
-	{
-	        assert(false);//not implemented
-	}
-
-	static void value_to_variant(const ministage &/*value*/, variant &/*var*/)
-	{
-		assert(false);//not implemented
-	}
-
-	static variant value_to_variant(const ministage &/*value*/)
-	{
-		assert(false);
-		return variant();
-	}
-
-	static ministage variant_to_value(const variant &/*var*/)
-	{
-		assert(false);
-		config cfg;
-		return ministage(cfg);
 	}
 };
 
@@ -413,7 +387,7 @@ public:
 	static terrain_filter variant_to_value(const variant &var)
 	{
 		static config c("not");
-		terrain_filter value(vconfig(c),*resources::units);
+		terrain_filter value(vconfig(c),resources::filter_con);
 		variant_to_value(var,value);
 		return value;
 	}

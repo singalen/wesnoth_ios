@@ -1,6 +1,5 @@
-/* $Id: contexts.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,15 +18,16 @@
  * @file
  */
 
-#include "contexts.hpp"
+#include "ai/default/contexts.hpp"
 
-#include "../../actions.hpp"
-#include "../../log.hpp"
-#include "../../map.hpp"
-#include "../../resources.hpp"
-#include "../../team.hpp"
-#include "../composite/goal.hpp"
-#include "../../pathfind/pathfind.hpp"
+#include "game_board.hpp"
+#include "log.hpp"
+#include "map/map.hpp"
+#include "resources.hpp"
+#include "team.hpp"
+#include "units/unit.hpp"
+#include "ai/composite/goal.hpp"
+#include "pathfind/pathfind.hpp"
 
 static lg::log_domain log_ai("ai/general");
 #define DBG_AI LOG_STREAM(debug, log_ai)
@@ -61,10 +61,6 @@ void default_ai_context_proxy::init_default_ai_context_proxy(default_ai_context 
 	target_= &target.get_default_ai_context();
 }
 
-
-const int max_positions = 10000;
-
-
 default_ai_context_impl::~default_ai_context_impl()
 {
 }
@@ -73,20 +69,20 @@ default_ai_context_impl::~default_ai_context_impl()
 int default_ai_context_impl::count_free_hexes_in_castle(const map_location &loc, std::set<map_location> &checked_hexes)
 {
 	int ret = 0;
-	unit_map &units_ = *resources::units;
+	unit_map &units_ = resources::gameboard->units();
 	map_location adj[6];
 	get_adjacent_tiles(loc,adj);
 	for(size_t n = 0; n != 6; ++n) {
 		if (checked_hexes.find(adj[n]) != checked_hexes.end())
 			continue;
 		checked_hexes.insert(adj[n]);
-		if (resources::game_map->is_castle(adj[n])) {
+		if (resources::gameboard->map().is_castle(adj[n])) {
 			const unit_map::const_iterator u = units_.find(adj[n]);
 			ret += count_free_hexes_in_castle(adj[n], checked_hexes);
 			if (u == units_.end()
 				|| (current_team().is_enemy(u->side())
-					&& u->invisible(adj[n]))
-				|| ((&(*resources::teams)[u->side() - 1]) == &current_team()
+					&& u->invisible(adj[n], *resources::gameboard))
+				|| ((&resources::gameboard->teams()[u->side() - 1]) == &current_team()
 					&& u->movement_left() > 0)) {
 				ret += 1;
 			}
@@ -103,8 +99,8 @@ default_ai_context& default_ai_context_impl::get_default_ai_context(){
 
 int default_ai_context_impl::rate_terrain(const unit& u, const map_location& loc) const
 {
-	gamemap &map_ = *resources::game_map;
-	const t_translation::t_terrain terrain = map_.get_terrain(loc);
+	const gamemap &map_ = resources::gameboard->map();
+	const t_translation::terrain_code terrain = map_.get_terrain(loc);
 	const int defense = u.defense_modifier(terrain);
 	int rating = 100 - defense;
 
@@ -113,12 +109,12 @@ int default_ai_context_impl::rate_terrain(const unit& u, const map_location& loc
 	const int neutral_village_value = 10;
 	const int enemy_village_value = 15;
 
-	if(map_.gives_healing(terrain) && u.get_ability_bool("regenerate",loc) == false) {
+	if(map_.gives_healing(terrain) && u.get_ability_bool("regenerate", loc, *resources::gameboard) == false) {
 		rating += healing_value;
 	}
 
 	if(map_.is_village(terrain)) {
-		int owner = village_owner(loc, *resources::teams) + 1;
+		int owner = resources::gameboard->village_owner(loc) + 1;
 
 		if(owner == get_side()) {
 			rating += friendly_village_value;
@@ -136,17 +132,13 @@ std::vector<target> default_ai_context_impl::find_targets(const move_map& enemy_
 {
 
 	log_scope2(log_ai, "finding targets...");
-	unit_map &units_ = *resources::units;
+	unit_map &units_ = resources::gameboard->units();
 	unit_map::iterator leader = units_.find_leader(get_side());
-	gamemap &map_ = *resources::game_map;
-	std::vector<team> teams_ = *resources::teams;
+	const gamemap &map_ = resources::gameboard->map();
+	std::vector<team> teams_ = resources::gameboard->teams();
 	const bool has_leader = leader != units_.end();
 
 	std::vector<target> targets;
-
-	std::map<map_location,pathfind::paths> friends_possible_moves;
-	move_map friends_srcdst, friends_dstsrc;
-	calculate_possible_moves(friends_possible_moves,friends_srcdst,friends_dstsrc,false,true);
 
 	//=== start getting targets
 
@@ -172,22 +164,21 @@ std::vector<target> default_ai_context_impl::find_targets(const move_map& enemy_
 
 			assert(threats.empty() == false);
 
-#ifdef SUOKKO
-			//FIXME: suokko's revision 29531 included this change.  Correct?
-			const double value = threat*get_protect_leader()/leader->second.hitpoints();
-#else
 			const double value = threat/double(threats.size());
-#endif
 			for(std::set<map_location>::const_iterator i = threats.begin(); i != threats.end(); ++i) {
 				LOG_AI << "found threat target... " << *i << " with value: " << value << "\n";
-				targets.push_back(target(*i,value,target::THREAT));
+				targets.push_back(target(*i,value,target::TYPE::THREAT));
 			}
 		}
 	}
 
-	double corner_distance = distance_between(map_location(0,0), map_location(map_.w(),map_.h()));
+	double corner_distance = distance_between(map_location::ZERO(), map_location(map_.w(),map_.h()));
 	double village_value = get_village_value();
-	if(has_leader && get_village_value() > 0.0) {
+	if(has_leader && village_value > 0.0) {
+		std::map<map_location,pathfind::paths> friends_possible_moves;
+		move_map friends_srcdst, friends_dstsrc;
+		calculate_possible_moves(friends_possible_moves, friends_srcdst, friends_dstsrc, false, true);
+
 		const std::vector<map_location>& villages = map_.villages();
 		for(std::vector<map_location>::const_iterator t =
 				villages.begin(); t != villages.end(); ++t) {
@@ -213,7 +204,7 @@ std::vector<target> default_ai_context_impl::find_targets(const move_map& enemy_
 						enemy *= 1.7;
 						double our = power_projection(*t, friends_dstsrc);
 						double value = village_value * our / enemy;
-						add_target(target(*t, value, target::SUPPORT));
+						add_target(target(*t, value, target::TYPE::SUPPORT));
 					}
 				}
 			}
@@ -224,7 +215,7 @@ std::vector<target> default_ai_context_impl::find_targets(const move_map& enemy_
 				LOG_AI << "found village target... " << *t
 					<< " with value: " << value
 					<< " distance: " << leader_distance << '\n';
-				targets.push_back(target(*t,value,target::VILLAGE));
+				targets.push_back(target(*t,value,target::TYPE::VILLAGE));
 			}
 		}
 	}
@@ -237,10 +228,10 @@ std::vector<target> default_ai_context_impl::find_targets(const move_map& enemy_
 		for(u = units_.begin(); u != units_.end(); ++u) {
 			//is a visible enemy leader
 			if (u->can_recruit() && current_team().is_enemy(u->side())
-			    && !u->invisible(u->get_location())) {
+			    && !u->invisible(u->get_location(), *resources::gameboard)) {
 				assert(map_.on_board(u->get_location()));
 				LOG_AI << "found enemy leader (side: " << u->side() << ") target... " << u->get_location() << " with value: " << get_leader_value() << "\n";
-				targets.push_back(target(u->get_location(), get_leader_value(), target::LEADER));
+				targets.push_back(target(u->get_location(), get_leader_value(), target::TYPE::LEADER));
 			}
 		}
 
@@ -271,8 +262,8 @@ std::vector<target> default_ai_context_impl::find_targets(const move_map& enemy_
 				continue;
 			}
 
-			const double distance = abs(j->loc.x - i->loc.x) +
-						abs(j->loc.y - i->loc.y);
+			const double distance = std::abs(j->loc.x - i->loc.x) +
+						std::abs(j->loc.y - i->loc.y);
 			new_values.back() += j->value/(distance*distance);
 		}
 	}

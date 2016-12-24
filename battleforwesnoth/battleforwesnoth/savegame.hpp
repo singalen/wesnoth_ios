@@ -1,6 +1,5 @@
-/* $Id: savegame.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by Jörg Hinrichs, refactored from various
+   Copyright (C) 2003 - 2016 by Jörg Hinrichs, refactored from various
    places formerly created by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -17,149 +16,161 @@
 #ifndef SAVEGAME_H_INCLUDED
 #define SAVEGAME_H_INCLUDED
 
+#include "config.hpp"
 #include "filesystem.hpp"
-#include "gamestatus.hpp"
-#include "tod_manager.hpp"
-#include "show_dialog.hpp"
+#include "lua_jailbreak_exception.hpp"
+#include "serialization/compression.hpp"
+
+#include <exception>
 
 class config_writer;
 class game_display;
-
-struct load_game_cancelled_exception {};
-struct illegal_filename_exception {};
+class saved_game;
+class CVideo;
+class version_info;
 
 namespace savegame {
+/** converts saves from older versions of wesnoth*/
+void convert_old_saves(config& cfg);
+/** Returns true if there is already a savegame with that name. */
+bool save_game_exists(const std::string& name, compression::format compressed);
 
-/** Filename and modification date for a file list */
-struct save_info {
-	save_info(const std::string& n, time_t t) : name(n), time_modified(t) {}
-	std::string name;
-	time_t time_modified;
+/** Delete all autosaves of a certain scenario. */
+void clean_saves(const std::string& label);
 
-	const std::string format_time_summary() const;
-	const std::string format_time_local() const;
+struct load_game_metadata {
+	/** Name of the savefile to be loaded. */
+	std::string filename;
+
+	/** The difficulty the save is meant to be loaded with. */
+	std::string difficulty;
+
+	/** State of the "show_replay" checkbox in the load-game dialog. */
+	bool show_replay;
+
+	/** State of the "cancel_orders" checkbox in the load-game dialog. */
+	bool cancel_orders;
+
+	/** State of the "change_difficulty" checkbox in the load-game dialog. */
+	bool select_difficulty;
+
+	/** Summary config of the save selected in the load game dialog. */
+	config summary;
+
+	/** Config information of the savefile to be loaded. */
+	config load_config;
+
+	explicit load_game_metadata(const std::string& fname = "", const std::string& hard = "",
+			bool replay = false, bool stop = false, bool change = false,
+			const config& summary = config(), const config& info = config())
+		: filename(fname), difficulty(hard)
+		, show_replay(replay), cancel_orders(stop), select_difficulty(change)
+		, summary(summary), load_config(info)
+	{
+	}
 };
 
 /**
-Container for a couple of savefile manipulating methods.
-Note: You are not supposed to instantiate this class.
+* Exception used to signal that the user has decided to abortt a game,
+* and to load another game instead.
 */
-class manager
+class load_game_exception
+	: public lua_jailbreak_exception, public std::exception
 {
 public:
-	/** Read summary information out of an existing savefile. */
-	static void load_summary(const std::string& name, config& cfg_summary, std::string* error_log);
-	/** Read the complete config information out of a savefile. */
-	static void read_save_file(const std::string& name, config& cfg, std::string* error_log);
+	load_game_exception(const std::string& fname)
+		: lua_jailbreak_exception()
+		, data_(fname)
+	{
+	}
 
-	/** Returns true if there is already a savegame with that name. */
-	static bool save_game_exists(const std::string& name, const bool compress_saves);
-	/** Get a list of available saves. */
-	static std::vector<save_info> get_saves_list(const std::string *dir = NULL, const std::string* filter = NULL);
-
-	/** Delete all autosaves of a certain scenario. */
-	static void clean_saves(const std::string &label);
-	/** Remove autosaves that are no longer needed (according to the autosave policy in the preferences). */
-	static void remove_old_auto_saves(const int autosavemax, const int infinite_auto_saves);
-	/** Delete a savegame. */
-	static void delete_game(const std::string& name);
-
+	load_game_exception(load_game_metadata&& data)
+		: lua_jailbreak_exception()
+		, data_(data)
+	{
+	}
+	load_game_metadata data_;
 private:
-	/** Default-Constructor (don't instantiate this class) */
-	manager() {}
-};
 
-/**
-Container for methods dealing with the save_index file.
-Note: You are not supposed to instantiate this class.
-*/
-class save_index
-{
-public:
-	/** Determines/Adds the "save"-child of the summary config. */
-	static config& save_summary(std::string save);
-	/** Update the save_index file with changed savegame information. */
-	static void write_save_index();
-
-private:
-	/** Default-Constructor (don't instantiate this class) */
-	save_index() {}
-
-	/** Read the complete config information out of the save_index file. */
-	static config& load();
-
-	static bool save_index_loaded; /** Tells, if the save_index config has been already loaded. */
-	static config save_index_cfg; /** save_index config (who would have guessed that ;-). */
+	IMPLEMENT_LUA_JAILBREAK_EXCEPTION(load_game_exception)
 };
 
 /** The class for loading a savefile. */
 class loadgame
 {
 public:
-	loadgame(display& gui, const config& game_config, game_state& gamestate);
+	loadgame(CVideo& video, const config& game_config, saved_game& gamestate);
 	virtual ~loadgame() {}
 
+	/* In any of the following three function, a bool value of false indicates
+	   some failure or abort of the load process */
+
 	/** Load a game without providing any information. */
-	void load_game();
+	bool load_game_ingame();
 	/** Load a game with pre-setting information for the load-game dialog. */
-	void load_game(
-			  const std::string& filename
-			, const bool show_replay
-			, const bool cancel_orders);
+	bool load_game();
 	/** Loading a game from within the multiplayer-create dialog. */
-	void load_multiplayer_game();
-	/** Populates the level-config for multiplayer from the loaded savegame information. */
-	void fill_mplevel_config(config& level);
+	bool load_multiplayer_game();
 	/** Generate the gamestate out of the loaded game config. */
 	void set_gamestate();
 
 	// Getter-methods
-	bool show_replay() const { return show_replay_; }
-	bool cancel_orders() const { return cancel_orders_; }
-	const std::string filename() const { return filename_; }
+	load_game_metadata& data()
+	{
+		return load_data_;
+	}
+	
+	/** GUI Dialog sequence which confirms attempts to load saves from previous game versions. */
+	static bool check_version_compatibility(const version_info & version, CVideo & video);
+
+	static bool is_replay_save(const config& cfg)
+	{
+		return cfg["replay"].to_bool() && !cfg["snapshot"].to_bool(true);
+	}
 
 private:
-	/** Display the load-game dialog. */
-	void show_dialog(bool show_replay, bool cancel_orders);
-	/** Check if the version of the savefile is compatible with the current version. */
-	void check_version_compatibility();
+	/** Display the difficulty dialog. */
+	bool show_difficulty_dialog();
+	/** Call check_version_compatibility above, using the version of this savefile. */
+	bool check_version_compatibility();
 	/** Copy era information into the snapshot. */
 	void copy_era(config& cfg);
 
 	const config& game_config_;
-	display& gui_;
+	CVideo& video_;
 
-	game_state& gamestate_; /** Primary output information. */
-	std::string filename_; /** Name of the savefile to be loaded. */
-	config load_config_; /** Config information of the savefile to be loaded. */
-	bool show_replay_; /** State of the "show_replay" checkbox in the load-game dialog. */
-	bool cancel_orders_; /** State of the "cancel_orders" checkbox in the load-game dialog. */
+	saved_game& gamestate_; /** Primary output information. */
+
+	load_game_metadata load_data_;
 };
-
-/** The base class for all savegame stuff */
+/**
+ * The base class for all savegame stuff.
+ * This should not be used directly, as it does not directly produce usable saves.
+ * Instead, use one of the derived classes.
+ */
 class savegame
 {
-public:
+protected:
 	/** The only constructor of savegame. The title parameter is only necessary if you
 		intend to do interactive saves. */
-	savegame(game_state& gamestate, const bool compress_saves, const std::string& title = "Save");
+	savegame(saved_game& gamestate, const compression::format compress_saves, const std::string& title = "Save");
+
+public:
+	enum DIALOG_TYPE { YES_NO, OK_CANCEL};
 
 	virtual ~savegame() {}
 
-	/** Save a game without any further user interaction. Atm, this is only used by the
-		console_handler save actions. The return value denotes, if the save was successful or not. */
-	//bool save_game(const std::string& filename);
-
 	/** Saves a game without user interaction, unless the file exists and it should be asked
 		to overwrite it. The return value denotes, if the save was successful or not.
-		This is used by automatically generated replays, start-of-scenario saves and autosaves.
+		This is used by automatically generated replays, start-of-scenario saves, autosaves,
+		and saves from the console (e.g. ":w").
 	*/
 	bool save_game_automatic(CVideo& video, bool ask_for_overwrite = false, const std::string& filename = "");
 
 	/** Save a game interactively through the savegame dialog. Used for manual midgame and replay
 		saves. The return value denotes, if the save was successful or not. */
 	bool save_game_interactive(CVideo& video, const std::string& message,
-		gui::DIALOG_TYPE dialog_type);
+		DIALOG_TYPE dialog_type);
 
 	const std::string& filename() const { return filename_; }
 
@@ -169,23 +180,25 @@ protected:
 		or error messages to appear, you have to provide the gui parameter.
 		The return value denotes, if the save was successful or not.
 	*/
-	bool save_game(CVideo* video = NULL, const std::string& filename = "");
+	bool save_game(CVideo* video = nullptr, const std::string& filename = "");
 
 	/** Sets the filename and removes invalid characters. Don't set the filename directly but
 		use this method instead. */
 	void set_filename(std::string filename);
 	/** Check, if the filename contains illegal constructs like ".gz". */
-	void check_filename(const std::string& filename, CVideo& video);
+	bool check_filename(const std::string& filename, CVideo& video);
 
 	/** Customize the standard error message */
 	void set_error_message(const std::string& error_message) { error_message_ = error_message; }
 
-	const std::string& title() const { return title_; }
-	game_state& gamestate() const { return gamestate_; }
-	config& snapshot() { return snapshot_; }
+	const std::string& title() { return title_; }
+	const saved_game& gamestate() { return gamestate_; }
 
 	/** If there needs to be some data fiddling before saving the game, this is the place to go. */
-	virtual void before_save();
+	void before_save();
+
+	/** Writing the savegame config to a file. */
+	virtual void write_game(config_writer &out);
 
 private:
 	/** Checks if a certain character is allowed in a savefile name. */
@@ -195,7 +208,7 @@ private:
 		override this to take effect. */
 	virtual void create_filename() {}
 	/** Display the save game dialog. */
-	virtual int show_save_dialog(CVideo& video, const std::string& message, const gui::DIALOG_TYPE dialog_type);
+	virtual int show_save_dialog(CVideo& video, const std::string& message, DIALOG_TYPE dialog_type);
 	/** Ask the user if an existing file should be overwritten. */
 	bool check_overwrite(CVideo& video);
 
@@ -203,22 +216,15 @@ private:
 		data manipulation has to happen before calling this method. */
 	void write_game_to_disk(const std::string& filename);
 
-	/** Writing the savegame config to a file. */
-	void write_game(config_writer &out) const;
 	/** Update the save_index */
 	void finish_save_game(const config_writer &out);
 	/** Throws game::save_game_failed. */
-	scoped_ostream open_save_game(const std::string &label);
-	/** Read the summary data from a savegame to display this information in the load-game dialog. */
-	void extract_summary_data_from_save(config& out);
-
-	game_state& gamestate_;
-
-	/** Gamestate information at the time of saving. Note that this object is needed here, since
-		even if it is empty the code relies on it to be there. */
-	config snapshot_;
-
-	std::string filename_; /** Filename of the savegame file on disk */
+	filesystem::scoped_ostream open_save_game(const std::string &label);
+	friend class save_info;
+	//before_save (write replay data) changes this so it cannot be const
+	saved_game& gamestate_;
+	/** Filename of the savegame file on disk */
+	std::string filename_;
 
 	const std::string title_; /** Title of the savegame dialog */
 
@@ -226,26 +232,23 @@ private:
 
 	bool show_confirmation_; /** Determines if a confirmation of successful saving the game is shown. */
 
-	bool compress_saves_; /** Determines, if compression is used for the savegame file */
+	compression::format compress_saves_; /** Determines, what compression format is used for the savegame file */
 };
 
 /** Class for "normal" midgame saves. The additional members are needed for creating the snapshot
 	information. */
-class game_savegame : public savegame
+class ingame_savegame : public savegame
 {
 public:
-	game_savegame(game_state& gamestate,
-		game_display& gui, const config& snapshot_cfg, const bool compress_saves);
+	ingame_savegame(saved_game& gamestate,
+		game_display& gui, const compression::format compress_saves);
 
 private:
 	/** Create a filename for automatic saves */
-	virtual void create_filename();
+	virtual void create_filename() override;
 
-	/** Builds the snapshot config. */
-	virtual void before_save();
 
-	/** For normal game saves. Builds a snapshot config object out of the relevant information. */
-	void write_game_snapshot();
+	void write_game(config_writer &out) override;
 
 protected:
 	game_display& gui_;
@@ -255,50 +258,49 @@ protected:
 class replay_savegame : public savegame
 {
 public:
-	replay_savegame(game_state& gamestate, const bool compress_saves);
+	replay_savegame(saved_game& gamestate, const compression::format compress_saves);
 
 private:
 	/** Create a filename for automatic saves */
-	virtual void create_filename();
+	virtual void create_filename() override;
+
+	void write_game(config_writer &out) override;
 };
 
 /** Class for autosaves. */
-class autosave_savegame : public game_savegame
+class autosave_savegame : public ingame_savegame
 {
 public:
-	autosave_savegame(game_state &gamestate,
-					 game_display& gui, const config& snapshot_cfg, const bool compress_saves);
+	autosave_savegame(saved_game &gamestate,
+					 game_display& gui, const compression::format compress_saves);
 
 	void autosave(const bool disable_autosave, const int autosave_max, const int infinite_autosaves);
 private:
 	/** Create a filename for automatic saves */
-	virtual void create_filename();
+	virtual void create_filename() override;
 };
 
-class oos_savegame : public game_savegame
+class oos_savegame : public ingame_savegame
 {
 public:
-	oos_savegame(const config& snapshot_cfg);
+	oos_savegame(saved_game& gamestate, game_display& gui, bool& ignore);
 
 private:
 	/** Display the save game dialog. */
-	virtual int show_save_dialog(CVideo& video, const std::string& message, const gui::DIALOG_TYPE dialog_type);
+	virtual int show_save_dialog(CVideo& video, const std::string& message, DIALOG_TYPE dialog_type) override;
+	bool& ignore_;
 };
 
 /** Class for start-of-scenario saves */
 class scenariostart_savegame : public savegame
 {
 public:
-	scenariostart_savegame(game_state& gamestate, const bool compress_saves);
+	scenariostart_savegame(saved_game& gamestate, const compression::format compress_saves);
 
 private:
-	/** Adds the player information to the starting position (= [replay_start]). */
-	virtual void before_save();
+	void write_game(config_writer &out) override;
 };
 
 } //end of namespace savegame
-
-void replace_underbar2space(std::string &name);
-void replace_space2underbar(std::string &name);
 
 #endif

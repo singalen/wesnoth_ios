@@ -1,6 +1,5 @@
-/* $Id: cutter.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -18,10 +17,10 @@
  * Standalone-Utility for images / tiles
  */
 
-#include "../game_config.hpp"
-#include "exploder_composer.hpp"
+#include "game_config.hpp"
+#include "tools/exploder_composer.hpp"
 
-#include "SDL_image.h"
+#include <SDL_image.h>
 
 #include <iostream>
 
@@ -76,7 +75,7 @@ int main(int argc, char* argv[])
 		cut.load_masks(conf);
 
 		const surface src_surface(make_neutral_surface(IMG_Load(src.c_str())));
-		if(src_surface == NULL)
+		if(src_surface == nullptr)
 			throw exploder_failure("Unable to load the source image " + src);
 
 		const cutter::surface_map surfaces = cut.cut_surface(src_surface, conf);
@@ -85,9 +84,10 @@ int main(int argc, char* argv[])
 				itor != surfaces.end(); ++itor) {
 			const cutter::mask &mask = itor->second.mask;
 
-			surface surf = surface(
-					create_compatible_surface(itor->second.image,
-					mask.cut.w, mask.cut.h));
+			surface surf = create_compatible_surface(
+					  itor->second.image
+					, mask.cut.w
+					, mask.cut.h);
 
 			masked_overwrite_surface(surf, itor->second.image, mask.image,
 					mask.cut.x - mask.shift.x, mask.cut.y - mask.shift.y);

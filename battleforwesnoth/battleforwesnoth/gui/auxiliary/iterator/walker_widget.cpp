@@ -1,6 +1,5 @@
-/* $Id: walker_widget.cpp 49173 2011-04-10 16:48:33Z mordante $ */
 /*
-   Copyright (C) 2011 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2011 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,35 +16,37 @@
 
 #include "gui/auxiliary/iterator/walker_widget.hpp"
 
-#include "asserts.hpp"
+#include <cassert>
 #include "gui/widgets/widget.hpp"
 
-namespace gui2 {
+namespace gui2
+{
 
-namespace iterator {
+namespace iteration
+{
 
-namespace walker {
+namespace walker
+{
 
-twidget::twidget(gui2::twidget& widget)
-	: widget_(&widget)
+widget::widget(gui2::widget& widget) : widget_(&widget)
 {
 }
 
-twalker_::tstate twidget::next(const tlevel level)
+walker_base::state_t widget::next(const level level)
 {
 	if(at_end(level)) {
 		return fail;
 	}
 
 	switch(level) {
-		case widget:
+		case self:
 			if(widget_) {
-				widget_ = NULL;
+				widget_ = nullptr;
 				return invalid;
 			} else {
 				/* FALL DOWN */
 			}
-		case grid: /* FALL DOWN */
+		case internal:  /* FALL DOWN */
 		case child: /* FALL DOWN */
 			;
 	}
@@ -54,12 +55,12 @@ twalker_::tstate twidget::next(const tlevel level)
 	return fail;
 }
 
-bool twidget::at_end(const tlevel level) const
+bool widget::at_end(const level level) const
 {
 	switch(level) {
-		case widget:
-			return widget_ == NULL;
-		case grid: /* FALL DOWN */
+		case self:
+			return widget_ == nullptr;
+		case internal: /* FALL DOWN */
 		case child:
 			return true;
 	}
@@ -68,24 +69,22 @@ bool twidget::at_end(const tlevel level) const
 	return true;
 }
 
-gui2::twidget* twidget::get(const tlevel level)
+gui2::widget* widget::get(const level level)
 {
 	switch(level) {
-		case widget:
+		case self:
 			return widget_;
-		case grid: /* FALL DOWN */
+		case internal: /* FALL DOWN */
 		case child:
-			return NULL;
+			return nullptr;
 	}
 
 	assert(false);
-	return NULL;
+	return nullptr;
 }
 
 } //  namespace walker
 
-} // namespace iterator
+} // namespace iteration
 
 } // namespace gui2
-
-

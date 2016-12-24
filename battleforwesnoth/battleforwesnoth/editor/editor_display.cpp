@@ -1,6 +1,5 @@
-/* $Id: editor_display.cpp 52594 2012-01-14 22:49:39Z alarantalara $ */
 /*
-   Copyright (C) 2008 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2008 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -14,16 +13,51 @@
 */
 #define GETTEXT_DOMAIN "wesnoth-editor"
 
-#include "editor_display.hpp"
-#include "builder.hpp"
+#include "editor/editor_display.hpp"
+#include "reports.hpp"
+#include "team.hpp"
+#include "terrain/builder.hpp"
+#include "units/map.hpp"
+
+namespace wb {
+	class manager;
+}
 
 namespace editor {
 
-editor_display::editor_display(CVideo& video, const editor_map& map,
+// Define dummy display context;
+
+class dummy_editor_display_context : public display_context
+{
+	config dummy_cfg1;
+
+	editor_map em;
+	unit_map u;
+	std::vector<team> t;
+	std::vector<std::string> lbls;
+
+public:
+	dummy_editor_display_context() : dummy_cfg1(), em(dummy_cfg1), u(), t(), lbls() {}
+	virtual ~dummy_editor_display_context(){}
+
+	virtual const gamemap & map() const { return em; }
+	virtual const unit_map & units() const { return u; }
+	virtual const std::vector<team> & teams() const { return t; }
+	virtual const std::vector<std::string> & hidden_label_categories() const { return lbls; }
+};
+
+const display_context * get_dummy_display_context() {
+	static const dummy_editor_display_context dedc = dummy_editor_display_context();
+	return &dedc;
+}
+
+// End dummy display context
+
+editor_display::editor_display(const display_context * dc, CVideo& video,
+		reports & reports_object,
 		const config& theme_cfg, const config& level)
-	: display(video, &map, theme_cfg, level)
+	: display(dc, video, std::shared_ptr<wb::manager>(), reports_object, theme_cfg, level)
 	, brush_locations_()
-	, toolbar_hint_()
 {
 	clear_screen();
 }
@@ -85,10 +119,6 @@ void editor_display::draw_hex(const map_location& loc)
 			drawing_buffer_add(LAYER_SELECTED_HEX, loc, xpos, ypos,
 					image::get_image(brush, image::SCALED_TO_HEX));
 		}
-		if (map().on_board(loc) && loc == mouseoverHex_) {
-			drawing_buffer_add(LAYER_MOUSEOVER_BOTTOM, loc, xpos, ypos,
-					image::get_image("misc/hover-hex.png", image::SCALED_TO_HEX));
-		}
 	}
 }
 
@@ -104,14 +134,20 @@ void editor_display::draw_sidebar()
 	// Fill in the terrain report
 	if (get_map().on_board_with_border(mouseoverHex_)) {
 		text = get_map().get_terrain_editor_string(mouseoverHex_);
-		refresh_report("terrain", element);
-		text = str_cast(mouseoverHex_);
-		refresh_report("position", element);
+		refresh_report("terrain", &element);
+		refresh_report("terrain_info");
+		text = lexical_cast<std::string>(mouseoverHex_);
+		refresh_report("position", &element);
 	}
-	text = int(get_map().villages().size());
-	refresh_report("villages", element);
-	text = toolbar_hint_;
-	refresh_report("editor_tool_hint", element);
+
+	if (dc_->teams().empty()) {
+		text = int(get_map().villages().size());
+		refresh_report("villages", &element);
+	} else {
+		refresh_report("villages");
+		refresh_report("num_units");
+	}
 }
+
 
 } //end namespace editor

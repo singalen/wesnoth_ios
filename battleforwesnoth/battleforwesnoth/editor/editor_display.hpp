@@ -1,6 +1,5 @@
-/* $Id: editor_display.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2008 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,16 +15,19 @@
 #ifndef EDITOR_EDITOR_DISPLAY_HPP_INCLUDED
 #define EDITOR_EDITOR_DISPLAY_HPP_INCLUDED
 
-#include "editor_map.hpp"
-#include "../display.hpp"
+#include "map/editor_map.hpp"
+#include "display.hpp"
 
 namespace editor {
+
+const display_context * get_dummy_display_context();
 
 class editor_display : public display
 {
 public:
-	editor_display(CVideo& video, const editor_map& map, const config& theme_cfg,
-			const config& level);
+	editor_display(const display_context * dc, CVideo& video,
+			reports & reports_object,
+			const config& theme_cfg, const config& level);
 
 	bool in_editor() const { return true; }
 
@@ -35,7 +37,6 @@ public:
 	void remove_brush_loc(const map_location& hex);
 	const editor_map& map() const { return static_cast<const editor_map&>(get_map()); }
 	void rebuild_terrain(const map_location &loc);
-	void set_toolbar_hint(const std::string& value) { toolbar_hint_ = value; }
 
 protected:
 	void pre_draw();
@@ -50,7 +51,7 @@ protected:
 	void draw_sidebar();
 
 	std::set<map_location> brush_locations_;
-	std::string toolbar_hint_;
+
 };
 
 } //end namespace editor

@@ -1,6 +1,5 @@
-/* $Id: lobby_preferences.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2009 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,8 +18,6 @@
 #include <string>
 
 namespace preferences {
-
-	bool lobby_sounds();
 
 	bool sort_list();
 	void _set_sort_list(bool show);

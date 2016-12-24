@@ -1,6 +1,5 @@
-/* $Id: reference_counter.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -22,30 +21,26 @@
 
 
 #include <limits>
-#include <boost/static_assert.hpp>
-
-//debug
-#include <iostream> //std::cerr
 
 namespace n_ref_counter {
 
 
 /**
-   @class t_ref_counter
-   @brief t_ref_counter is a reference counter.  If the counter overflows it stops counting.
+   @class ref_counter
+   @brief ref_counter is a reference counter.  If the counter overflows it stops counting.
    So any negative count disables reference counting.
 **/
-template <typename T_integral> class t_ref_counter {
-	BOOST_STATIC_ASSERT( std::numeric_limits<T_integral>::is_signed);
+template <typename T_integral> class ref_counter {
+	static_assert(std::numeric_limits<T_integral>::is_signed, "Reference counter must be a signed integer");
 
 	T_integral count_;
 
 public:
 	enum {NEW=0, NOT_COUNTED = -1};
 
-	explicit t_ref_counter(T_integral x = 0) : count_(x) {}
-	t_ref_counter(t_ref_counter const &a) : count_(a.count_) {}
-	t_ref_counter & operator=(t_ref_counter const a){count_ = a.count_; return *this;}
+	explicit ref_counter(T_integral x = 0) : count_(x) {}
+	ref_counter(ref_counter const &a) : count_(a.count_) {}
+	ref_counter & operator=(ref_counter const &a){count_ = a.count_; return *this;}
 
 	operator T_integral const () const {return count_;}
 

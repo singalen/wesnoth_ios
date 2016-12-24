@@ -1,6 +1,5 @@
-/* $Id: slider.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,58 +18,81 @@
 #include "gui/widgets/integer_selector.hpp"
 #include "gui/widgets/scrollbar.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
+
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 /** A slider. */
-class tslider : public tscrollbar_, public tinteger_selector_
+class slider : public scrollbar_base, public integer_selector
 {
 public:
-
-	tslider();
+	slider();
 
 	/***** ***** ***** ***** layout functions ***** ***** ***** *****/
 
 private:
-	/** Inherited from tcontrol. */
-	tpoint calculate_best_size() const;
-public:
+	/** See @ref widget::calculate_best_size. */
+	virtual point calculate_best_size() const override;
 
+public:
 	/***** ***** ***** ***** Inherited ***** ***** ***** *****/
 
-	/** Inherited from tinteger_selector_. */
-	void set_value(const int value);
+	/** Inherited from integer_selector. */
+	void set_value(const int value) override;
 
-	/** Inherited from tinteger_selector_. */
-	int get_value() const
-		{ return minimum_value_ + get_item_position() * get_step_size(); }
+	/** Inherited from integer_selector. */
+	int get_value() const override
+	{
+		return minimum_value_ + get_item_position() * get_step_size();
+	}
 
-	/** Inherited from tinteger_selector_. */
-	void set_minimum_value(const int minimum_value);
+	/** Inherited from integer_selector. */
+	void set_minimum_value(const int minimum_value) override;
 
-	/** Inherited from tinteger_selector_. */
-	int get_minimum_value() const { return minimum_value_; }
+	/** Inherited from integer_selector. */
+	int get_minimum_value() const override
+	{
+		return minimum_value_;
+	}
 
-	/** Inherited from tinteger_selector_. */
-	void set_maximum_value(const int maximum_value);
+	/** Inherited from integer_selector. */
+	void set_maximum_value(const int maximum_value) override;
 
-	/** Inherited from tinteger_selector_. */
-	int get_maximum_value() const
-		// The number of items needs to include the begin and end so count - 1.
-		{ return minimum_value_ + get_item_count() - 1; }
-
+	/** Inherited from integer_selector. */
+	int get_maximum_value() const override
+	// The number of items needs to include the begin and end so count - 1.
+	{
+		return minimum_value_ + get_item_count() - 1;
+	}
+	typedef std::function<t_string(int /*current position*/, int /*num positions*/)> tlabel_creator;
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
 	void set_best_slider_length(const unsigned length)
-		{ best_slider_length_ = length; set_dirty(); }
+	{
+		best_slider_length_ = length;
+		set_is_dirty(true);
+	}
 
 	void set_minimum_value_label(const t_string& minimum_value_label)
-		{ minimum_value_label_ = minimum_value_label; }
+	{
+		minimum_value_label_ = minimum_value_label;
+	}
 
 	void set_maximum_value_label(const t_string& maximum_value_label)
-		{ maximum_value_label_ = maximum_value_label; }
+	{
+		maximum_value_label_ = maximum_value_label;
+	}
 
-	void set_value_labels(const std::vector<t_string>& value_labels)
-		{ value_labels_ = value_labels; }
+	void set_value_labels(const std::vector<t_string>& value_labels);
+
+	void set_value_labels(const tlabel_creator& value_labels)
+	{
+		value_labels_ = value_labels;
+	}
 
 	/**
 	 * Returns the label shown for the current value.
@@ -82,12 +104,10 @@ public:
 	t_string get_value_label() const;
 
 protected:
-
 	/** Inherited from tscrollbar. */
-	void child_callback_positioner_moved();
+	void child_callback_positioner_moved() override;
 
 private:
-
 	/** The best size for the slider part itself, if 0 ignored. */
 	unsigned best_slider_length_;
 
@@ -100,32 +120,43 @@ private:
 	int minimum_value_;
 
 	/** Inherited from tscrollbar. */
-	unsigned get_length() const { return get_width(); }
+	unsigned get_length() const override
+	{
+		return get_width();
+	}
 
 	/** Inherited from tscrollbar. */
-	unsigned minimum_positioner_length() const;
+	unsigned minimum_positioner_length() const override;
 
 	/** Inherited from tscrollbar. */
-	unsigned maximum_positioner_length() const;
+	unsigned maximum_positioner_length() const override;
 
 	/** Inherited from tscrollbar. */
-	unsigned offset_before() const;
+	unsigned offset_before() const override;
 
 	/** Inherited from tscrollbar. */
-	unsigned offset_after() const;
+	unsigned offset_after() const override;
 
 	/** Inherited from tscrollbar. */
-	bool on_positioner(const tpoint& coordinate) const;
+	bool on_positioner(const point& coordinate) const override;
 
 	/** Inherited from tscrollbar. */
-	int on_bar(const tpoint& coordinate) const;
+	int on_bar(const point& coordinate) const override;
 
 	/** Inherited from tscrollbar. */
-	int get_length_difference(const tpoint& original, const tpoint& current) const
-		{ return current.x - original.x; }
+	bool in_orthogonal_range(const point& coordinate) const override;
 
 	/** Inherited from tscrollbar. */
-	void update_canvas();
+	int get_length_difference(const point& original, const point& current) const override
+	{
+		return current.x - original.x;
+	}
+
+	/** Inherited from tscrollbar. */
+	//void move_positioner(const int distance) override;
+
+	/** See @ref styled_widget::update_canvas. */
+	virtual void update_canvas() override;
 
 	/**
 	 * When the slider shows the minimum value can show a special text.
@@ -145,10 +176,19 @@ private:
 	 * sliders. When set these texts are shown instead of the values. It also
 	 * overrides minimum_value_label_ and maximum_value_label_.
 	 */
-	std::vector<t_string> value_labels_;
+	tlabel_creator value_labels_;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/**
+	 * When initially pessing the positioner and every time a new value is chosen through dragging,
+	 * this value is upda with the mouse position at the time. This allows the widget to track
+	 * how far the mouse has moved since setting the last value.
+	 */
+	point current_item_mouse_position_;
+
+	//void update_current_item_mouse_position();
+
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 
 	/**
 	 * Handlers for keyboard input
@@ -159,17 +199,66 @@ private:
 	/**
 	 * Signal handlers:
 	 */
-	void signal_handler_sdl_key_down(const event::tevent event
-			, bool& handled
-			, const SDLKey key);
+	void signal_handler_sdl_key_down(const event::ui_event event,
+									 bool& handled,
+									 const SDL_Keycode key);
+
+	//void signal_handler_left_button_down(const event::ui_event event, bool& handled);
 
 	// In this subclass, only used to grab keyboard focus -
 	// see tscrollbar class for more handling of this event.
-	void signal_handler_left_button_up(
-			const event::tevent event, bool& handled);
+	void signal_handler_left_button_up(const event::ui_event event,
+									   bool& handled);
 };
+
+// }---------- DEFINITION ---------{
+
+struct slider_definition : public styled_widget_definition
+{
+	explicit slider_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+
+		unsigned minimum_positioner_length;
+		unsigned maximum_positioner_length;
+
+		unsigned left_offset;
+		unsigned right_offset;
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_slider : public builder_styled_widget
+{
+	explicit builder_slider(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+private:
+	unsigned best_slider_length_;
+	int minimum_value_;
+	int maximum_value_;
+	unsigned step_size_;
+	int value_;
+
+	t_string minimum_value_label_;
+	t_string maximum_value_label_;
+
+	std::vector<t_string> value_labels_;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-

@@ -1,6 +1,5 @@
-/* $Id: player.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -59,10 +58,10 @@ public:
 	/**
 	 * @return true iff the player is in a game
 	 */
-	bool in_game() const { return get_game() != NULL; }
+	bool in_game() const { return get_game() != nullptr; }
 
 	/**
-	 * @return a pointer to the game the player is in, or NULL if he/she is not
+	 * @return a pointer to the game the player is in, or nullptr if he/she is not
 	 * in a game at the moment
 	 */
 	const game* get_game() const;

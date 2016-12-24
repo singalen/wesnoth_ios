@@ -1,6 +1,5 @@
-/* $Id: exploder_composer.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -13,8 +12,8 @@
    See the COPYING file for more details.
 */
 
-#include "exploder_composer.hpp"
-#include "SDL_image.h"
+#include "tools/exploder_composer.hpp"
+#include <SDL_image.h>
 
 #include <iostream>
 
@@ -41,11 +40,11 @@ surface composer::compose(const std::string &src, const std::string &dest)
 		std::cerr << "Loading images...\n";
 	}
 	const surface src_surface(make_neutral_surface(IMG_Load(src.c_str())));
-	if(src_surface == NULL)
+	if(src_surface == nullptr)
 		throw exploder_failure("Unable to load the source image " + src);
 
 	const surface dest_surface(make_neutral_surface(IMG_Load(dest.c_str())));
-	if(dest_surface == NULL)
+	if(dest_surface == nullptr)
 		throw exploder_failure("Unable to load the destination image " + dest);
 
 	if(verbose_) {

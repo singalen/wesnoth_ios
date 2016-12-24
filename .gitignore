@@ -16,6 +16,12 @@ local.properties
 .settings/
 .loadpath
 
+# AppCode/CLion
+.idea
+
+# XCode
+xcuserdata/
+
 # External tool builders
 .externalToolBuilders/
 

@@ -1,6 +1,5 @@
-/* $Id: multi_page.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,26 +16,31 @@
 #ifndef GUI_WIDGETS_MULTI_PAGE_HPP_INCLUDED
 #define GUI_WIDGETS_MULTI_PAGE_HPP_INCLUDED
 
-#include "gui/widgets/container.hpp"
+#include "gui/widgets/container_base.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
 
-namespace implementation {
-	struct tbuilder_multi_page;
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
+
+namespace implementation
+{
+struct builder_multi_page;
 }
 
-class tgenerator_;
+class generator_base;
 
 /** The multi page class. */
-class tmulti_page
-		: public tcontainer_
+class multi_page : public container_base
 {
-	friend struct implementation::tbuilder_multi_page;
-	friend class tdebug_layout_graph;
+	friend struct implementation::builder_multi_page;
+	friend class debug_layout_graph;
 
 public:
-
-	tmulti_page();
+	multi_page();
 
 	/***** ***** ***** ***** Page handling. ***** ***** ****** *****/
 
@@ -63,10 +67,10 @@ public:
 	 *                            has the wanted id (if any). If the member
 	 *                            id is an empty string, it is send to all
 	 *                            members. Having both empty and non-empty
-	 *                            id's gives undefined behaviour.
+	 *                            id's gives undefined behavior.
 	 */
-	void add_page(const std::map<std::string /* widget id */,
-			string_map>& data);
+	void
+	add_page(const std::map<std::string /* widget id */, string_map>& data);
 
 	/**
 	 * Removes a page in the multi page.
@@ -108,7 +112,7 @@ public:
 	 *
 	 * @returns                   The grid of the wanted page.
 	 */
-	const tgrid& page_grid(const unsigned page) const;
+	const grid& page_grid(const unsigned page) const;
 
 	/**
 	 * Returns the grid for the page.
@@ -118,23 +122,24 @@ public:
 	 *
 	 * @returns                   The grid of the wanted page.
 	 */
-	tgrid& page_grid(const unsigned page);
+	grid& page_grid(const unsigned page);
 
 	/***** ***** ***** inherited ***** ****** *****/
 
-	/** Inherited from tcontrol. */
-	bool get_active() const { return true; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
 
-	/** Inherited from tcontrol. */
-	unsigned get_state() const { return 0; }
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
-	void set_page_builder(tbuilder_grid_ptr page_builder)
-		{ page_builder_ = page_builder; }
+	void set_page_builder(builder_grid_ptr page_builder)
+	{
+		page_builder_ = page_builder;
+	}
 
 private:
-
 	/**
 	 * Finishes the building initialization of the widget.
 	 *
@@ -146,30 +151,68 @@ private:
 	 * Contains a pointer to the generator.
 	 *
 	 * The pointer is not owned by this class, it's stored in the content_grid_
-	 * of the tscrollbar_container super class and freed when it's grid is
+	 * of the scrollbar_container super class and freed when it's grid is
 	 * freed.
 	 */
-	tgenerator_* generator_;
+	generator_base* generator_;
 
 	/** Contains the builder for the new items. */
-	tbuilder_grid_const_ptr page_builder_;
+	builder_grid_const_ptr page_builder_;
+
+	/** See @ref widget::impl_draw_background. */
+	virtual void impl_draw_background(surface& frame_buffer,
+									  int x_offset,
+									  int y_offset) override;
+
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
+
+	/** See @ref container_base::set_self_active. */
+	virtual void set_self_active(const bool active) override;
+};
+
+// }---------- DEFINITION ---------{
+
+struct multi_page_definition : public styled_widget_definition
+{
+	explicit multi_page_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+
+		builder_grid_ptr grid;
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_multi_page : public builder_styled_widget
+{
+	explicit builder_multi_page(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	builder_grid_ptr builder;
 
 	/**
-	 * Inherited from tcontrol.
+	 * Multi page data.
 	 *
-	 * Since we're always empty the draw does nothing.
+	 * Contains a vector with the data to set in every cell, it's used to
+	 * serialize the data in the config, so the config is no longer required.
 	 */
-	void impl_draw_background(surface& /*frame_buffer*/) {}
-
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
-
-	/** Inherited from tcontainer_. */
-	void set_self_active(const bool /*active*/) {}
+	std::vector<std::map<std::string, t_string> > data;
 };
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-
-

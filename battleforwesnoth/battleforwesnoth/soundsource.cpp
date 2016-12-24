@@ -1,6 +1,5 @@
-/* $Id: soundsource.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2006 - 2012 by Karol Nowak <grzywacz@sul.uni.lodz.pl>
+   Copyright (C) 2006 - 2016 by Karol Nowak <grzywacz@sul.uni.lodz.pl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,18 +21,17 @@
 #include "sound.hpp"
 #include "soundsource.hpp"
 
+#include <SDL.h> // Travis doesn't like this, although it works on my machine -> '#include <SDL_sound.h>
+
 namespace soundsource {
 
 const unsigned DEFAULT_CHANCE           = 100;
 const unsigned DEFAULT_DELAY            = 1000;
-const unsigned DEFAULT_FULL_RANGE       = 3;
-const unsigned DEFAULT_FADE_RANGE       = 14;
 
 unsigned int positional_source::last_id = 0;
 
 manager::manager(const display &disp) :
 	observer(),
-	savegame_config(),
 	sources_(),
 	disp_(disp)
 {
@@ -66,6 +64,16 @@ void manager::add(const sourcespec &spec)
 		delete (*it).second;
 		(*it).second = new positional_source(spec);
 	}
+}
+
+config manager::get(const std::string &id)
+{
+	config cfg;
+	positional_source_iterator it = sources_.find(id);
+	if(it != sources_.end()) {
+		it->second->write_config(cfg);
+	}
+	return cfg;
 }
 
 void manager::remove(const std::string &id)
@@ -107,13 +115,6 @@ void manager::write_sourcespecs(config& cfg) const
 		child["id"] = i->first;
 		i->second->write_config(child);
 	}
-}
-
-config manager::to_config() const
-{
-	config cfg;
-	write_sourcespecs(cfg);
-	return cfg.child("sound_source");
 }
 
 positional_source::positional_source(const sourcespec &spec) :
@@ -161,8 +162,8 @@ void positional_source::update(unsigned int time, const display &disp)
 		}
 
 		int distance_volume = DISTANCE_SILENT;
-		for(std::vector<map_location>::iterator i = locations_.begin(); i != locations_.end(); ++i) {
-			int v = calculate_volume(*i, disp);
+		for(const map_location& l : locations_) {
+			int v = calculate_volume(l, disp);
 			if(v < distance_volume) {
 				distance_volume = v;
 			}

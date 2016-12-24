@@ -1,6 +1,5 @@
-/* $Id: schema_generator.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-  Copyright (C) 2011 - 2012 by Sytyi Nick <nsytyi@gmail.com>
+  Copyright (C) 2011 - 2016 by Sytyi Nick <nsytyi@gmail.com>
   Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
   This program is free software; you can redistribute it and/or modify
@@ -28,8 +27,7 @@
 #include <fstream>
 #include <string>
 
-#include <string.h>
-
+#include <cstring>
 
 std::string version = "0.6.0";
 
@@ -101,15 +99,15 @@ int main(int argc, char *argv[]){
 		input_dir = "./src";
 	}
 
-	if (! file_exists(input_dir)){
+	if (! filesystem::file_exists(input_dir)){
 		return 2;
 	}
 
 	std::vector<std::string> files;
 	std::vector<std::string> dirs;
 
-	if (is_directory(input_dir)){
-		get_files_in_dir(input_dir, &files, &dirs, ENTIRE_FILE_PATH);
+	if (filesystem::is_directory(input_dir)){
+		filesystem::get_files_in_dir(input_dir, &files, &dirs, filesystem::ENTIRE_FILE_PATH);
 
 		if (files.empty() && dirs.empty()){
 			std::cout << "Some problem with input directory "
@@ -121,7 +119,7 @@ int main(int argc, char *argv[]){
 		while (!dirs.empty()){
 			std::string temp_dir = dirs.back();
 			dirs.pop_back();
-			get_files_in_dir(temp_dir, &files, &dirs, ENTIRE_FILE_PATH);
+			filesystem::get_files_in_dir(temp_dir, &files, &dirs, filesystem::ENTIRE_FILE_PATH);
 		}
 	}else{
 		files.push_back(input_dir);
@@ -133,13 +131,13 @@ int main(int argc, char *argv[]){
 
 	for (;i != files.end(); ++i){
 		bool ok = false;
-		if (file_name((*i)).find(".cpp")!=std::string::npos){
+		if (filesystem::base_name((*i)).find(".cpp")!=std::string::npos){
 			ok = true;
 		} else
-				if (file_name((*i)).find(".hpp")!=std::string::npos){
+				if (filesystem::base_name((*i)).find(".hpp")!=std::string::npos){
 			ok = true;
 		} else
-			if (file_name((*i)).find(".schema")!=std::string::npos){
+			if (filesystem::base_name((*i)).find(".schema")!=std::string::npos){
 			ok = true;
 		}
 		if (ok){
@@ -164,7 +162,7 @@ int main(int argc, char *argv[]){
 		while (true) {
 			std::cin.get(c);
 			const char *r = strchr("yYnN",c);
-			if (r == NULL){
+			if (r == nullptr){
 				std::cout << "Please, choose your answer " << std::endl;
 				continue;
 			}

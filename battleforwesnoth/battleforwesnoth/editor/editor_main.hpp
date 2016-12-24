@@ -1,6 +1,5 @@
-/* $Id: editor_main.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2008 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -33,7 +32,7 @@ enum EXIT_STATUS {
 /**
  * Main interface for launching the editor from the title screen.
  * @returns How the editor was exited (whether the intent was to
- *          go back to the titlescreen or quit to desktop altogeter)
+ *          go back to the titlescreen or quit to desktop altogether)
  */
 
 EXIT_STATUS start(const config& game_config, CVideo& video, const std::string& filename = "", bool take_screenshot = false, const std::string& screenshot_filename = "map_screenshot.bmp");

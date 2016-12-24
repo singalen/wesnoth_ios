@@ -1,6 +1,5 @@
-/* $Id: resources.cpp 53976 2012-04-23 00:47:38Z espreon $ */
 /*
-   Copyright (C) 2009 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+   Copyright (C) 2009 - 2016 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,18 +17,22 @@
 
 namespace resources
 {
-	game_display *screen = NULL;
-	soundsource::manager *soundsources = NULL;
-	gamemap *game_map = NULL;
-	unit_map *units = NULL;
-	std::vector<team> *teams = NULL;
-	game_state *state_of_game = NULL;
-	LuaKernel *lua_kernel = NULL;
-	play_controller *controller = NULL;
-	::tod_manager *tod_manager = NULL;
-	pathfind::manager *tunnels = NULL;
-	wb::manager *whiteboard = NULL;
-	std::vector<undo_action> *undo_stack = NULL;
-	std::vector<undo_action> *redo_stack = NULL;
-	persist_manager *persist = NULL;
+	game_board           *gameboard = nullptr;
+	play_controller      *controller = nullptr;
+	game_data            *gamedata = nullptr;
+	filter_context	     *filter_con = nullptr;
+	game_events::manager *game_events = nullptr;
+	game_lua_kernel            *lua_kernel = nullptr;
+	persist_manager      *persist = nullptr;
+	game_display         *screen = nullptr;
+	soundsource::manager *soundsources = nullptr;
+	replay               *recorder = nullptr;
+	::tod_manager        *tod_manager = nullptr;
+	fake_unit_manager    *fake_units = nullptr;
+	pathfind::manager    *tunnels = nullptr;
+	actions::undo_list   *undo_stack = nullptr;
+	std::shared_ptr<wb::manager> whiteboard = std::shared_ptr<wb::manager>();
+	game_classification  *classification = nullptr;
+	const mp_game_settings *mp_settings = nullptr;
+	bool                 simulation_ = false;
 }

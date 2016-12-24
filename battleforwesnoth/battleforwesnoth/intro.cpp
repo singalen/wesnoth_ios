@@ -1,6 +1,5 @@
-/* $Id: intro.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -23,19 +22,14 @@
 
 #include "intro.hpp"
 
-#include "display.hpp"
+#include "video.hpp"
 #include "gettext.hpp"
-#include "log.hpp"
-#include "marked-up_text.hpp"
-#include "storyscreen/interface.hpp"
+#include "font/marked-up_text.hpp"
+#include "color.hpp"
+#include "sdl/rect.hpp"
+#include "font/sdl_ttf.hpp"
 
-static lg::log_domain log_engine("engine");
-#define ERR_NG LOG_STREAM(err, log_engine)
-#define LOG_NG LOG_STREAM(info, log_engine)
-
-static bool use_shadowm_storyscreen = false;
-
-static void the_end_old(display &disp, std::string text, unsigned int duration)
+void the_end(CVideo &video, std::string text, unsigned int duration)
 {
 	//
 	// Some sane defaults.
@@ -46,11 +40,9 @@ static void the_end_old(display &disp, std::string text, unsigned int duration)
 		duration = 3500;
 
 	SDL_Rect area = screen_area();
-	CVideo &video = disp.video();
-	sdl_fill_rect(video.getSurface(),&area,0);
+	sdl::fill_rect(video.getSurface(),&area,0);
 
-	update_whole_screen();
-	disp.flip();
+	video.flip();
 
 	const size_t font_size = font::SIZE_XLARGE;
 
@@ -60,17 +52,16 @@ static void the_end_old(display &disp, std::string text, unsigned int duration)
 
 	for(size_t n = 0; n < 255; n += 5) {
 		if(n)
-			sdl_fill_rect(video.getSurface(),&area,0);
+			sdl::fill_rect(video.getSurface(),&area,0);
 
-		const SDL_Color col = create_color(n, n, n, n);
+		const color_t col = color_t(uint8_t(n), uint8_t(n), uint8_t(n), uint8_t(n));
 		font::draw_text(&video,area,font_size,col,text,area.x,area.y);
-		update_rect(area);
 
 		events::pump();
 		events::raise_process_event();
 		events::raise_draw_event();
-		disp.flip();
-		disp.delay(10);
+		video.flip();
+		CVideo::delay(10);
 	}
 
 	//
@@ -82,25 +73,8 @@ static void the_end_old(display &disp, std::string text, unsigned int duration)
 		events::pump();
 		events::raise_process_event();
 		events::raise_draw_event();
-		disp.flip();
-		disp.delay(10);
+		video.flip();
+		CVideo::delay(10);
 		--count;
 	}
 }
-
-void set_new_storyscreen(bool enabled)
-{
-	use_shadowm_storyscreen = enabled;
-	LOG_NG << "enabled experimental story/endscreen code\n";
-}
-
-void the_end(display &disp, std::string text, unsigned int duration)
-{
-	if(use_shadowm_storyscreen) {
-		show_endscreen(disp, t_string(text) /* dumb! */, duration);
-	}
-	else {
-		the_end_old(disp,text,duration);
-	}
-}
-

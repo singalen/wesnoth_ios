@@ -1,6 +1,5 @@
-/* $Id: exploder_cutter.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -16,9 +15,8 @@
 #ifndef EXPLODER_CUTTER_HPP_INCLUDED
 #define EXPLODER_CUTTER_HPP_INCLUDED
 
-#include "../sdl_utils.hpp"
-#include "../config.hpp"
-#include "../sdl_utils.hpp"
+#include "sdl/surface.hpp"
+#include "config.hpp"
 #include "exploder_utils.hpp"
 
 class cutter
@@ -28,7 +26,7 @@ public:
 	{
 		mask()
 			: name()
-			, image(NULL)
+			, image(nullptr)
 			, filename()
 			, shift()
 			, cut()
@@ -47,10 +45,10 @@ public:
 		positioned_surface()
 			: name()
 			, pos()
-			, image(NULL)
+			, image(nullptr)
 			, mask()
 		{
-		};
+		}
 
 		std::string name;
 		exploder_point pos;

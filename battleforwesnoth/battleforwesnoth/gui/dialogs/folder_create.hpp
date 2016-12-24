@@ -1,6 +1,5 @@
-/* $Id: folder_create.hpp 50092 2011-06-29 23:53:18Z espreon $ */
 /*
-   Copyright (C) 2011 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2011 - 2016 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,33 +15,64 @@
 #ifndef GUI_DIALOGS_FOLDER_CREATE_HPP_INCLUDED
 #define GUI_DIALOGS_FOLDER_CREATE_HPP_INCLUDED
 
-#include "gui/dialogs/dialog.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
-class tfolder_create : public tdialog
+class folder_create : public modal_dialog
 {
 public:
 	/**
 	 * Constructor.
 	 *
-	 * @param folder_name [in]    A suggested folder name.
-	 * @param folder_name [out]   The folder name the user actually entered if the dialog
-	 *                            returns @ref twindow::OK; undefined otherwise.
+	 * @param [in, out] folder_name
+	 *                            The parameter's usage is:
+	 *                            - Input: A suggested folder name.
+	 *                            - Output: The folder name the user actually
+	 *                              entered if the dialog returns @ref
+	 *                              window::OK; undefined otherwise.
 	 */
-	tfolder_create(std::string& folder_name);
+	folder_create(std::string& folder_name);
 
-	/** The excute function; see @ref tdialog for more information. */
+	/** The execute function; see @ref modal_dialog for more information. */
 	static bool execute(std::string& folder_name, CVideo& video)
 	{
-		return tfolder_create(folder_name).show(video);
+		return folder_create(folder_name).show(video);
 	}
 
 private:
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	friend class bookmark_create;
+
+	bool bookmark_mode_;
+
+	/** Changes the dialog caption so it can be used for naming bookmarks. */
+	folder_create& enable_bookmark_mode()
+	{
+		bookmark_mode_ = true;
+		return *this;
+	}
+
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
+
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 };
 
-}
+class bookmark_create
+{
+public:
+	/** The execute function; see @ref modal_dialog for more information. */
+	static bool execute(std::string& bookmark_name, CVideo& video)
+	{
+		return folder_create(bookmark_name).enable_bookmark_mode().show(video);
+	}
+};
+
+} // namespace dialogs
+} // namespace gui2
 
 #endif /* ! GUI_DIALOGS_EDIT_LABEL_INCLUDED */

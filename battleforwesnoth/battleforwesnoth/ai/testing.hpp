@@ -1,6 +1,5 @@
-/* $Id: testing.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Yurii Chernyi <terraninfo@terraninfo.net>
+   Copyright (C) 2009 - 2016 by Yurii Chernyi <terraninfo@terraninfo.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -21,7 +20,7 @@
 #ifndef AI_TESTING_HPP_INCLUDED
 #define AI_TESTING_HPP_INCLUDED
 
-#include "../global.hpp"
+#include "global.hpp"
 
 #include <vector>
 
@@ -48,7 +47,7 @@ public:
 	 * Log in case of victory
 	 * teams vector of winner teams
 	 */
-	static void log_victory( std::vector<unsigned int> teams );
+	static void log_victory( std::set<unsigned int> teams );
 
 
 	/*

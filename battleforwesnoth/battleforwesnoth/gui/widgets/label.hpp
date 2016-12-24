@@ -1,6 +1,5 @@
-/* $Id: label.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,52 +15,73 @@
 #ifndef GUI_WIDGETS_LABEL_HPP_INCLUDED
 #define GUI_WIDGETS_LABEL_HPP_INCLUDED
 
-#include "gui/widgets/control.hpp"
+#include "gui/widgets/styled_widget.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
+
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 /** Label showing a text. */
-class tlabel : public tcontrol
+class label : public styled_widget
 {
 public:
+	label();
 
-	tlabel()
-		: tcontrol(COUNT)
-		, state_(ENABLED)
-		, can_wrap_(false)
-	{
-	}
+	/** See @ref widget::can_wrap. */
+	virtual bool can_wrap() const override;
 
-	/** Inherited from twidget. */
-	bool can_wrap() const { return can_wrap_; }
+	/** See @ref styled_widget::get_characters_per_line. */
+	virtual unsigned get_characters_per_line() const override;
 
-	/** Inherited from tcontrol. */
-	void set_active(const bool active)
-		{ if(get_active() != active) set_state(active ? ENABLED : DISABLED); }
+	/** See @ref styled_widget::get_link_aware. */
+	virtual bool get_link_aware() const override;
 
-	/** Inherited from tcontrol. */
-	bool get_active() const { return state_ != DISABLED; }
+	/** See @ref styled_widget::get_link_aware. */
+	virtual color_t get_link_color() const override;
 
-	/** Inherited from tcontrol. */
-	unsigned get_state() const { return state_; }
+	/** See @ref styled_widget::set_active. */
+	virtual void set_active(const bool active) override;
 
-	/** Inherited from tcontrol. */
-	bool disable_click_dismiss() const { return false; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
+
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
+
+	/** See @ref widget::disable_click_dismiss. */
+	bool disable_click_dismiss() const override;
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
-	void set_can_wrap(const bool wrap) { can_wrap_ = wrap; }
+	void set_can_wrap(const bool wrap)
+	{
+		can_wrap_ = wrap;
+	}
 
+	void set_characters_per_line(const unsigned set_characters_per_line);
+
+	void set_link_aware(bool l);
+
+	void set_link_color(const color_t& color);
+
+	virtual bool can_mouse_focus() const override { return !tooltip().empty(); }
 private:
-
 	/**
 	 * Possible states of the widget.
 	 *
 	 * Note the order of the states must be the same as defined in settings.hpp.
 	 */
-	enum tstate { ENABLED, DISABLED, COUNT };
+	enum state_t {
+		ENABLED,
+		DISABLED,
+		COUNT
+	};
 
-	void set_state(const tstate state);
+	void set_state(const state_t state);
 
 	/**
 	 * Current state of the widget.
@@ -69,16 +89,88 @@ private:
 	 * The state of the widget determines what to render and how the widget
 	 * reacts to certain 'events'.
 	 */
-	tstate state_;
+	state_t state_;
 
 	/** Holds the label can wrap or not. */
 	bool can_wrap_;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/**
+	 * The maximum number of characters per line.
+	 *
+	 * The maximum is not an exact maximum, it uses the average character width.
+	 */
+	unsigned characters_per_line_;
+
+	/**
+	 * Whether the label is link aware, rendering links with special formatting
+	 * and handling click events.
+	 */
+	bool link_aware_;
+
+	/**
+	 * What color links will be rendered in.
+	 */
+	color_t link_color_;
+
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
+
+	/** Inherited from styled_widget. */
+	void load_config_extra() override;
+
+	/***** ***** ***** signal handlers ***** ****** *****/
+
+	/**
+	 * Left click signal handler: checks if we clicked on a hyperlink
+	 */
+	void signal_handler_left_button_click(const event::ui_event event, bool & handled);
+
+	/**
+	 * Right click signal handler: checks if we clicked on a hyperlink, copied to clipboard
+	 */
+	void signal_handler_right_button_click(const event::ui_event event, bool & handled);
 };
+
+// }---------- DEFINITION ---------{
+
+struct label_definition : public styled_widget_definition
+{
+
+	explicit label_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+
+		bool link_aware;
+		color_t link_color;
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_label : public builder_styled_widget
+{
+	builder_label(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	bool wrap;
+
+	unsigned characters_per_line;
+
+	PangoAlignment text_alignment;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-

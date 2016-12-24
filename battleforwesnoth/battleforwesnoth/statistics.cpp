@@ -1,6 +1,5 @@
-/* $Id: statistics.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,16 +18,17 @@
  */
 
 #include "global.hpp"
+#include "game_board.hpp"
 #include "statistics.hpp"
 #include "log.hpp"
+#include "resources.hpp" // Needed for teams, to get team save_id for a unit
 #include "serialization/binary_or_text.hpp"
-#include "unit.hpp"
-#include "util.hpp"
-
-#include <boost/foreach.hpp>
+#include "team.hpp" // Needed to get team save_id
+#include "units/unit.hpp"
 
 static lg::log_domain log_engine("engine");
 #define DBG_NG LOG_STREAM(debug, log_engine)
+#define ERR_NG LOG_STREAM(err, log_engine)
 
 namespace {
 
@@ -37,6 +37,13 @@ namespace {
 bool mid_scenario = false;
 
 typedef statistics::stats stats;
+typedef std::map<std::string,stats> team_stats_t;
+
+std::string get_team_save_id(const unit & u)
+{
+	assert(resources::gameboard);
+	return resources::gameboard->teams().at(u.side()-1).save_id();
+}
 
 struct scenario_stats
 {
@@ -50,7 +57,7 @@ struct scenario_stats
 	config write() const;
 	void write(config_writer &out) const;
 
-	std::map<std::string,stats> team_stats;
+	team_stats_t team_stats;
 	std::string scenario_name;
 };
 
@@ -58,7 +65,7 @@ scenario_stats::scenario_stats(const config& cfg) :
 	team_stats(),
 	scenario_name(cfg["scenario"])
 {
-	BOOST_FOREACH(const config &team, cfg.child_range("team")) {
+	for(const config &team : cfg.child_range("team")) {
 		team_stats[team["save_id"]] = stats(team);
 	}
 }
@@ -67,7 +74,7 @@ config scenario_stats::write() const
 {
 	config res;
 	res["scenario"] = scenario_name;
-	for(std::map<std::string,stats>::const_iterator i = team_stats.begin(); i != team_stats.end(); ++i) {
+	for(team_stats_t::const_iterator i = team_stats.begin(); i != team_stats.end(); ++i) {
 		res.add_child("team",i->second.write());
 	}
 
@@ -77,7 +84,7 @@ config scenario_stats::write() const
 void scenario_stats::write(config_writer &out) const
 {
 	out.write_key_val("scenario", scenario_name);
-	for(std::map<std::string,stats>::const_iterator i = team_stats.begin(); i != team_stats.end(); ++i) {
+	for(team_stats_t::const_iterator i = team_stats.begin(); i != team_stats.end(); ++i) {
 		out.open_child("team");
 		i->second.write(out);
 		out.close_child("team");
@@ -94,7 +101,7 @@ static stats &get_stats(const std::string &save_id)
 		master_stats.push_back(scenario_stats(std::string()));
 	}
 
-	std::map<std::string,stats>& team_stats = master_stats.back().team_stats;
+	team_stats_t& team_stats = master_stats.back().team_stats;
 	return team_stats[save_id];
 }
 
@@ -102,9 +109,12 @@ static config write_str_int_map(const stats::str_int_map& m)
 {
 	config res;
 	for(stats::str_int_map::const_iterator i = m.begin(); i != m.end(); ++i) {
-		char buf[50];
-		snprintf(buf,sizeof(buf),"%d",i->second);
-		res[i->first] = buf;
+		std::string n = std::to_string(i->second);
+		if(res.has_attribute(n)) {
+			res[n] = res[n].str() + "," + i->first;
+		} else {
+			res[n] = i->first;
+		}
 	}
 
 	return res;
@@ -112,18 +122,38 @@ static config write_str_int_map(const stats::str_int_map& m)
 
 static void write_str_int_map(config_writer &out, const stats::str_int_map& m)
 {
-	for(stats::str_int_map::const_iterator i = m.begin(); i != m.end(); ++i) {
-		char buf[50];
-		snprintf(buf,sizeof(buf),"%d",i->second);
-		out.write_key_val(i->first, buf);
+	using reverse_map = std::multimap<int, std::string>;
+	reverse_map rev;
+	std::transform(
+		m.begin(), m.end(),
+		std::inserter(rev, rev.begin()),
+		[](const stats::str_int_map::value_type p) {
+			return std::make_pair(p.second, p.first);
+		}
+	);
+	reverse_map::const_iterator i = rev.begin(), j;
+	while(i != rev.end()) {
+		j = rev.upper_bound(i->first);
+		std::vector<std::string> vals;
+		std::transform(i, j, std::back_inserter(vals), [](const reverse_map::value_type& p) {
+			return p.second;
+		});
+		out.write_key_val(std::to_string(i->first), utils::join(vals));
+		i = j;
 	}
 }
 
 static stats::str_int_map read_str_int_map(const config& cfg)
 {
 	stats::str_int_map m;
-	BOOST_FOREACH(const config::attribute &i, cfg.attribute_range()) {
-		m[i.first] = i.second;
+	for(const config::attribute &i : cfg.attribute_range()) {
+		try {
+			for(const std::string& val : utils::split(i.second)) {
+				m[val] = std::stoi(i.first);
+			}
+		} catch(std::invalid_argument&) {
+			ERR_NG << "Invalid statistics entry; skipping\n";
+		}
 	}
 
 	return m;
@@ -135,10 +165,7 @@ static config write_battle_result_map(const stats::battle_result_map& m)
 	for(stats::battle_result_map::const_iterator i = m.begin(); i != m.end(); ++i) {
 		config& new_cfg = res.add_child("sequence");
 		new_cfg = write_str_int_map(i->second);
-
-		char buf[50];
-		snprintf(buf,sizeof(buf),"%d",i->first);
-		new_cfg["_num"] = buf;
+		new_cfg["_num"] = i->first;
 	}
 
 	return res;
@@ -149,10 +176,7 @@ static void write_battle_result_map(config_writer &out, const stats::battle_resu
 	for(stats::battle_result_map::const_iterator i = m.begin(); i != m.end(); ++i) {
 		out.open_child("sequence");
 		write_str_int_map(out, i->second);
-
-		char buf[50];
-		snprintf(buf,sizeof(buf),"%d",i->first);
-		out.write_key_val("_num", buf);
+		out.write_key_val("_num", i->first);
 		out.close_child("sequence");
 	}
 }
@@ -160,7 +184,7 @@ static void write_battle_result_map(config_writer &out, const stats::battle_resu
 static stats::battle_result_map read_battle_result_map(const config& cfg)
 {
 	stats::battle_result_map m;
-	BOOST_FOREACH(const config &i, cfg.child_range("sequence"))
+	for(const config &i : cfg.child_range("sequence"))
 	{
 		config item = i;
 		int key = item["_num"];
@@ -253,7 +277,7 @@ stats::stats(const config& cfg) :
 	expected_damage_taken(0),
 	turn_expected_damage_inflicted(0),
 	turn_expected_damage_taken(0),
-	save_id(std::string())
+	save_id()
 {
 	read(cfg);
 }
@@ -269,38 +293,20 @@ config stats::write() const
 	res.add_child("attacks",write_battle_result_map(attacks));
 	res.add_child("defends",write_battle_result_map(defends));
 
-	std::ostringstream ss;
-	ss << recruit_cost;
-	res["recruit_cost"] = ss.str();
-	ss.str(std::string());
-	ss << recall_cost;
-	res["recall_cost"] = ss.str();
+	res["recruit_cost"] = recruit_cost;
+	res["recall_cost"] = recall_cost;
 
-	ss.str(std::string());
-	ss << damage_inflicted;
-	res["damage_inflicted"] = ss.str();
-	ss.str(std::string());
-	ss << damage_taken;
-	res["damage_taken"] = ss.str();
-	ss.str(std::string());
-	ss << expected_damage_inflicted;
-	res["expected_damage_inflicted"] = ss.str();
-	ss.str(std::string());
-	ss << expected_damage_taken;
-	res["expected_damage_taken"] = ss.str();
-	ss.str(std::string());
-	ss << turn_damage_inflicted;
+	res["damage_inflicted"] = damage_inflicted;
+	res["damage_taken"] = damage_taken;
+	res["expected_damage_inflicted"] = expected_damage_inflicted;
+	res["expected_damage_taken"] = expected_damage_taken;
 
-	res["turn_damage_inflicted"] = ss.str();
-	ss.str(std::string());
-	ss << turn_damage_taken;
-	res["turn_damage_taken"] = ss.str();
-	ss.str(std::string());
-	ss << turn_expected_damage_inflicted;
-	res["turn_expected_damage_inflicted"] = ss.str();
-	ss.str(std::string());
-	ss << turn_expected_damage_taken;
-	res["turn_expected_damage_taken"] = ss.str();
+	res["turn_damage_inflicted"] = turn_damage_inflicted;
+	res["turn_damage_taken"] = turn_damage_taken;
+	res["turn_expected_damage_inflicted"] = turn_expected_damage_inflicted;
+	res["turn_expected_damage_taken"] = turn_expected_damage_taken;
+
+	res["save_id"] = save_id;
 
 	return res;
 }
@@ -329,41 +335,20 @@ void stats::write(config_writer &out) const
 	write_battle_result_map(out, defends);
 	out.close_child("defends");
 
-	std::ostringstream ss;
-	ss << recruit_cost;
-	out.write_key_val("recruit_cost", ss.str());
-	ss.str(std::string());
-	ss << recall_cost;
-	out.write_key_val("recall_cost", ss.str());
+	out.write_key_val("recruit_cost", recruit_cost);
+	out.write_key_val("recall_cost", recall_cost);
 
-	ss.str(std::string());
-	ss << damage_inflicted;
-	out.write_key_val("damage_inflicted", ss.str());
-	ss.str(std::string());
-	ss << damage_taken;
-	out.write_key_val("damage_taken", ss.str());
-	ss.str(std::string());
-	ss << expected_damage_inflicted;
-	out.write_key_val("expected_damage_inflicted", ss.str());
-	ss.str(std::string());
-	ss << expected_damage_taken;
-	out.write_key_val("expected_damage_taken", ss.str());
-	ss.str(std::string());
-	ss << turn_damage_inflicted;
+	out.write_key_val("damage_inflicted", damage_inflicted);
+	out.write_key_val("damage_taken", damage_taken);
+	out.write_key_val("expected_damage_inflicted", expected_damage_inflicted);
+	out.write_key_val("expected_damage_taken", expected_damage_taken);
 
-	out.write_key_val("turn_damage_inflicted", ss.str());
-	ss.str(std::string());
-	ss << turn_damage_taken;
-	out.write_key_val("turn_damage_taken", ss.str());
-	ss.str(std::string());
-	ss << turn_expected_damage_inflicted;
-	out.write_key_val("turn_expected_damage_inflicted", ss.str());
-	ss.str(std::string());
-	ss << turn_expected_damage_taken;
-	out.write_key_val("turn_expected_damage_taken", ss.str());
+	out.write_key_val("turn_damage_inflicted", turn_damage_inflicted);
+	out.write_key_val("turn_damage_taken", turn_damage_taken);
+	out.write_key_val("turn_expected_damage_inflicted", turn_expected_damage_inflicted);
+	out.write_key_val("turn_expected_damage_taken", turn_expected_damage_taken);
 
 	out.write_key_val("save_id", save_id);
-
 }
 
 void stats::read(const config& cfg)
@@ -393,18 +378,18 @@ void stats::read(const config& cfg)
 		defends = read_battle_result_map(c);
 	}
 
-	recruit_cost = lexical_cast<long long>(cfg["recruit_cost"]);
-	recall_cost = lexical_cast<long long>(cfg["recall_cost"]);
+	recruit_cost = cfg["recruit_cost"].to_int();
+	recall_cost = cfg["recall_cost"].to_int();
 
-	damage_inflicted = lexical_cast<long long>(cfg["damage_inflicted"]);
-	damage_taken = lexical_cast<long long>(cfg["damage_taken"]);
-	expected_damage_inflicted = lexical_cast<long long>(cfg["expected_damage_inflicted"]);
-	expected_damage_taken = lexical_cast<long long>(cfg["expected_damage_taken"]);
+	damage_inflicted = cfg["damage_inflicted"].to_long_long();
+	damage_taken = cfg["damage_taken"].to_long_long();
+	expected_damage_inflicted = cfg["expected_damage_inflicted"].to_long_long();
+	expected_damage_taken = cfg["expected_damage_taken"].to_long_long();
 
-	turn_damage_inflicted = lexical_cast<long long>(cfg["turn_damage_inflicted"]);
-	turn_damage_taken = lexical_cast<long long>(cfg["turn_damage_taken"]);
-	turn_expected_damage_inflicted = lexical_cast<long long>(cfg["turn_expected_damage_inflicted"]);
-	turn_expected_damage_taken = lexical_cast<long long>(cfg["turn_expected_damage_taken"]);
+	turn_damage_inflicted = cfg["turn_damage_inflicted"].to_long_long();
+	turn_damage_taken = cfg["turn_damage_taken"].to_long_long();
+	turn_expected_damage_inflicted = cfg["turn_expected_damage_inflicted"].to_long_long();
+	turn_expected_damage_taken = cfg["turn_expected_damage_taken"].to_long_long();
 
 	save_id = cfg["save_id"].str();
 }
@@ -427,8 +412,8 @@ attack_context::attack_context(const unit& a,
 		const unit& d, int a_cth, int d_cth) :
 	attacker_type(a.type_id()),
 	defender_type(d.type_id()),
-	attacker_side(a.side_id()),
-	defender_side(d.side_id()),
+	attacker_side(get_team_save_id(a)),
+	defender_side(get_team_save_id(d)),
 	chance_to_hit_defender(a_cth),
 	chance_to_hit_attacker(d_cth),
 	attacker_res(),
@@ -521,40 +506,45 @@ void attack_context::defend_result(hit_result res, int damage, int drain)
 
 void recruit_unit(const unit& u)
 {
-	stats& s = get_stats(u.side_id());
-	s.recruits[u.type_id()]++;
+	stats& s = get_stats(get_team_save_id(u));
+	s.recruits[u.type().base_id()]++;
 	s.recruit_cost += u.cost();
 }
 
 void recall_unit(const unit& u)
 {
-	stats& s = get_stats(u.side_id());
+	stats& s = get_stats(get_team_save_id(u));
 	s.recalls[u.type_id()]++;
 	s.recall_cost += u.cost();
 }
 
 void un_recall_unit(const unit& u)
 {
-	stats& s = get_stats(u.side_id());
+	stats& s = get_stats(get_team_save_id(u));
 	s.recalls[u.type_id()]--;
 	s.recall_cost -= u.cost();
 }
 
 void un_recruit_unit(const unit& u)
 {
-	stats& s = get_stats(u.side_id());
-	s.recruits[u.type_id()]--;
+	stats& s = get_stats(get_team_save_id(u));
+	s.recruits[u.type().base_id()]--;
 	s.recruit_cost -= u.cost();
+}
+
+int un_recall_unit_cost(const unit& u)  // this really belongs elsewhere, perhaps in undo.cpp
+{					// but I'm too lazy to do it at the moment
+	return u.recall_cost();
 }
 
 
 void advance_unit(const unit& u)
 {
-	stats& s = get_stats(u.side_id());
+	stats& s = get_stats(get_team_save_id(u));
 	s.advanced_to[u.type_id()]++;
 }
 
-void reset_turn_stats(std::string save_id)
+void reset_turn_stats(const std::string & save_id)
 {
 	stats &s = get_stats(save_id);
 	s.turn_damage_inflicted = 0;
@@ -564,26 +554,57 @@ void reset_turn_stats(std::string save_id)
 	s.save_id = save_id;
 }
 
-stats calculate_stats(int category, std::string save_id)
+stats calculate_stats(const std::string & save_id)
 {
-	DBG_NG << "calculate_stats, category: " << category << " side: " << save_id << " master_stats.size: " << master_stats.size() << "\n";
-	if(category == 0) {
-		stats res;
-		// We are going from last to first to include correct turn stats in result
-		for(int i = int(master_stats.size()); i > 0 ; --i) {
-			merge_stats(res,calculate_stats(i,save_id));
-		}
+	stats res;
 
-		return res;
-	} else {
-		const size_t index = master_stats.size() - size_t(category);
-		if(index < master_stats.size() && master_stats[index].team_stats.find(save_id) != master_stats[index].team_stats.end()) {
-			return master_stats[index].team_stats[save_id];
-		} else {
-			return stats();
-		}
+	DBG_NG << "calculate_stats, side: " << save_id << " master_stats.size: " << master_stats.size() << "\n";
+	// The order of this loop matters since the turn stats are taken from the
+	// last stats merged.
+	for ( size_t i = 0; i != master_stats.size(); ++i ) {
+		team_stats_t::const_iterator find_it = master_stats[i].team_stats.find(save_id);
+		if ( find_it != master_stats[i].team_stats.end() )
+			merge_stats(res, find_it->second);
 	}
+
+	return res;
 }
+
+
+/**
+ * Returns a list of names and stats for each scenario in the current campaign.
+ * The front of the list is the oldest scenario; the back of the list is the
+ * (most) current scenario.
+ * Only scenarios with stats for the given @a side_id are included, but if no
+ * scenarios are applicable, then a vector containing a single dummy entry will
+ * be returned. (I.e., this never returns an empty vector.)
+ * This list is intended for the statistics dialog and may become invalid if
+ * new stats are recorded.
+ */
+levels level_stats(const std::string & save_id)
+{
+	static const stats null_stats;
+	static const std::string null_name("");
+
+	levels level_list;
+
+	for ( size_t level = 0; level != master_stats.size(); ++level ) {
+		const team_stats_t & team_stats = master_stats[level].team_stats;
+
+		team_stats_t::const_iterator find_it = team_stats.find(save_id);
+		if ( find_it != team_stats.end() )
+			level_list.push_back(make_pair(&master_stats[level].scenario_name,
+			                               &find_it->second));
+	}
+
+	// Make sure we do return something (so other code does not have to deal
+	// with an empty list).
+	if ( level_list.empty() )
+			level_list.push_back(make_pair(&null_name, &null_stats));
+
+	return level_list;
+}
+
 
 config write_stats()
 {
@@ -613,7 +634,7 @@ void read_stats(const config& cfg)
 	fresh_stats();
 	mid_scenario = cfg["mid_scenario"].to_bool();
 
-	BOOST_FOREACH(const config &s, cfg.child_range("scenario")) {
+	for(const config &s : cfg.child_range("scenario")) {
 		master_stats.push_back(scenario_stats(s));
 	}
 }
@@ -646,7 +667,12 @@ int sum_cost_str_int_map(const stats::str_int_map &m)
 {
 	int cost = 0;
 	for (stats::str_int_map::const_iterator i = m.begin(); i != m.end(); ++i) {
-		cost += i->second * unit_types.find(i->first)->cost();
+		const unit_type *t = unit_types.find(i->first);
+		if (!t) {
+			ERR_NG << "Statistics refer to unknown unit type '" << i->first << "'. Discarding." << std::endl;
+		} else {
+			cost += i->second * t->cost();
+		}
 	}
 
 	return cost;

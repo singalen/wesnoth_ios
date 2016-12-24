@@ -1,6 +1,5 @@
-/* $Id: ai.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2008 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,14 +21,27 @@
 #ifndef AI_FORMULA_AI_HPP_INCLUDED
 #define AI_FORMULA_AI_HPP_INCLUDED
 
-#include "callable_objects.hpp"
-#include "candidates.hpp"
-#include "function_table.hpp"
+#include "ai/contexts.hpp"
+#include "ai/formula/function_table.hpp"           // for ai_function_symbol_table
+#include "ai/formula/callable_objects.hpp"         // for position_callable, etc
+#include "ai/formula/candidates.hpp"               // for candidate_action_ptr, etc
+#include "config.hpp"                   // for config
+#include "formula/callable.hpp"         // for formula_callable, etc
+#include "formula/formula_fwd.hpp"              // for const_formula_ptr, etc
+#include "generic_event.hpp"  // for observer
+#include "pathfind/teleport.hpp"  // for teleport_map
+#include "units/map.hpp"
+#include <set>                          // for multiset
+#include <string>                       // for string
+#include <utility>                      // for pair
+#include <vector>                       // for vector
 
-#include "../default/ai.hpp"
-#include "../../pathfind/teleport.hpp"
+class variant;
 
-#include <boost/noncopyable.hpp>
+namespace ai { class ai_context; }
+namespace game_logic { struct formula_error; }
+namespace pathfind { struct plain_route; }  // lines 57-57
+struct map_location;
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -61,10 +73,14 @@ struct plain_route;
 
 namespace ai {
 
-class formula_ai : public readonly_context_proxy, public game_logic::formula_callable, public boost::noncopyable {
+class formula_ai : public readonly_context_proxy, public game_logic::formula_callable {
 public:
+	formula_ai(const formula_ai&) = delete;
+	formula_ai& operator=(const formula_ai&) = delete;
+
 	explicit formula_ai(readonly_context &context, const config &cfg);
-	virtual ~formula_ai() {};
+	virtual ~formula_ai() {}
+
 	virtual config to_config() const;
 
 	std::string evaluate(const std::string& formula_str);
@@ -150,7 +166,6 @@ private:
 	gamestate_change_observer infinite_loop_guardian_;
 	game_logic::map_formula_callable vars_;
 	game_logic::ai_function_symbol_table function_table_;
-	game_logic::candidate_action_manager candidate_action_manager_;
 
 	friend class ai_default;
 };

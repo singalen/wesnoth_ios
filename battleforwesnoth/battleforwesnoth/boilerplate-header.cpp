@@ -1,6 +1,5 @@
-/* $Id: boilerplate-header.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,6 +17,3 @@
  * Template for new cpp-files.
  */
 
-// After adding the file don't forget to set the properties
-// svn propset svn:keywords 'Author Date Id Revision' file
-// svn propset svn:eol-style 'native' file

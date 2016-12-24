@@ -1,6 +1,5 @@
-/* $Id: pathutils.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,37 +17,60 @@
 #ifndef PATHUTILS_H_INCLUDED
 #define PATHUTILS_H_INCLUDED
 
-#include "map_location.hpp"
+#include "map/location.hpp"
 
 class gamemap;
 
-/**
- * Function which, given a location, will place all locations in a ring of
- * distance r in res. res must be a std::vector of location
- */
-void get_tile_ring(const map_location& a, const int r, std::vector<map_location>& res);
-
-class xy_pred : public std::unary_function<map_location const&, bool>
+class xy_pred
 {
 public:
-	virtual bool operator()(map_location const&) = 0;
+	virtual bool operator()(map_location const&) const = 0;
 protected:
 	virtual ~xy_pred() {}
 };
 
-/** Function which, given a location, will find all tiles within 'radius' of that tile */
-void get_tiles_radius(const map_location& a, size_t radius,
-					  std::set<map_location>& res);
-
-/** Function which, given a set of locations, will find all tiles within 'radius' of those tiles */
-void get_tiles_radius(const gamemap& map, const std::vector<map_location>& locs, size_t radius,
-					  std::set<map_location>& res, xy_pred *pred=NULL);
+/**
+ * Function that will add to @a result all locations exactly @a radius tiles
+ * from @a center (or nothing if @a radius is not positive). @a result must be
+ * a std::vector of locations.
+ */
+void get_tile_ring(const map_location& center, const int radius,
+                   std::vector<map_location>& result);
 
 /**
- * Function which, given a location, will place all locations in the radius of r in res
- * res must be a std::vector of location
+ * Function that will add to @a result all locations within @a radius tiles
+ * of @a center (excluding @a center itself). @a result must be a std::vector
+ * of locations.
  */
-void get_tiles_in_radius(const map_location& a, const int r, std::vector<map_location>& res);
+void get_tiles_in_radius(const map_location& center, const int radius,
+                         std::vector<map_location>& result);
+
+/**
+ * Function that will add to @a result all locations within @a radius tiles
+ * of @a center (including @a center itself). @a result must be a std::set
+ * of locations.
+ */
+void get_tiles_radius(const map_location& center, size_t radius,
+                      std::set<map_location>& result);
+
+/**
+ * Function that will add to @a result all elements of @a locs, plus all
+ * on-board locations that are within @a radius tiles of an element of locs.
+ * @a result must be a std::set of locations.
+ */
+void get_tiles_radius(const gamemap& map, const std::vector<map_location>& locs,
+                      size_t radius, std::set<map_location>& result,
+                      bool with_border=false);
+
+/**
+ * Function that will add to @a result all elements of @a locs, plus all
+ * on-board locations matching @a pred that are connected to elements of
+ * locs by a chain of at most @a radius tiles, each of which matches @a pred.
+ * @a result must be a std::set of locations.
+ */
+void get_tiles_radius(const gamemap& map, const std::vector<map_location>& locs,
+                      size_t radius, std::set<map_location>& result,
+                      bool with_border, const xy_pred &pred);
 
 #endif
 

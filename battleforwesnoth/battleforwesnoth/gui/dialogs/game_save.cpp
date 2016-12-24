@@ -1,6 +1,5 @@
-/* $Id: game_save.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2008 - 2012 by Jörg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2008 - 2016 by Jörg Hinrichs <joerg.hinrichs@alice-dsl.de>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -15,15 +14,21 @@
 
 #define GETTEXT_DOMAIN "wesnoth-lib"
 
+#include <boost/multi_index_container.hpp>
+// ^ This is apparently unnecessary but we don't compile without it...
+
 #include "gui/dialogs/game_save.hpp"
 
 #include "gettext.hpp"
-#include "gui/dialogs/field.hpp"
+#include "gui/auxiliary/field.hpp"
 #include "gui/widgets/button.hpp"
 #include "gui/widgets/label.hpp"
 #include "gui/widgets/settings.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /*WIKI
  * @page = GUIWindowDefinitionWML
@@ -46,19 +51,22 @@ namespace gui2 {
 
 REGISTER_DIALOG(game_save)
 
-tgame_save::tgame_save(std::string& filename, const std::string& title)
+game_save::game_save(std::string& filename, const std::string& title)
 {
+	set_restore(true);
+
 	register_text("txtFilename", false, filename, true);
 	register_label("lblTitle", true, title);
 }
 
 REGISTER_DIALOG(game_save_message)
 
-tgame_save_message::tgame_save_message(
-		  std::string& filename
-		, const std::string& title
-		, const std::string& message)
+game_save_message::game_save_message(std::string& filename,
+									   const std::string& title,
+									   const std::string& message)
 {
+	set_restore(true);
+
 	register_label("lblTitle", true, title);
 	register_text("txtFilename", false, filename, true);
 	register_label("lblMessage", true, message);
@@ -66,11 +74,10 @@ tgame_save_message::tgame_save_message(
 
 REGISTER_DIALOG(game_save_oos)
 
-tgame_save_oos::tgame_save_oos(
-		  bool& ignore_all
-		, std::string& filename
-		, const std::string& title
-		, const std::string& message)
+game_save_oos::game_save_oos(bool& ignore_all,
+							   std::string& filename,
+							   const std::string& title,
+							   const std::string& message)
 {
 	register_label("lblTitle", true, title);
 	register_text("txtFilename", false, filename, true);
@@ -81,5 +88,5 @@ tgame_save_oos::tgame_save_oos(
 	set_always_save_fields(true);
 }
 
+} // namespace dialogs
 } // namespace gui2
-

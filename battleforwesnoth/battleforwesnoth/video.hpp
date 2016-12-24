@@ -1,6 +1,5 @@
-/* $Id: video.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,52 +18,72 @@
 #include "exceptions.hpp"
 #include "lua_jailbreak_exception.hpp"
 
-#include <boost/utility.hpp>
+#include <memory>
 
-struct surface;
+#include "sdl/window.hpp"
 
-//possible flags when setting video modes
-#define FULL_SCREEN SDL_FULLSCREEN
-#define VIDEO_MEMORY SDL_HWSURFACE
-#define SYSTEM_MEMORY SDL_SWSURFACE
+class surface;
 
-surface display_format_alpha(surface surf);
-surface get_video_surface();
 SDL_Rect screen_area();
 
-bool non_interactive();
+class CVideo {
+public:
+	CVideo(const CVideo&) = delete;
+	CVideo& operator=(const CVideo&) = delete;
 
-//which areas of the screen will be updated when the buffer is flipped?
-void update_rect(size_t x, size_t y, size_t w, size_t h);
-void update_rect(const SDL_Rect& rect);
-void update_whole_screen();
+	enum FAKE_TYPES {
+		  NO_FAKE
+		, FAKE
+		, FAKE_TEST
+	};
 
-class CVideo : private boost::noncopyable {
-     public:
-		 enum FAKE_TYPES {
-			 NO_FAKE,
-			 FAKE,
-			 FAKE_TEST
-		 };
+	enum MODE_EVENT {
+		  TO_RES
+		, TO_FULLSCREEN
+		, TO_WINDOWED
+		, TO_MAXIMIZED_WINDOW
+	};
 
 	CVideo(FAKE_TYPES type = NO_FAKE);
 	~CVideo();
 
+	static CVideo& get_singleton() { return *singleton_; }
 
-	int bppForMode( int x, int y, int flags);
-	int modePossible( int x, int y, int bits_per_pixel, int flags, bool current_screen_optimal=false);
-	int setMode( int x, int y, int bits_per_pixel, int flags );
+	bool non_interactive();
 
-	//did the mode change, since the last call to the modeChanged() method?
-	bool modeChanged();
+	const static int DefaultBpp = 32;
+
+	/**
+	 * Initializes a new window, taking into account any preiously saved states.
+	 */
+	void init_window();
+
+	void setMode( int x, int y, const MODE_EVENT mode );
+
+	void set_fullscreen(bool ison);
+
+	/**
+	 * Set the resolution.
+	 *
+	 * @param width               The new width.
+	 * @param height              The new height.
+	 *
+	 * @returns                   The status true if width and height are the
+	 *                            size of the framebuffer, false otherwise.
+	 */
+	void set_resolution(const std::pair<int,int>& res);
+	void set_resolution(const unsigned width, const unsigned height);
+
+	std::pair<int,int> current_resolution();
 
 	//functions to get the dimensions of the current video-mode
 	int getx() const;
 	int gety() const;
 
 	//blits a surface with black as alpha
-	void blit_surface(int x, int y, surface surf, SDL_Rect* srcrect=NULL, SDL_Rect* clip_rect=NULL);
+	void blit_surface(int x, int y, surface surf, SDL_Rect* srcrect=nullptr, SDL_Rect* clip_rect=nullptr);
 	void flip();
+	static void delay(unsigned int milliseconds);
 
 	surface& getSurface();
 
@@ -76,12 +95,12 @@ class CVideo : private boost::noncopyable {
 	};
 
 	class quit
-		: public tlua_jailbreak_exception
+		: public lua_jailbreak_exception
 	{
 	public:
 
 		quit()
-			: tlua_jailbreak_exception()
+			: lua_jailbreak_exception()
 		{
 		}
 
@@ -91,8 +110,6 @@ class CVideo : private boost::noncopyable {
 	};
 
 	//functions to allow changing video modes when 16BPP is emulated
-	void setBpp( int bpp );
-	int getBpp();
 
 	void make_fake();
 	/**
@@ -103,7 +120,7 @@ class CVideo : private boost::noncopyable {
 	 * @param bpp                 The bpp of the buffer.
 	 */
 	void make_test_fake(const unsigned width = 1024,
-			const unsigned height = 768, const unsigned bpp = 32);
+			const unsigned height = 768, const unsigned bpp = DefaultBpp);
 	bool faked() const { return fake_screen_; }
 
 	//functions to set and clear 'help strings'. A 'help string' is like a tooltip, but it appears
@@ -121,21 +138,57 @@ class CVideo : private boost::noncopyable {
 	void lock_updates(bool value);
 	bool update_locked() const;
 
+	//this needs to be invoked immediately after a resize event or the game will crash.
+	void update_framebuffer();
+
+	/**
+	 * Sets the title of the main window.
+	 *
+	 * @param title               The new title for the window.
+	 */
+	void set_window_title(const std::string& title);
+
+	/**
+	 * Sets the icon of the main window.
+	 *
+	 * @param icon                The new icon for the window.
+	 */
+	void set_window_icon(surface& icon);
+
+	sdl::window *get_window();
+
+	/**
+	 * Returns the list of available screen resolutions.
+	 */
+	std::vector<std::pair<int, int> > get_available_resolutions(const bool include_current = false);
+
+	void lock_flips(bool);
+
 private:
+	static CVideo* singleton_;
+
+	std::unique_ptr<sdl::window> window;
+	class video_event_handler : public events::sdl_handler {
+	public:
+		virtual void handle_event(const SDL_Event &) {}
+
+		virtual void handle_window_event(const SDL_Event &event);
+
+		video_event_handler() :	sdl_handler(false) {}
+	};
 
 	void initSDL();
 
-	bool mode_changed_;
-
-	int bpp_;	// Store real bits per pixel
-
 	//if there is no display at all, but we 'fake' it for clients
 	bool fake_screen_;
+
+	video_event_handler event_handler_;
 
 	//variables for help strings
 	int help_string_;
 
 	int updatesLocked_;
+	int flip_locked_;
 };
 
 //an object which will lock the display for the duration of its lifetime.
@@ -163,15 +216,27 @@ private:
 	bool unlock;
 };
 
-class resize_monitor : public events::pump_monitor {
-	void process(events::pump_info &info);
+class flip_locker
+{
+public:
+	flip_locker(CVideo &video) : video_(video) {
+		video_.lock_flips(true);
+	}
+	~flip_locker() {
+		video_.lock_flips(false);
+	}
+
+private:
+	CVideo& video_;
 };
 
-//an object which prevents resizing of the screen occurring during
-//its lifetime.
-struct resize_lock {
-	resize_lock();
-	~resize_lock();
-};
 
+namespace video2 {
+class draw_layering: public events::sdl_handler {
+protected:
+	draw_layering(const bool auto_join=true);
+	virtual ~draw_layering();
+};
+void trigger_full_redraw();
+}
 #endif

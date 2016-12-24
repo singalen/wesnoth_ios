@@ -1,6 +1,5 @@
-/* $Id: about.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,7 +17,6 @@
 
 #include "global.hpp"
 
-class display;
 class config;
 
 #include <vector>
@@ -27,9 +25,17 @@ class config;
 namespace about
 {
 
-void show_about(display &disp, const std::string &campaign = std::string());
+/**
+ * General getter methods for the credits config and image lists by campaign id
+ */
+const config& get_about_config();
+
+std::vector<std::string> get_background_images(const std::string& campaign);
+
+/**
+ * Regenerates the credits config
+ */
 void set_about(const config& cfg);
-std::vector<std::string> get_text(const std::string &campaign = std::string());
 
 }
 

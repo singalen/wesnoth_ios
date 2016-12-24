@@ -1,6 +1,5 @@
-/* $Id: uninstall_list.hpp 52250 2011-12-12 01:29:49Z espreon $ */
 /*
-   Copyright (C) 2011 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2011 - 2016 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,41 +15,49 @@
 #ifndef GUI_DIALOGS_ADDON_UNINSTALL_LIST_HPP_INCLUDED
 #define GUI_DIALOGS_ADDON_UNINSTALL_LIST_HPP_INCLUDED
 
-#include "gui/dialogs/dialog.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
 
 #include <map>
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
-class taddon_uninstall_list : public tdialog
+class addon_uninstall_list : public modal_dialog
 {
 public:
-
 	/**
 	 * Constructor.
 	 *
-	 * @param addon_ids               The information about the addon to show.
+	 * @param addon_titles_map
+	 *                        Internal id <-> user-visible title mappings for
+	 *                        the add-ons to display.
 	 */
-	explicit taddon_uninstall_list(const std::vector<std::string>& addon_ids)
-		: ids_(addon_ids), names_(), selections_() {}
+	explicit addon_uninstall_list(
+			const std::map<std::string, std::string>& addon_titles_map)
+		: titles_map_(addon_titles_map), ids_(), selections_()
+	{
+	}
 
 	std::vector<std::string> selected_addons() const;
 
 private:
+	std::map<std::string, std::string> titles_map_;
 	std::vector<std::string> ids_;
-	std::vector<std::string> names_;
 	std::map<std::string, bool> selections_;
 
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
 
-	/** Inherited from tdialog. */
-	void pre_show(CVideo& video, twindow& window);
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 
-	/** Inherited from tdialog. */
-	void post_show(twindow& window);
+	/** Inherited from modal_dialog. */
+	void post_show(window& window);
 };
 
+} // namespace dialogs
 } // namespace gui2
 
 #endif

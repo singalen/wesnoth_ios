@@ -1,6 +1,5 @@
-/* $Id: user_handler.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Thomas Baumhauer <thomas.baumhauer@NOSPAMgmail.com>
+   Copyright (C) 2008 - 2016 by Thomas Baumhauer <thomas.baumhauer@NOSPAMgmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -13,8 +12,8 @@
    See the COPYING file for more details.
 */
 
-#include "user_handler.hpp"
-#include "../config.hpp"
+#include "server/user_handler.hpp"
+#include "config.hpp"
 #include "serialization/string_utils.hpp"
 
 #include <ctime>
@@ -22,7 +21,7 @@
 bool user_handler::send_mail(const std::string& to_user,
 		const std::string& /*subject*/, const std::string& /*message*/) {
 
-	//If this user is registerd at all
+	//If this user is registered at all
 	if(!user_exists(to_user)) {
 		throw error("Could not send email. No user with the name '" + to_user + "' exists.");
 	}
@@ -39,7 +38,7 @@ void user_handler::init_mailer(const config &) {
 }
 
 std::string user_handler::create_salt(int length) {
-	srand(static_cast<unsigned>(time(NULL)));
+	srand(static_cast<unsigned>(time(nullptr)));
 
 	std::stringstream ss;
 

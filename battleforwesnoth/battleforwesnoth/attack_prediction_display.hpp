@@ -1,6 +1,5 @@
-/* $Id: attack_prediction_display.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2006 - 2016 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
    wesnoth playturn Copyright (C) 2003 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -17,7 +16,11 @@
 #ifndef ATTACK_PREDICTION_DISPLAY_H_INCLUDED
 #define ATTACK_PREDICTION_DISPLAY_H_INCLUDED
 
-#include "actions.hpp"
+class  attack_type;
+class  battle_context;
+struct battle_context_unit_stats;
+struct map_location;
+class  unit;
 #include "show_dialog.hpp"
 
 // This preview pane is shown in the "Damage Calculations" dialog.
@@ -26,8 +29,11 @@ class battle_prediction_pane : public gui::preview_pane
 public:
 
 	// Lengthy constructor.
-	battle_prediction_pane(const battle_context& bc,
+	battle_prediction_pane(battle_context& bc,
 		const map_location& attacker_loc, const map_location& defender_loc);
+	battle_prediction_pane(battle_context&& bc,
+		const map_location& attacker_loc, const map_location& defender_loc) :
+		battle_prediction_pane(bc, attacker_loc, defender_loc) {}
 
 	// This method is called to draw the dialog contents.
 	void draw_contents();
@@ -39,7 +45,6 @@ public:
 	void set_selection(int) {}
 
 private:
-	const battle_context& bc_;
 	const map_location& attacker_loc_;
 	const map_location& defender_loc_;
 	const unit& attacker_;
@@ -105,31 +110,6 @@ private:
 							const battle_context_unit_stats& stats,
 								const battle_context_unit_stats& opp_stats,
 								surface& surf, int& width, int& height);
-
-	// This method blends a RGB color. The method takes as input a surface,
-	// the RGB color to blend and a value specifying how much blending to
-	// apply. The blended color is returned. Caution: if you use a
-	// transparent color, make sure the resulting color is not equal to the
-	// transparent color.
-	Uint32 blend_rgb(const surface& surf, unsigned char r, unsigned char g, unsigned char b, unsigned char drop);
-};
-
-// This class is used when the user clicks on the button
-// to show the "Damage Calculations" dialog.
-class attack_prediction_displayer : public gui::dialog_button_action
-{
-public:
-	attack_prediction_displayer(const std::vector<battle_context>& bc_vector,
-								const map_location& attacker_loc, const map_location& defender_loc)
-		: bc_vector_(bc_vector),
-			  attacker_loc_(attacker_loc), defender_loc_(defender_loc) {}
-	// This method is called when the button is pressed.
-	RESULT button_pressed(int selection);
-
-private:
-	const std::vector<battle_context>& bc_vector_;
-	const map_location& attacker_loc_;
-	const map_location& defender_loc_;
 };
 
 #endif

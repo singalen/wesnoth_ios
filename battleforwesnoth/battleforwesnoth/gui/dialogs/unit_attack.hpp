@@ -1,6 +1,5 @@
-/* $Id: unit_attack.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,36 +15,41 @@
 #ifndef GUI_DIALOGS_UNIT_ATTACK_HPP_INCLUDED
 #define GUI_DIALOGS_UNIT_ATTACK_HPP_INCLUDED
 
-#include "actions.hpp"
-#include "gui/dialogs/dialog.hpp"
-#include "unit_map.hpp"
+#include "actions/attack.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
+#include "units/map.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
-class tunit_attack
-	: public tdialog
+class unit_attack : public modal_dialog
 {
 public:
-	tunit_attack(
-			  const unit_map::iterator& attacker_itor
-			, const unit_map::iterator& defender_itor
-			, const std::vector<battle_context>& weapons
-			, const int best_weapon);
+	unit_attack(const unit_map::iterator& attacker_itor,
+				 const unit_map::iterator& defender_itor,
+				 const std::vector<battle_context>& weapons,
+				 const int best_weapon);
 
 	/***** ***** ***** setters / getters for members ***** ****** *****/
 
-	int get_selected_weapon() const { return selected_weapon_; }
+	int get_selected_weapon() const
+	{
+		return selected_weapon_;
+	}
 
 private:
-
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
 
-	/** Inherited from tdialog. */
-	void pre_show(CVideo& video, twindow& window);
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 
-	/** Inherited from tdialog. */
-	void post_show(twindow& window);
+	/** Inherited from modal_dialog. */
+	void post_show(window& window);
+
+	void damage_calc_callback(window& window);
 
 	/** The index of the selected weapon. */
 	int selected_weapon_;
@@ -63,7 +67,7 @@ private:
 	int best_weapon_;
 };
 
+} // namespace dialogs
 } // namespace gui2
 
 #endif
-

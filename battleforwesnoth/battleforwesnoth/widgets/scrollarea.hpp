@@ -1,6 +1,5 @@
-/* $Id: scrollarea.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+   Copyright (C) 2004 - 2016 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -36,7 +35,7 @@ public:
 	virtual void hide(bool value = true);
 
 protected:
-	virtual handler_vector handler_members();
+	virtual sdl_handler_vector handler_members();
 	virtual void update_location(SDL_Rect const &rect);
 	virtual void handle_event(const SDL_Event& event);
 	virtual void process_event();

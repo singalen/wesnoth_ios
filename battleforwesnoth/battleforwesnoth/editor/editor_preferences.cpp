@@ -1,6 +1,5 @@
-/* $Id: editor_preferences.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Tomasz Sniatowski <kailoran@gmail.com>
+   Copyright (C) 2009 - 2016 by Tomasz Sniatowski <kailoran@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -14,9 +13,10 @@
 */
 
 #include "editor/editor_preferences.hpp"
+#include "config.hpp"
 #include "game_preferences.hpp"
+#include "lexical_cast.hpp"
 #include "serialization/string_utils.hpp"
-#include "util.hpp"
 
 namespace preferences {
 
@@ -27,15 +27,7 @@ namespace editor {
 	}
 
 	void set_auto_update_transitions(int value) {
-		preferences::set("editor_auto_update_transitions", lexical_cast<std::string>(value));
-	}
-
-	bool use_mdi() {
-		return preferences::get("editor_use_mdi", true);
-	}
-
-	void set_use_mdi(bool value) {
-		preferences::set("editor_use_mdi", value);
+		preferences::set("editor_auto_update_transitions", std::to_string(value));
 	}
 
 	std::string default_dir() {
@@ -58,49 +50,106 @@ namespace editor {
 		preferences::set("editor_draw_hex_coordinates", value);
 	}
 
+	bool draw_num_of_bitmaps() {
+		return preferences::get("editor_draw_num_of_bitmaps", false);
+	}
+
+	void set_draw_num_of_bitmaps(bool value) {
+		preferences::set("editor_draw_num_of_bitmaps", value);
+	}
+
 	namespace {
-		void normalize_editor_rgb(int rval)
+		size_t editor_mru_limit()
 		{
-			if (rval < -255) {
-				rval = -255;
+			return std::max(size_t(1), lexical_cast_default<size_t>(
+					preferences::get("editor_max_recent_files"), 10));
+		}
+
+		//
+		// NOTE: The MRU read/save functions enforce the entry count limit in
+		// order to ensure the list on disk doesn't grow forever. Otherwise,
+		// normally this would be the UI's responsibility instead.
+		//
+
+		std::vector<std::string> do_read_editor_mru()
+		{
+			const config& cfg = preferences::get_child("editor_recent_files");
+
+			std::vector<std::string> mru;
+			if(!cfg) {
+				return mru;
 			}
-			else if (rval > 255) {
-				rval = 255;
+
+			for(const config& child : cfg.child_range("entry"))
+			{
+				const std::string& entry = child["path"].str();
+				if(!entry.empty()) {
+					mru.push_back(entry);
+				}
 			}
+
+			mru.resize(std::min(editor_mru_limit(), mru.size()));
+
+			return mru;
+		}
+
+		void do_commit_editor_mru(const std::vector<std::string>& mru)
+		{
+			config cfg;
+			unsigned n = 0;
+
+			for(const std::string& entry : mru)
+			{
+				if(entry.empty()) {
+					continue;
+				}
+
+				config& child = cfg.add_child("entry");
+				child["path"] = entry;
+
+				if(++n >= editor_mru_limit()) {
+					break;
+				}
+			}
+
+			preferences::set_child("editor_recent_files", cfg);
 		}
 	}
 
-	void set_tod_r(int value)
+	std::vector<std::string> recent_files()
 	{
-		normalize_editor_rgb(value);
-		preferences::set("editor_r",lexical_cast<std::string>(value));
+		return do_read_editor_mru();
 	}
 
-	void set_tod_g(int value)
+	void add_recent_files_entry(const std::string& path)
 	{
-		normalize_editor_rgb(value);
-		preferences::set("editor_g",lexical_cast<std::string>(value));
+		if(path.empty()) {
+			return;
+		}
+
+		std::vector<std::string> mru = do_read_editor_mru();
+
+		// Enforce uniqueness. Normally shouldn't do a thing unless somebody
+		// has been tampering with the preferences file.
+		mru.erase(std::remove(mru.begin(), mru.end(), path), mru.end());
+
+		mru.insert(mru.begin(), path);
+		mru.resize(std::min(editor_mru_limit(), mru.size()));
+
+		do_commit_editor_mru(mru);
 	}
 
-	void set_tod_b(int value)
+	void remove_recent_files_entry(const std::string& path)
 	{
-		normalize_editor_rgb(value);
-		preferences::set("editor_b",lexical_cast<std::string>(value));
-	}
+		if(path.empty()) {
+			return;
+		}
 
-	int tod_r()
-	{
-		return lexical_cast_in_range<int>(preferences::get("editor_r"), 0, -255, 255);
-	}
+		std::vector<std::string> mru = do_read_editor_mru();
 
-	int tod_g()
-	{
-		return lexical_cast_in_range<int>(preferences::get("editor_g"), 0, -255, 255);
-	}
+		mru.erase(std::remove(mru.begin(), mru.end(), path), mru.end());
 
-	int tod_b()
-	{
-		return lexical_cast_in_range<int>(preferences::get("editor_b"), 0, -255, 255);
+		do_commit_editor_mru(mru);
 	}
 
 } //end namespace editor

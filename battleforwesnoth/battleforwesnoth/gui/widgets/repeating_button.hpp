@@ -1,6 +1,5 @@
-/* $Id: repeating_button.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2009 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,18 +15,22 @@
 #ifndef GUI_WIDGETS_REPEATING_BUTTON_HPP_INCLUDED
 #define GUI_WIDGETS_REPEATING_BUTTON_HPP_INCLUDED
 
-#include "gui/widgets/control.hpp"
-#include "gui/widgets/clickable.hpp"
+#include "gui/widgets/styled_widget.hpp"
+#include "gui/widgets/clickable_item.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
 
-class trepeating_button
-	: public tcontrol
-	, public tclickable_
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
+
+class repeating_button : public styled_widget, public clickable_item
 {
 public:
-	trepeating_button();
-	~trepeating_button();
+	repeating_button();
+	~repeating_button();
 
 	/**
 	 * Connects a signal handler for a left mouse button down.
@@ -37,7 +40,7 @@ public:
 	 *
 	 * @param signal              The signal to connect.
 	 */
-	void connect_signal_mouse_left_down(const event::tsignal_function& signal);
+	void connect_signal_mouse_left_down(const event::signal_function& signal);
 
 	/**
 	 * Disconnects a signal handler for a left mouse button down.
@@ -45,29 +48,28 @@ public:
 	 * @param signal              The signal to disconnect (should be the same
 	 *                            as send to the connect call.
 	 */
-	void disconnect_signal_mouse_left_down(
-			const event::tsignal_function& signal);
+	void
+	disconnect_signal_mouse_left_down(const event::signal_function& signal);
 
 	/***** ***** ***** ***** Inherited ***** ***** ***** *****/
 
-	/** Inherited from tcontrol. */
-	void set_active(const bool active)
-		{ if(get_active() != active) set_state(active ? ENABLED : DISABLED); };
+	/** See @ref styled_widget::set_active. */
+	virtual void set_active(const bool active) override;
 
-	/** Inherited from tcontrol. */
-	bool get_active() const { return state_ != DISABLED; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
 
-	/** Inherited from tcontrol. */
-	unsigned get_state() const { return state_; }
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
 
 	/** Inherited from tclickable. */
-	void connect_click_handler(const event::tsignal_function& signal)
+	void connect_click_handler(const event::signal_function& signal) override
 	{
 		connect_signal_mouse_left_down(signal);
 	}
 
 	/** Inherited from tclickable. */
-	void disconnect_click_handler(const event::tsignal_function& signal)
+	void disconnect_click_handler(const event::signal_function& signal) override
 	{
 		disconnect_signal_mouse_left_down(signal);
 	}
@@ -78,38 +80,73 @@ private:
 	 *
 	 * Note the order of the states must be the same as defined in settings.hpp.
 	 */
-	enum tstate { ENABLED, DISABLED, PRESSED, FOCUSSED, COUNT };
+	enum state_t {
+		ENABLED,
+		DISABLED,
+		PRESSED,
+		FOCUSED,
+		COUNT
+	};
 
-	void set_state(const tstate state);
+	void set_state(const state_t state);
 	/**
 	 * Current state of the widget.
 	 *
 	 * The state of the widget determines what to render and how the widget
 	 * reacts to certain 'events'.
 	 */
-	tstate state_;
+	state_t state_;
 
 	/** The timer for the repeating events. */
-	unsigned long repeat_timer_;
+	size_t repeat_timer_;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 
 	/***** ***** ***** signal handlers ***** ****** *****/
 
-	void signal_handler_mouse_enter(const event::tevent event, bool& handled);
+	void signal_handler_mouse_enter(const event::ui_event event, bool& handled);
 
-	void signal_handler_mouse_leave(const event::tevent event, bool& handled);
+	void signal_handler_mouse_leave(const event::ui_event event, bool& handled);
 
-	void signal_handler_left_button_down(
-			const event::tevent event, bool& handled);
+	void signal_handler_left_button_down(const event::ui_event event,
+										 bool& handled);
 
-	void signal_handler_left_button_up(
-			const event::tevent event, bool& handled);
+	void signal_handler_left_button_up(const event::ui_event event,
+									   bool& handled);
 };
 
+// }---------- DEFINITION ---------{
+
+struct repeating_button_definition : public styled_widget_definition
+{
+	explicit repeating_button_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_repeating_button : public builder_styled_widget
+{
+public:
+	explicit builder_repeating_button(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-

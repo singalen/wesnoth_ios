@@ -1,6 +1,5 @@
-/* $Id: transient_message.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2009 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,53 +16,69 @@
 
 #include "gui/dialogs/transient_message.hpp"
 
-#include "gettext.hpp"
+#include "gui/auxiliary/find_widget.hpp"
 #include "gui/widgets/settings.hpp"
+#include "gui/widgets/window.hpp"
 #include "log.hpp"
 
-namespace gui2 {
+#include "gettext.hpp"
+
+namespace gui2
+{
+namespace dialogs
+{
 
 REGISTER_DIALOG(transient_message)
 
-ttransient_message::ttransient_message(const std::string& title
-		, const bool title_use_markup
-		, const std::string& message
-		, const bool message_use_markup
-		, const std::string& image)
+transient_message::transient_message(const std::string& title,
+									   const bool title_use_markup,
+									   const std::string& message,
+									   const bool message_use_markup,
+									   const std::string& image)
+	: hide_title_(title.empty()), hide_image_(image.empty())
 {
 	register_label("title", true, title, title_use_markup);
 	register_label("message", true, message, message_use_markup);
 	register_image("image", true, image);
 }
 
-void show_transient_message(CVideo& video
-		, const std::string& title
-		, const std::string& message
-		, const std::string& image
-		, const bool message_use_markup
-		, const bool title_use_markup)
+void transient_message::pre_show(window& window)
 {
-	ttransient_message dlg(title
-			, title_use_markup
-			, message
-			, message_use_markup
-			, image);
+	if(hide_title_) {
+		widget& title = find_widget<widget>(&window, "title", false);
+		title.set_visible(widget::visibility::invisible);
+	}
 
+	if(hide_image_) {
+		widget& image = find_widget<widget>(&window, "image", false);
+		image.set_visible(widget::visibility::invisible);
+	}
+}
+} // namespace dialogs
+
+void show_transient_message(CVideo& video,
+							const std::string& title,
+							const std::string& message,
+							const std::string& image,
+							const bool message_use_markup,
+							const bool title_use_markup,
+							const bool restore_background)
+{
+	dialogs::transient_message dlg(
+			title, title_use_markup, message, message_use_markup, image);
+
+	dlg.set_restore(restore_background);
 	dlg.show(video);
 }
 
-void show_transient_error_message(CVideo& video
-		, const std::string& message
-		, const std::string& image
-		, const bool message_use_markup)
+void show_transient_error_message(CVideo& video,
+								  const std::string& message,
+								  const std::string& image,
+								  const bool message_use_markup)
 {
-	LOG_STREAM(err, lg::general) << message << '\n';
-	show_transient_message(video
-			, _("Error")
-			, message
-			, image
-			, message_use_markup);
+	LOG_STREAM(err, lg::general()) << message << '\n';
+	show_transient_message(
+			video, _("Error"), message, image, message_use_markup);
 }
 
 } // namespace gui2
-

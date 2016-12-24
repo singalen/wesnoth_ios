@@ -1,6 +1,5 @@
-/* $Id: image.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,16 +15,19 @@
 #ifndef IMAGE_HPP_INCLUDED
 #define IMAGE_HPP_INCLUDED
 
-#include "map_location.hpp"
-#include "sdl_utils.hpp"
-#include "terrain_translation.hpp"
+#include "map/location.hpp"
+#include "terrain/translation.hpp"
+#include "game_config.hpp"
+
+#include <SDL.h>
+#include <unordered_map>
+
+class surface;
 
 ///this module manages the cache of images. With an image name, you can get
 ///the surface corresponding to that image.
 //
 namespace image {
-	const int tile_size = 72;
-
 	template<typename T>
 	class cache_type;
 
@@ -58,23 +60,17 @@ namespace image {
 			int center_y_;
 		};
 
-		friend size_t hash_value(const value&);
+		friend struct std::hash<value>;
 
 	public:
 
-		/**
-		 * @todo replace this with std::unordered_map<value, int> or boost::unordered_map<value, int>
-		 *       boost::unordered_map can almost just be dropped in as boost::hash<T>(T val) will return hash_value(val), but it
-		 *       requires boost 1.35 (preferably 1.36 or later)
-		 *
-		 **/
-		typedef std::map<size_t, std::map<value, int> > locator_finder_t;
+		typedef std::unordered_map<value, int> locator_finder_t;
 
 		// Constructing locators is somewhat slow, accessing image
 		// through locators is fast. The idea is that calling functions
 		// should store locators, and not strings to construct locators
 		// (the second will work, of course, but will be slower)
-	        locator();
+		locator();
 		locator(const locator &a, const std::string &mods ="");
 		locator(const char *filename);
 		locator(const std::string& filename);
@@ -92,7 +88,7 @@ namespace image {
 		int get_center_x() const { return val_.center_x_; }
 		int get_center_y() const { return val_.center_y_; }
 		const std::string& get_modifications() const {return val_.modifications_;}
-		type get_type() const { return val_.type_; };
+		type get_type() const { return val_.type_; }
 		// const int get_index() const { return index_; };
 
 		// returns true if the locator does not correspond to any
@@ -111,9 +107,6 @@ namespace image {
 		 */
 		bool file_exists() const;
 
-		// loads the image it is pointing to from the disk
-		surface load_from_disk() const;
-
 		template <typename T>
 		bool in_cache(cache_type<T> &cache) const;
 		template <typename T>
@@ -125,24 +118,22 @@ namespace image {
 
 	private:
 
-		surface load_image_file() const;
-		surface load_image_sub_file() const;
-
 		int index_;
 		value val_;
 	};
 
-	size_t hash_value(const locator::value&);
+	surface load_from_disk(const locator &loc);
 
 
 	typedef cache_type<surface> image_cache;
 	typedef cache_type<bool> bool_cache;
 
-	typedef std::map<t_translation::t_terrain, surface> mini_terrain_cache_map;
+	typedef std::map<t_translation::terrain_code, surface> mini_terrain_cache_map;
 	extern mini_terrain_cache_map mini_terrain_cache;
 	extern mini_terrain_cache_map mini_fogged_terrain_cache;
+	extern mini_terrain_cache_map mini_highlighted_terrain_cache;
 
-	///light_string store colors info of central and adjacents hexes.
+	///light_string store colors info of central and adjacent hexes.
 	///The structure is one or several 4 chars blocks (L,R,G,B)
 	///where RGB is the color and L is the lightmap to use:
 	///(-1:none, 0-5:transition in each direction, 6:full hex)
@@ -150,7 +141,7 @@ namespace image {
 	///return light_string of one light operation(see above)
 	light_string get_light_string(int op, int r, int g, int b);
 
-	// pair each light possibilty with its lighted surface
+	// pair each light possibility with its lighted surface
 	typedef std::map<light_string, surface> lit_variants;
 	// lighted variants for each locator
 	typedef cache_type<lit_variants> lit_cache;
@@ -182,8 +173,8 @@ namespace image {
 
 	///set the team colors used by the TC image modification
 	///use a vector with one string for each team
-	///using NULL will reset to default TC
-	void set_team_colors(const std::vector<std::string>* colors = NULL);
+	///using nullptr will reset to default TC
+	void set_team_colors(const std::vector<std::string>* colors = nullptr);
 
 	const std::vector<std::string>& get_team_colors();
 
@@ -204,8 +195,6 @@ namespace image {
 	enum TYPE { UNSCALED, SCALED_TO_ZOOM, HEXED, SCALED_TO_HEX, TOD_COLORED, BRIGHTENED};
 
 	///function to get the surface corresponding to an image.
-	///note that this surface must be freed by the user by calling
-	///SDL_FreeSurface()
 	surface get_image(const locator& i_locator, TYPE type=UNSCALED);
 
 	///function to get the surface corresponding to an image.
@@ -226,7 +215,6 @@ namespace image {
 
 	///function to reverse an image. The image MUST have originally been returned from
 	///an image:: function. Returned images have the same semantics as for get_image()
-	///and must be freed using SDL_FreeSurface()
 	surface reverse_image(const surface &surf);
 
 	///returns true if the given image actually exists, without loading it.
@@ -235,6 +223,12 @@ namespace image {
 	/// precache the existence of files in the subdir (ex: "terrain/")
 	void precache_file_existence(const std::string& subdir = "");
 	bool precached_file_exists(const std::string& file);
+
+	/// initialize any private data, e.g. algorithm choices from preferences
+	bool update_from_preferences();
+
+	bool save_image(const locator& i_locator, const std::string& outfile);
+	bool save_image(const surface& surf, const std::string& outfile);
 }
 
 #endif

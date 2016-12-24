@@ -1,6 +1,5 @@
-/* $Id: game_load.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Jörg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2008 - 2016 by Jörg Hinrichs <joerg.hinrichs@alice-dsl.de>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,58 +15,64 @@
 #ifndef GUI_DIALOGS_LOAD_GAME_HPP_INCLUDED
 #define GUI_DIALOGS_LOAD_GAME_HPP_INCLUDED
 
-#include "gui/dialogs/dialog.hpp"
-#include "gui/widgets/listbox.hpp"
-#include "gui/widgets/text.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
+#include "gui/dialogs/transient_message.hpp"
 #include "savegame.hpp"
+#include "save_index.hpp"
 #include "tstring.hpp"
+#include "gettext.hpp"
 
-namespace gui2 {
+namespace gui2
+{
 
-class tgame_load : public tdialog
+class listbox;
+class text_box_base;
+
+namespace dialogs
+{
+
+class game_load : public modal_dialog
 {
 public:
-	explicit tgame_load(const config& cache_config);
+	game_load(const config& cache_config, savegame::load_game_metadata& data);
 
-	const std::string& filename() const { return filename_; }
-	bool show_replay() const { return show_replay_; }
-	bool cancel_orders() const { return cancel_orders_; }
+	static bool execute(const config& cache_config, savegame::load_game_metadata& data, CVideo& video)
+	{
+		if(savegame::get_saves_list().empty()) {
+			gui2::show_transient_message(video, _("No Saved Games"), _("There are no save files to load"));
+			return false;
+		}
 
-protected:
-	/** Inherited from tdialog. */
-	void pre_show(CVideo& video, twindow& window);
-
-	/** Inherited from tdialog. */
-	void post_show(twindow& window);
+		return game_load(cache_config, data).show(video);
+	}
 
 private:
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
 
-	bool filter_text_changed(ttext_* textbox, const std::string& text);
-	void list_item_clicked(twindow& window);
-	void delete_button_callback(twindow& window);
+	void filter_text_changed(text_box_base* textbox, const std::string& text);
+	void delete_button_callback(window& window);
 
-	void display_savegame(twindow& window);
+	void display_savegame(window& window);
 	void evaluate_summary_string(std::stringstream& str, const config& cfg_summary);
-	void fill_game_list(twindow& window, std::vector<savegame::save_info>& games);
 
-	tfield_text* txtFilter_;
-	tfield_bool* chk_show_replay_;
-	tfield_bool* chk_cancel_orders_;
+	std::string& filename_;
 
-	std::string filename_;
-	bool show_replay_;
-	bool cancel_orders_;
+	field_bool* change_difficulty_;
+	field_bool* show_replay_;
+	field_bool* cancel_orders_;
+
+	config& summary_;
 
 	std::vector<savegame::save_info> games_;
 	const config& cache_config_;
 
 	std::vector<std::string> last_words_;
 };
-
-}
+} // namespace dialogs
+} // namespace gui2
 
 #endif
-

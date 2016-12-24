@@ -1,6 +1,5 @@
-/* $Id: intro.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,7 +17,7 @@
 #ifndef INTRO_HPP_INCLUDED
 #define INTRO_HPP_INCLUDED
 
-class display;
+class CVideo;
 
 #include <string>
 
@@ -31,12 +30,6 @@ class display;
  * @param duration In milliseconds, for how much time the text will
  *                 be displayed on screen.
  */
-void the_end(display &disp, std::string text, unsigned int duration);
-
-/**
- * Enables/disables the new (work in progress) story screen
- * code.
- */
-void set_new_storyscreen(bool enabled);
+void the_end(CVideo &video, std::string text, unsigned int duration);
 
 #endif /* ! INTRO_HPP_INCLUDED */

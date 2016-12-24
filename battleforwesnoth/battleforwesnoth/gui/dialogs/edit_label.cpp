@@ -1,6 +1,5 @@
-/* $Id: edit_label.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2010 - 2012 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2010 - 2016 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,7 +18,10 @@
 
 #include "gui/widgets/settings.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /*WIKI
  * @page = GUIWindowDefinitionWML
@@ -46,11 +48,10 @@ namespace gui2 {
 
 REGISTER_DIALOG(edit_label)
 
-tedit_label::tedit_label(std::string& label, bool& team_only)
+edit_label::edit_label(std::string& label, bool& team_only)
 {
 	register_text("label", true, label, true);
 	register_bool("team_only_toggle", true, team_only);
 }
-
-}
-
+} // namespace dialogs
+} // namespace gui2

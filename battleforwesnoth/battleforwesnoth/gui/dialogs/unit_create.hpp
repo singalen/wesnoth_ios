@@ -1,6 +1,5 @@
-/* $Id: unit_create.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Ignacio R. Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2009 - 2016 by Ignacio R. Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,46 +15,73 @@
 #ifndef GUI_DIALOGS_UNIT_CREATE_HPP_INCLUDED
 #define GUI_DIALOGS_UNIT_CREATE_HPP_INCLUDED
 
-#include "gui/dialogs/dialog.hpp"
-#include "race.hpp"
+#include "gui/dialogs/modal_dialog.hpp"
+#include "gui/widgets/group.hpp"
+#include "units/race.hpp"
 
 #include <string>
 #include <vector>
 
-namespace gui2 {
+class display;
+class unit_type;
 
-class tunit_create : public tdialog
+namespace gui2
+{
+
+class text_box_base;
+
+namespace dialogs
+{
+
+class unit_create : public modal_dialog
 {
 public:
-	tunit_create();
+	unit_create();
 
 	/** Unit type choice from the user. */
-	const std::string& choice() const { return choice_; }
+	const std::string& choice() const
+	{
+		return choice_;
+	}
 
 	/** Whether the user actually chose a unit type or not. */
-	bool no_choice() const { return choice_.empty(); }
+	bool no_choice() const
+	{
+		return choice_.empty();
+	}
 
 	/** Gender choice from the user. */
-	unit_race::GENDER gender() { return gender_; }
+	unit_race::GENDER gender()
+	{
+		return gender_;
+	}
 
 private:
-	unit_race::GENDER        gender_;
+	std::vector<const unit_type*> units_;
 
-	std::string              choice_;
-	std::vector<std::string> type_ids_;
+	unit_race::GENDER gender_;
 
-	/** Inherited from tdialog, implemented by REGISTER_DIALOG. */
+	std::string choice_;
+
+	std::vector<std::string> last_words_;
+
+	/** Inherited from modal_dialog, implemented by REGISTER_DIALOG. */
 	virtual const std::string& window_id() const;
 
-	/** Inherited from tdialog. */
-	void pre_show(CVideo& video, twindow& window);
+	/** Inherited from modal_dialog. */
+	void pre_show(window& window);
 
-	/** Inherited from tdialog. */
-	void post_show(twindow& window);
+	/** Inherited from modal_dialog. */
+	void post_show(window& window);
 
-	void gender_toggle_callback(twindow& window);
+	/** Callbacks */
+	void list_item_clicked(window& window);
+	void filter_text_changed(text_box_base* textbox, const std::string& text);
+	void gender_toggle_callback(window& window);
+
+	group<unit_race::GENDER> gender_toggle;
 };
-
-}
+} // namespace dialogs
+} // namespace gui2
 
 #endif /* ! GUI_DIALOGS_UNIT_CREATE_HPP_INCLUDED */

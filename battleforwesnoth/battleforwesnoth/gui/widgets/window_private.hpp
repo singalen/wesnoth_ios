@@ -1,6 +1,5 @@
-/* $Id: window_private.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2009 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2009 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -28,7 +27,8 @@
 
 #include "gui/widgets/window.hpp"
 
-namespace gui2 {
+namespace gui2
+{
 
 /**
  * Helper to implement private functions without modifying the header.
@@ -36,22 +36,22 @@ namespace gui2 {
  * The class is a helper to avoid recompilation and only has static
  * functions.
  */
-struct twindow_implementation
+struct window_implementation
 {
 	/**
 	 * Layouts the window.
 	 *
 	 * This part handles the actual layouting of the window.
 	 *
-	 * @see layout_algorihm for more information.
+	 * See @ref layout_algorithm for more information.
 	 *
 	 * @param window              The window to operate upon.
 	 * @param maximum_width       The maximum width of the window.
 	 * @param maximum_height      The maximum height of the window.
 	 */
-	static void layout(twindow& window,
-			const unsigned maximum_width, const unsigned maximum_height);
-
+	static void layout(window& window,
+					   const unsigned maximum_width,
+					   const unsigned maximum_height);
 };
 
 } // namespace gui2

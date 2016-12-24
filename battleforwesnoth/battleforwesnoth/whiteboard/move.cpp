@@ -1,6 +1,5 @@
-/* $Id: move.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -17,26 +16,30 @@
  * @file
  */
 
-#include "move.hpp"
+#include "whiteboard/move.hpp"
 
-#include "visitor.hpp"
-#include "manager.hpp"
-#include "side_actions.hpp"
-#include "utility.hpp"
+#include "whiteboard/visitor.hpp"
+#include "whiteboard/manager.hpp"
+#include "whiteboard/side_actions.hpp"
+#include "whiteboard/utility.hpp"
 
 #include "arrow.hpp"
 #include "config.hpp"
+#include "fake_unit_manager.hpp"
+#include "fake_unit_ptr.hpp"
+#include "font/standard_colors.hpp"
+#include "game_board.hpp"
 #include "game_end_exceptions.hpp"
+#include "map/map.hpp"
 #include "mouse_events.hpp"
 #include "play_controller.hpp"
 #include "replay.hpp"
 #include "resources.hpp"
 #include "team.hpp"
-#include "unit.hpp"
-#include "unit_display.hpp"
-#include "unit_map.hpp"
-
-#include <boost/foreach.hpp>
+#include "units/unit.hpp"
+#include "units/animation_component.hpp"
+#include "units/udisplay.hpp"
+#include "units/map.hpp"
 
 namespace wb {
 
@@ -69,7 +72,6 @@ move::move(size_t team_index, bool hidden, unit& u, const pathfind::marked_route
   turn_number_(0),
   arrow_(arrow),
   fake_unit_(fake_unit),
-  valid_(true),
   arrow_brightness_(),
   arrow_texture_(),
   mover_(),
@@ -92,15 +94,14 @@ move::move(config const& cfg, bool hidden)
 	, turn_number_(0)
 	, arrow_(new arrow(hidden))
 	, fake_unit_()
-	, valid_(true)
 	, arrow_brightness_()
 	, arrow_texture_()
 	, mover_()
 	, fake_unit_hidden_(false)
 {
 	// Construct and validate unit_
-	unit_map::iterator unit_itor = resources::units->find(cfg["unit_"]);
-	if(unit_itor == resources::units->end())
+	unit_map::iterator unit_itor = resources::gameboard->units().find(cfg["unit_"]);
+	if(unit_itor == resources::gameboard->units().end())
 		throw action::ctor_err("move: Invalid underlying_id");
 	unit_underlying_id_ = unit_itor->underlying_id();
 
@@ -109,12 +110,15 @@ move::move(config const& cfg, bool hidden)
 	if(!route_cfg)
 		throw action::ctor_err("move: Invalid route_");
 	route_->move_cost = route_cfg["move_cost"];
-	BOOST_FOREACH(config const& loc_cfg, route_cfg.child_range("step")) {
-		route_->steps.push_back(map_location(loc_cfg["x"],loc_cfg["y"]));
+	for(config const& loc_cfg : route_cfg.child_range("step")) {
+		route_->steps.push_back(map_location(loc_cfg["x"],loc_cfg["y"], wml_loc()));
 	}
-	BOOST_FOREACH(config const& mark_cfg, route_cfg.child_range("mark")) {
-		route_->marks[map_location(mark_cfg["x"],mark_cfg["y"])]
-				= pathfind::marked_route::mark(mark_cfg["turns"],mark_cfg["zoc"],mark_cfg["capture"],mark_cfg["invisible"]);
+	for(config const& mark_cfg : route_cfg.child_range("mark")) {
+		route_->marks[map_location(mark_cfg["x"],mark_cfg["y"], wml_loc())]
+			= pathfind::marked_route::mark(mark_cfg["turns"],
+				mark_cfg["zoc"].to_bool(),
+				mark_cfg["capture"].to_bool(),
+				mark_cfg["invisible"].to_bool());
 	}
 
 	// Validate route_ some more
@@ -128,12 +132,11 @@ move::move(config const& cfg, bool hidden)
 	arrow_->set_path(route_->steps);
 
 	// Construct fake_unit_
-	fake_unit_.reset(new game_display::fake_unit(*get_unit()) );
+	fake_unit_ = fake_unit_ptr( unit_ptr(new unit(*get_unit())) , resources::fake_units );
 	if(hidden)
 		fake_unit_->set_hidden(true);
-	fake_unit_->place_on_game_display(resources::screen);
-	fake_unit_->set_ghosted(true);
-	unit_display::move_unit(route_->steps, *fake_unit_, *resources::teams, false); //get facing right
+	fake_unit_->anim_comp().set_ghosted(true);
+	unit_display::move_unit(route_->steps, fake_unit_.get_unit_ptr(), false); //get facing right
 	fake_unit_->set_location(route_->steps.back());
 
 	this->init();
@@ -141,6 +144,13 @@ move::move(config const& cfg, bool hidden)
 
 void move::init()
 {
+	// If a unit is invalid, return immediately to avoid crashes such as trying to plan a move for a planned recruit.
+	// As per Bug #18637, this should be fixed so that planning moves on planned recruits work properly.
+	// The alternative is to disable movement on planned recruits altogether,
+	// possibly in select_or_action() where the fake unit is selected in the first place.
+	if (get_unit() == nullptr)
+		return;
+
 	assert(get_unit());
 	unit_id_ = get_unit()->id();
 
@@ -148,23 +158,23 @@ void move::init()
 	//than previous actions' fake units
 	if (fake_unit_)
 	{
-		fake_unit_->set_ghosted(true);
+		fake_unit_->anim_comp().set_ghosted(true);
 	}
-	side_actions_ptr side_actions = resources::teams->at(team_index()).get_side_actions();
-	side_actions::iterator action = side_actions->find_last_action_of(get_unit());
+	side_actions_ptr side_actions = resources::gameboard->teams().at(team_index()).get_side_actions();
+	side_actions::iterator action = side_actions->find_last_action_of(*(get_unit()));
 	if (action != side_actions->end())
 	{
-		if (move_ptr move = boost::dynamic_pointer_cast<class move>(*action))
+		if (move_ptr move = std::dynamic_pointer_cast<class move>(*action))
 		{
 			if (move->fake_unit_)
-				move->fake_unit_->set_disabled_ghosted(true);
+				move->fake_unit_->anim_comp().set_disabled_ghosted(true);
 		}
 	}
 
 	this->calculate_move_cost();
 
 	// Initialize arrow_brightness_ and arrow_texture_ using arrow_->style_
-	arrow::STYLE arrow_style = arrow_->get_style();
+	std::string arrow_style = arrow_->get_style();
 	if(arrow_style == arrow::STYLE_STANDARD)
 	{
 		arrow_brightness_ = ARROW_BRIGHTNESS_STANDARD;
@@ -187,6 +197,8 @@ void move::init()
 	}
 }
 
+move::~move(){}
+
 void move::accept(visitor& v)
 {
 	v.visit(shared_from_this());
@@ -194,14 +206,14 @@ void move::accept(visitor& v)
 
 void move::execute(bool& success, bool& complete)
 {
-	if (!valid_) {
+	if(!valid()) {
 		success = false;
 		//Setting complete to true signifies to side_actions to delete the planned action.
 		complete = true;
 		return;
 	}
 
-	if (get_source_hex() == get_dest_hex()) {
+	if(get_source_hex() == get_dest_hex()) {
 		//zero-hex move, used by attack subclass
 		success = complete = true;
 		return;
@@ -209,95 +221,60 @@ void move::execute(bool& success, bool& complete)
 
 	LOG_WB << "Executing: " << shared_from_this() << "\n";
 
+	// Copy the current route to ensure it remains valid throughout the animation.
+	const std::vector<map_location> steps = route_->steps;
+
 	set_arrow_brightness(ARROW_BRIGHTNESS_HIGHLIGHTED);
 	hide_fake_unit();
 
-	events::mouse_handler& mouse_handler = resources::controller->get_mouse_handler_base();
-	std::set<map_location> adj_enemies = mouse_handler.get_adj_enemies(get_dest_hex(), side_number());
-
-	map_location final_location;
-	bool steps_finished;
-	bool enemy_sighted;
-	{
-		team const& owner_team = resources::teams->at(team_index());
-		try {
-			steps_finished = mouse_handler.move_unit_along_route(*route_, &final_location, owner_team.auto_shroud_updates(), &enemy_sighted);
-		} catch (end_turn_exception&) {
-			set_arrow_brightness(ARROW_BRIGHTNESS_STANDARD);
-			throw; // we rely on the caller to delete this action
-		}
-		// final_location now contains the final unit location
-		// if that isn't needed, pass NULL rather than &final_location
-		// Also, enemy_sighted now tells whether a unit was sighted during the move
+	size_t num_steps;
+	bool interrupted;
+	try {
+		events::mouse_handler& mouse_handler = resources::controller->get_mouse_handler_base();
+		num_steps = mouse_handler.move_unit_along_route(steps, interrupted);
+	} catch (return_to_play_side_exception&) {
+		set_arrow_brightness(ARROW_BRIGHTNESS_STANDARD);
+		throw; // we rely on the caller to delete this action
 	}
-	if(mouse_handler.get_adj_enemies(final_location,side_number()) != adj_enemies)
-		enemy_sighted = true; //< "ambushed" on last hex
+	const map_location & final_location = steps[num_steps];
+	unit_map::const_iterator unit_it = resources::gameboard->units().find(final_location);
 
-	unit_map::const_iterator unit_it;
-
-	if (final_location == route_->steps.front())
+	if ( num_steps == 0 )
 	{
 		LOG_WB << "Move execution resulted in zero movement.\n";
 		success = false;
 		complete = true;
 	}
-	else if (final_location.valid() &&
-			(unit_it = resources::units->find(final_location)) != resources::units->end()
-			&& unit_it->id() == unit_id_)
+	else if ( unit_it == resources::gameboard->units().end()  ||  unit_it->id() != unit_id_ )
 	{
-		if (steps_finished && route_->steps.back() == final_location) //reached destination
-		{
-			complete = true;
+		WRN_WB << "Unit disappeared from map during move execution." << std::endl;
+		success = false;
+		complete = true;
+	}
+	else
+	{
+		complete = num_steps + 1 == steps.size();
+		success = complete && !interrupted;
 
-			//check if new enemies are now visible
-			if(enemy_sighted)
+		if ( !success )
+		{
+			if ( complete )
 			{
 				LOG_WB << "Move completed, but interrupted on final hex. Halting.\n";
 				//reset to a single-hex path, just in case *this is a wb::attack
+				route_->steps = std::vector<map_location>(1, final_location);
 				arrow_.reset();
-				route_->steps = std::vector<map_location>(1,route_->steps.back());
-				success = false;
 			}
-			else // Everything went smoothly
-				success = true;
-		}
-		else // Move was interrupted, probably by enemy unit sighted
-		{
-			success = false;
-
-			LOG_WB << "Move finished at (" << final_location << ") instead of at (" << get_dest_hex() << "), analyzing\n";
-			std::vector<map_location>::iterator start_new_path;
-			bool found = false;
-			for (start_new_path = route_->steps.begin(); ((start_new_path != route_->steps.end()) && !found); ++start_new_path)
+			else
 			{
-				if (*start_new_path == final_location)
-				{
-					found = true;
-				}
-			}
-			if (found)
-			{
-				--start_new_path; //since the for loop incremented the iterator once after we found the right one.
-				std::vector<map_location> new_path(start_new_path, route_->steps.end());
-				LOG_WB << "Setting new path for this move from (" << new_path.front()
-						<< ") to (" << new_path.back() << ").\n";
-				//FIXME: probably better to use the new calculate_new_route instead of doing this
-				route_->steps = new_path;
-				arrow_->set_path(new_path);
-				complete = false;
-			}
-			else //Unit ended up in location outside path, likely due to a WML event
-			{
-				WRN_WB << "Unit ended up in location outside path during move execution.\n";
-				complete = true;
+				LOG_WB << "Move finished at (" << final_location << ") instead of at (" << get_dest_hex() << "). Setting new path.\n";
+				route_->steps = std::vector<map_location>(steps.begin() + num_steps, steps.end());
+				//FIXME: probably better to use the new calculate_new_route() instead of the above:
+				//calculate_new_route(final_location, steps.back());
+				// Of course, "better" would need to be verified.
+				arrow_->set_path(route_->steps);
 			}
 		}
-	}
-	else //Unit disappeared from the map, likely due to a WML event
-	{
-		WRN_WB << "Unit disappeared from map during move execution.\n";
-		success = false;
-		complete = true;
 	}
 
 	if(!complete)
@@ -307,13 +284,13 @@ void move::execute(bool& success, bool& complete)
 	}
 }
 
-unit* move::get_unit() const
+unit_ptr move::get_unit() const
 {
-	unit_map::iterator itor = resources::units->find(unit_underlying_id_);
+	unit_map::iterator itor = resources::gameboard->units().find(unit_underlying_id_);
 	if (itor.valid())
-		return &*itor;
+		return itor.get_shared_ptr();
 	else
-		return NULL;
+		return unit_ptr();
 }
 
 map_location move::get_source_hex() const
@@ -339,10 +316,10 @@ bool move::calculate_new_route(const map_location& source_hex, const map_locatio
 {
 	pathfind::plain_route new_plain_route;
 	pathfind::shortest_path_calculator path_calc(*get_unit(),
-						resources::teams->at(team_index()), *resources::units,
-						*resources::teams, *resources::game_map);
+						resources::gameboard->teams().at(team_index()),
+						resources::gameboard->teams(), resources::gameboard->map());
 	new_plain_route = pathfind::a_star_search(source_hex,
-						dest_hex, 10000, &path_calc, resources::game_map->w(), resources::game_map->h());
+						dest_hex, 10000, path_calc, resources::gameboard->map().w(), resources::gameboard->map().h());
 	if (new_plain_route.move_cost >= path_calc.getNoPathValue()) return false;
 	route_.reset(new pathfind::marked_route(pathfind::mark_route(new_plain_route)));
 	calculate_move_cost();
@@ -353,6 +330,10 @@ void move::apply_temp_modifier(unit_map& unit_map)
 {
 	if (get_source_hex() == get_dest_hex())
 		return; //zero-hex move, used by attack subclass
+
+	// Safety: Make sure the old temporary_unit_mover (if any) is destroyed
+	// before creating a new one.
+	mover_.reset();
 
 	//@todo: deal with multi-turn moves, which may for instance end their first turn
 	// by capturing a village
@@ -369,16 +350,15 @@ void move::apply_temp_modifier(unit_map& unit_map)
 	DBG_WB <<"Move: Changing movement points for unit " << unit->name() << " [" << unit->id()
 			<< "] from " << unit->movement_left() << " to "
 			<< unit->movement_left() - movement_cost_ << ".\n";
-	unit->set_movement(unit->movement_left() - movement_cost_);
-
 	// Move the unit
 	DBG_WB << "Move: Temporarily moving unit " << unit->name() << " [" << unit->id()
 			<< "] from (" << get_source_hex() << ") to (" << get_dest_hex() <<")\n";
-	mover_.reset(new temporary_unit_mover(unit_map,get_source_hex(), get_dest_hex()));
+	mover_.reset(new temporary_unit_mover(unit_map, get_source_hex(), get_dest_hex(),
+	                                      unit->movement_left() - movement_cost_));
 
 	//Update status of fake unit (not undone by remove_temp_modifiers)
 	//@todo this contradicts the name "temp_modifiers"
-	fake_unit_->set_movement(unit->movement_left());
+	fake_unit_->set_movement(unit->movement_left(), true);
 }
 
 void move::remove_temp_modifier(unit_map&)
@@ -386,20 +366,21 @@ void move::remove_temp_modifier(unit_map&)
 	if (get_source_hex() == get_dest_hex())
 		return; //zero-hex move, probably used by attack subclass
 
-	unit* unit;
+	// Debug movement points
+	if ( !lg::debug().dont_log(log_whiteboard) )
 	{
-		unit_map::iterator unit_it = resources::units->find(get_dest_hex());
-		assert(unit_it != resources::units->end());
-		unit = &*unit_it;
+		unit* unit;
+		{
+			unit_map::iterator unit_it = resources::gameboard->units().find(get_dest_hex());
+			assert(unit_it != resources::gameboard->units().end());
+			unit = &*unit_it;
+		}
+		DBG_WB << "Move: Movement points for unit " << unit->name() << " [" << unit->id()
+					<< "] should get changed from " << unit->movement_left() << " to "
+					<< unit->movement_left() + movement_cost_ << ".\n";
 	}
 
-	// Restore movement points
-	DBG_WB << "Move: Changing movement points for unit " << unit->name() << " [" << unit->id()
-				<< "] from " << unit->movement_left() << " to "
-				<< unit->movement_left() + movement_cost_ << ".\n";
-	unit->set_movement(unit->movement_left() + movement_cost_);
-
-	// Restore the unit to its original position
+	// Restore the unit to its original position and movement.
 	mover_.reset();
 }
 
@@ -447,16 +428,68 @@ map_location move::get_numbering_hex() const
 	return get_dest_hex();
 }
 
-void move::set_valid(bool valid)
+action::error move::check_validity() const
 {
-	if(valid_ != valid)
-	{
-		valid_ = valid;
-		if(valid_)
-			set_arrow_texture(ARROW_TEXTURE_VALID);
-		else
-			set_arrow_texture(ARROW_TEXTURE_INVALID);
+	// Used to deal with multiple return paths.
+	class arrow_texture_setter {
+	public:
+		arrow_texture_setter(const move *target, move::ARROW_TEXTURE current_texture, move::ARROW_TEXTURE setting_texture):
+			target(target),
+			current_texture(current_texture),
+			setting_texture(setting_texture) {}
+
+		~arrow_texture_setter() {
+			if(current_texture!=setting_texture) {
+				target->set_arrow_texture(setting_texture);
+			}
+		}
+
+		void set_texture(move::ARROW_TEXTURE texture) { setting_texture=texture; }
+
+	private:
+		const move *target;
+		move::ARROW_TEXTURE current_texture, setting_texture;
+	};
+
+	arrow_texture_setter setter(this, arrow_texture_, ARROW_TEXTURE_INVALID);
+
+	if(!(get_source_hex().valid() && get_dest_hex().valid())) {
+		return INVALID_LOCATION;
 	}
+
+	//Check that the unit still exists in the source hex
+	unit_map::iterator unit_it;
+	unit_it = resources::gameboard->units().find(get_source_hex());
+	if(unit_it == resources::gameboard->units().end()) {
+		return NO_UNIT;
+	}
+
+	//check if the unit in the source hex has the same unit id as before,
+	//i.e. that it's the same unit
+	if(unit_id_ != unit_it->id() || unit_underlying_id_ != unit_it->underlying_id()) {
+		return UNIT_CHANGED;
+	}
+
+	//If the path has at least two hexes (it can have less with the attack subclass), ensure destination hex is free
+	if(get_route().steps.size() >= 2 && resources::gameboard->get_visible_unit(get_dest_hex(),resources::gameboard->teams().at(viewer_team())) != nullptr) {
+		return LOCATION_OCCUPIED;
+	}
+
+	//check that the path is good
+	if(get_source_hex() != get_dest_hex()) { //skip zero-hex move used by attack subclass
+		// Mark the plain route to see if the move can still be done in one turn,
+		// which is always the case for planned moves
+		pathfind::marked_route checked_route = pathfind::mark_route(get_route().route);
+
+		if(checked_route.marks[checked_route.steps.back()].turns != 1) {
+			return TOO_FAR;
+		}
+	}
+
+	// The move is valid, so correct the setter.
+	setter.set_texture(ARROW_TEXTURE_VALID);
+
+	return OK;
 }
 
 config move::to_config() const
@@ -471,19 +504,19 @@ config move::to_config() const
 	//Serialize route_
 	config route_cfg;
 	route_cfg["move_cost"]=route_->move_cost;
-	BOOST_FOREACH(map_location const& loc, route_->steps)
+	for(map_location const& loc : route_->steps)
 	{
 		config loc_cfg;
-		loc_cfg["x"]=loc.x;
-		loc_cfg["y"]=loc.y;
+		loc_cfg["x"]=loc.wml_x();
+		loc_cfg["y"]=loc.wml_y();
 		route_cfg.add_child("step",loc_cfg);
 	}
 	typedef std::pair<map_location,pathfind::marked_route::mark> pair_loc_mark;
-	BOOST_FOREACH(pair_loc_mark const& item, route_->marks)
+	for(pair_loc_mark const& item : route_->marks)
 	{
 		config mark_cfg;
-		mark_cfg["x"]=item.first.x;
-		mark_cfg["y"]=item.first.y;
+		mark_cfg["x"]=item.first.wml_x();
+		mark_cfg["y"]=item.first.wml_y();
 		mark_cfg["turns"]=item.second.turns;
 		mark_cfg["zoc"]=item.second.zoc;
 		mark_cfg["capture"]=item.second.capture;
@@ -505,7 +538,7 @@ void move::calculate_move_cost()
 		// @todo: find a better treatment of movement points when defining moves out-of-turn
 		if(get_unit()->movement_left() - route_->move_cost < 0
 				&& resources::controller->current_side() == resources::screen->viewing_side()) {
-			WRN_WB << "Move defined with insufficient movement left.\n";
+			WRN_WB << "Move defined with insufficient movement left." << std::endl;
 		}
 
 		// If unit finishes move in a village it captures, set the move cost to unit's movement_left()
@@ -518,6 +551,13 @@ void move::calculate_move_cost()
 			 movement_cost_ = route_->move_cost;
 		 }
 	}
+}
+
+void move::redraw()
+{
+	resources::screen->invalidate(get_source_hex());
+	resources::screen->invalidate(get_dest_hex());
+	update_arrow_style();
 }
 
 //If you add more arrow styles, this will need to change

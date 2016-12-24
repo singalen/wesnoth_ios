@@ -1,6 +1,5 @@
-/* $Id: panel.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2008 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,9 +15,15 @@
 #ifndef GUI_WIDGETS_PANEL_HPP_INCLUDED
 #define GUI_WIDGETS_PANEL_HPP_INCLUDED
 
-#include "gui/widgets/container.hpp"
+#include "gui/widgets/container_base.hpp"
 
-namespace gui2 {
+#include "gui/core/widget_definition.hpp"
+#include "gui/core/window_builder.hpp"
+
+namespace gui2
+{
+
+// ------------ WIDGET -----------{
 
 /**
  * Visible container to hold multiple widgets.
@@ -26,58 +31,87 @@ namespace gui2 {
  * This widget can draw items beyond the widgets it holds and in front of them.
  * A panel is always active so these functions return dummy values.
  */
-class tpanel : public tcontainer_
+class panel : public container_base
 {
 
 public:
-
 	/**
 	 * Constructor.
 	 *
-	 * @param canvas_count        The canvas count for tcontrol.
+	 * @param canvas_count        The canvas count for styled_widget.
 	 */
-	explicit tpanel(const unsigned canvas_count = 2) :
-		tcontainer_(canvas_count)
+	explicit panel(const unsigned canvas_count = 2) : container_base(canvas_count)
 	{
 	}
 
-	/**
-	 * Returns the client rect.
-	 *
-	 * The client rect is the area which is used for child items. The rest of
-	 * the area of this widget is used for its own decoration.
-	 *
-	 * @returns                   The client rect.
-	 */
-	virtual SDL_Rect get_client_rect() const;
+	/** See @ref container_base::get_client_rect. */
+	virtual SDL_Rect get_client_rect() const override;
 
-	/** Inherited from tcontrol. */
-	bool get_active() const { return true; }
+	/** See @ref styled_widget::get_active. */
+	virtual bool get_active() const override;
 
-	/** Inherited from tcontrol. */
-	unsigned get_state() const { return 0; }
+	/** See @ref styled_widget::get_state. */
+	virtual unsigned get_state() const override;
 
 private:
+	/** See @ref widget::impl_draw_background. */
+	virtual void impl_draw_background(surface& frame_buffer,
+									  int x_offset,
+									  int y_offset) override;
 
-	/** Inherited from tcontrol. */
-	void impl_draw_background(surface& frame_buffer);
+	/** See @ref widget::impl_draw_foreground. */
+	virtual void impl_draw_foreground(surface& frame_buffer,
+									  int x_offset,
+									  int y_offset) override;
 
-	/** Inherited from tcontrol. */
-	void impl_draw_foreground(surface& frame_buffer);
+	/** See @ref styled_widget::get_control_type. */
+	virtual const std::string& get_control_type() const override;
 
-	/** Inherited from tcontrol. */
-	const std::string& get_control_type() const;
+	/** See @ref container_base::border_space. */
+	virtual point border_space() const override;
 
-	/** Inherited from tcontainer_. */
-	tpoint border_space() const;
-
-	/** Inherited from tcontainer_. */
-	void set_self_active(const bool /*active*/) {}
-
+	/** See @ref container_base::set_self_active. */
+	virtual void set_self_active(const bool active) override;
 };
+
+// }---------- DEFINITION ---------{
+
+struct panel_definition : public styled_widget_definition
+{
+	explicit panel_definition(const config& cfg);
+
+	struct resolution : public resolution_definition
+	{
+		explicit resolution(const config& cfg);
+
+		unsigned top_border;
+		unsigned bottom_border;
+
+		unsigned left_border;
+		unsigned right_border;
+	};
+};
+
+// }---------- BUILDER -----------{
+
+namespace implementation
+{
+
+struct builder_panel : public builder_styled_widget
+{
+	explicit builder_panel(const config& cfg);
+
+	using builder_styled_widget::build;
+
+	widget* build() const;
+
+	builder_grid_ptr grid;
+};
+
+} // namespace implementation
+
+// }------------ END --------------
 
 } // namespace gui2
 
 #endif
-
-

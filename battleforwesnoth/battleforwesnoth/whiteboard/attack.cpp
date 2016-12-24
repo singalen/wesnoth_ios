@@ -1,6 +1,5 @@
-/* $Id: attack.cpp 53970 2012-04-22 23:18:06Z gabba $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -17,15 +16,19 @@
  * @file
  */
 
-#include "attack.hpp"
+#include "whiteboard/attack.hpp"
 
-#include "visitor.hpp"
+#include "whiteboard/visitor.hpp"
+#include "whiteboard/utility.hpp"
 
 #include "arrow.hpp"
+#include "config.hpp"
+#include "fake_unit_ptr.hpp"
+#include "game_board.hpp"
 #include "play_controller.hpp"
 #include "resources.hpp"
-#include "unit.hpp"
-#include "unit_map.hpp"
+#include "units/unit.hpp"
+#include "units/map.hpp"
 
 namespace wb
 {
@@ -62,7 +65,7 @@ attack::attack(size_t team_index, bool hidden, unit& u, const map_location& targ
 
 attack::attack(config const& cfg, bool hidden)
 	: move(cfg,hidden)
-	, target_hex_(cfg.child("target_hex_")["x"],cfg.child("target_hex_")["y"])
+	, target_hex_(cfg.child("target_hex_")["x"],cfg.child("target_hex_")["y"], wml_loc())
 	, weapon_choice_(cfg["weapon_choice_"].to_int(-1)) //default value: -1
 	, attack_movement_cost_()
 	, temp_movement_subtracted_(0)
@@ -109,7 +112,7 @@ void attack::invalidate()
 
 void attack::execute(bool& success, bool& complete)
 {
-	if (!valid_) {
+	if(!valid()) {
 		success = false;
 		//Setting complete to true signifies to side_actions to delete the planned action: nothing more to do with it.
 		complete = true;
@@ -134,7 +137,7 @@ void attack::execute(bool& success, bool& complete)
 	complete = true;
 
 	//check that attacking unit is still alive, if not, consider the attack a failure
-	unit_map::const_iterator survivor = resources::units->find(get_dest_hex());
+	unit_map::const_iterator survivor = resources::gameboard->units().find(get_dest_hex());
 	if(!survivor.valid() || survivor->id() != unit_id_)
 	{
 		success = false;
@@ -158,12 +161,12 @@ void attack::apply_temp_modifier(unit_map& unit_map)
 	DBG_WB << "Attack: Changing movement points for unit " << unit.name() << " [" << unit.id()
 				<< "] from " << unit.movement_left() << " to "
 				<< unit.movement_left() - temp_movement_subtracted_ << ".\n";
-	unit.set_movement(unit.movement_left() - temp_movement_subtracted_);
+	unit.set_movement(unit.movement_left() - temp_movement_subtracted_, true);
 
 	//Update status of fake unit (not undone by remove_temp_modifiers)
 	//@todo this contradicts the name "temp_modifiers"
 	if (fake_unit_) { //Attacks that are not attack-moves don't have fake units
-		fake_unit_->set_movement(unit.movement_left());
+		fake_unit_->set_movement(unit.movement_left(), true);
 		fake_unit_->set_attacks(unit.attacks_left());
 	}
 }
@@ -178,7 +181,7 @@ void attack::remove_temp_modifier(unit_map& unit_map)
 	DBG_WB << "Attack: Changing movement points for unit " << unit.name() << " [" << unit.id()
 				<< "] from " << unit.movement_left() << " to "
 				<< unit.movement_left() + temp_movement_subtracted_ << ".\n";
-	unit.set_movement(unit.movement_left() + temp_movement_subtracted_);
+	unit.set_movement(unit.movement_left() + temp_movement_subtracted_, true);
 	temp_movement_subtracted_ = 0;
 	move::remove_temp_modifier(unit_map);
 }
@@ -189,7 +192,7 @@ void attack::draw_hex(const map_location& hex)
 	{
 		//@todo: replace this by either the use of transparency + LAYER_ATTACK_INDICATOR,
 		//or a dedicated layer
-		const display::tdrawing_layer layer = display::LAYER_FOOTSTEPS;
+		const display::drawing_layer layer = display::LAYER_FOOTSTEPS;
 
 		//calculate direction (valid for both hexes)
 		std::string direction_text = map_location::write_direction(
@@ -214,6 +217,40 @@ void attack::draw_hex(const map_location& hex)
 	}
 }
 
+void attack::redraw()
+{
+	move::redraw();
+	resources::screen->invalidate(target_hex_);
+}
+
+action::error attack::check_validity() const
+{
+	// Verify that the unit that planned this attack exists
+	if(!get_unit()) {
+		return NO_UNIT;
+	}
+	// Verify that the target hex is still valid
+	if(!target_hex_.valid()) {
+		return INVALID_LOCATION;
+	}
+	// Verify that the target hex isn't empty
+	if(resources::gameboard->units().find(target_hex_) == resources::gameboard->units().end()){
+		return NO_TARGET;
+	}
+	// Verify that the attacking unit has attacks left
+	if(get_unit()->attacks_left() <= 0) {
+		return NO_ATTACK_LEFT;
+	}
+	// Verify that the attacker and target are enemies
+	if(!resources::gameboard->teams()[get_unit()->side() - 1].is_enemy(resources::gameboard->units().find(target_hex_)->side())){
+		return NOT_AN_ENEMY;
+	}
+	//@todo: (maybe) verify that the target hex contains the same unit that before,
+	// comparing for example the unit ID
+
+	return move::check_validity();
+}
+
 config attack::to_config() const
 {
 	config final_cfg = move::to_config();
@@ -224,8 +261,8 @@ config attack::to_config() const
 //	final_cfg["temp_movement_subtracted_"] = temp_movement_subtracted_; //Unnecessary
 
 	config target_hex_cfg;
-	target_hex_cfg["x"]=target_hex_.x;
-	target_hex_cfg["y"]=target_hex_.y;
+	target_hex_cfg["x"]=target_hex_.wml_x();
+	target_hex_cfg["y"]=target_hex_.wml_y();
 	final_cfg.add_child("target_hex_",target_hex_cfg);
 
 	return final_cfg;

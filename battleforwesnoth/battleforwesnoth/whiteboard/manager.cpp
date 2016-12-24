@@ -1,6 +1,5 @@
-/* $Id: manager.cpp 55706 2012-11-16 22:54:08Z jamit $ */
 /*
- Copyright (C) 2010 - 2012 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
+ Copyright (C) 2010 - 2016 by Gabriel Morin <gabrielmorin (at) gmail (dot) com>
  Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
  This program is free software; you can redistribute it and/or modify
@@ -17,36 +16,40 @@
  * @file
  */
 
-#include "manager.hpp"
+#include "whiteboard/manager.hpp"
 
-#include "action.hpp"
-#include "highlight_visitor.hpp"
-#include "mapbuilder.hpp"
-#include "move.hpp"
-#include "attack.hpp"
-#include "recall.hpp"
-#include "recruit.hpp"
-#include "side_actions.hpp"
-#include "utility.hpp"
+#include "whiteboard/action.hpp"
+#include "whiteboard/highlighter.hpp"
+#include "whiteboard/mapbuilder.hpp"
+#include "whiteboard/move.hpp"
+#include "whiteboard/attack.hpp"
+#include "whiteboard/recall.hpp"
+#include "whiteboard/recruit.hpp"
+#include "whiteboard/side_actions.hpp"
+#include "whiteboard/utility.hpp"
 
-#include "actions.hpp"
+#include "actions/create.hpp"
+#include "actions/undo.hpp"
 #include "arrow.hpp"
 #include "chat_events.hpp"
-#include "formula_string_utils.hpp"
+#include "fake_unit_manager.hpp"
+#include "fake_unit_ptr.hpp"
+#include "formula/string_utils.hpp"
+#include "game_board.hpp"
 #include "game_preferences.hpp"
+#include "game_state.hpp"
 #include "gettext.hpp"
 #include "gui/dialogs/simple_item_selector.hpp"
 #include "key.hpp"
-#include "network.hpp"
 #include "pathfind/pathfind.hpp"
 #include "play_controller.hpp"
 #include "resources.hpp"
-#include "rng.hpp"
 #include "team.hpp"
-#include "unit_display.hpp"
+#include "units/unit.hpp"
+#include "units/animation_component.hpp"
+#include "units/udisplay.hpp"
 
-#include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
+#include "utils/functional.hpp"
 
 #include <sstream>
 
@@ -56,7 +59,9 @@ manager::manager():
 		active_(false),
 		inverted_behavior_(false),
 		self_activate_once_(true),
+#if 0
 		print_help_once_(true),
+#endif
 		wait_for_side_init_(true),
 		planned_unit_map_active_(false),
 		executing_actions_(false),
@@ -73,10 +78,13 @@ manager::manager():
 		temp_move_unit_underlying_id_(0),
 		key_poller_(new CKey),
 		hidden_unit_hexes_(),
-		net_buffer_(resources::teams->size()),
-		team_plans_hidden_(resources::teams->size(),preferences::hide_whiteboard()),
+		net_buffer_(resources::gameboard->teams().size()),
+		team_plans_hidden_(resources::gameboard->teams().size()),
 		units_owning_moves_()
 {
+	if(preferences::hide_whiteboard()) {
+		team_plans_hidden_.flip();
+	}
 	LOG_WB << "Manager initialized.\n";
 }
 
@@ -89,7 +97,7 @@ manager::~manager()
 #if 0
 static void print_to_chat(const std::string& title, const std::string& message)
 {
-	resources::screen->add_chat_message(time(NULL), title, 0, message,
+	resources::screen->add_chat_message(time(nullptr), title, 0, message,
 			events::chat_handler::MESSAGE_PRIVATE, false);
 }
 #endif
@@ -137,9 +145,9 @@ void manager::print_help_once()
 bool manager::can_modify_game_state() const
 {
 	if(wait_for_side_init_
-					|| resources::teams == NULL
+					|| resources::gameboard == nullptr
 					|| executing_actions_
-					|| is_observer()
+					|| resources::gameboard->is_observer()
 					|| resources::controller->is_linger_mode())
 	{
 		return false;
@@ -174,7 +182,7 @@ void manager::set_active(bool active)
 		if (active_)
 		{
 			if(should_clear_undo())
-				clear_undo();
+				resources::undo_stack->clear();
 			validate_viewer_actions();
 			LOG_WB << "Whiteboard activated! " << *viewer_actions() << "\n";
 			create_temp_move();
@@ -258,7 +266,7 @@ bool manager::allow_leader_to_move(unit const& leader) const
 	//Look for another leader on another keep in the same castle
 	{ wb::future_map future; // start planned unit map scope
 		if(!has_planned_unit_map()) {
-			WRN_WB << "Unable to build future map to determine whether leader's allowed to move.\n";
+			WRN_WB << "Unable to build future map to determine whether leader's allowed to move." << std::endl;
 		}
 		if(find_backup_leader(leader))
 			return true;
@@ -269,14 +277,14 @@ bool manager::allow_leader_to_move(unit const& leader) const
 	}
 
 	//Look for planned recruits that depend on this leader
-	BOOST_FOREACH(action_const_ptr action, *viewer_actions())
+	for(action_const_ptr action : *viewer_actions())
 	{
-		recruit_const_ptr recruit = boost::dynamic_pointer_cast<class recruit const>(action);
-		recall_const_ptr recall = boost::dynamic_pointer_cast<class recall const>(action);
+		recruit_const_ptr recruit = std::dynamic_pointer_cast<class recruit const>(action);
+		recall_const_ptr recall = std::dynamic_pointer_cast<class recall const>(action);
 		if(recruit || recall)
 		{
 			map_location const target_hex = recruit?recruit->get_recruit_hex():recall->get_recall_hex();
-			if (can_recruit_on(*resources::game_map, leader.get_location(), target_hex))
+			if ( dynamic_cast<game_state*>(resources::filter_con)->can_recruit_on(leader, target_hex) )
 				return false;
 		}
 	}
@@ -285,7 +293,10 @@ bool manager::allow_leader_to_move(unit const& leader) const
 
 void manager::on_init_side()
 {
-	update_plan_hiding(); //< validates actions
+	//Turn should never start with action auto-execution already enabled!
+	assert(!executing_all_actions_ && !executing_actions_);
+
+	update_plan_hiding(); /* validates actions */
 	wait_for_side_init_ = false;
 	LOG_WB << "on_init_side()\n";
 
@@ -318,34 +329,36 @@ void manager::post_delete_action(action_ptr action)
 	// If the last remaining action of the unit that owned this move is a move as well,
 	// adjust its appearance accordingly.
 
-	side_actions_ptr side_actions = resources::teams->at(action->team_index()).get_side_actions();
+	side_actions_ptr side_actions = resources::gameboard->teams().at(action->team_index()).get_side_actions();
 
-	side_actions::iterator action_it = side_actions->find_last_action_of(action->get_unit());
-	if (action_it != side_actions->end())
-	{
-		if (move_ptr move = boost::dynamic_pointer_cast<class move>(*action_it))
-		{
-			if (move->get_fake_unit())
-				move->get_fake_unit()->set_standing(true);
+	unit_ptr actor = action->get_unit();
+	if(actor) { // The unit might have died following the execution of an attack
+		side_actions::iterator action_it = side_actions->find_last_action_of(*actor);
+		if(action_it != side_actions->end()) {
+			move_ptr move = std::dynamic_pointer_cast<class move>(*action_it);
+			if(move && move->get_fake_unit()) {
+				move->get_fake_unit()->anim_comp().set_standing(true);
+			}
 		}
 	}
 }
 
 static void hide_all_plans()
 {
-	BOOST_FOREACH(team& t, *resources::teams)
+	for(team& t : resources::gameboard->teams()){
 		t.get_side_actions()->hide();
+	}
 }
 
 /* private */
 void manager::update_plan_hiding(size_t team_index)
 {
 	//We don't control the "viewing" side ... we're probably an observer
-	if(!resources::teams->at(team_index).is_human())
+	if(!resources::gameboard->teams().at(team_index).is_local_human())
 		hide_all_plans();
-	else //< normal circumstance
+	else // normal circumstance
 	{
-		BOOST_FOREACH(team& t, *resources::teams)
+		for(team& t : resources::gameboard->teams())
 		{
 			//make sure only appropriate teams are hidden
 			if(!t.is_network_human())
@@ -357,7 +370,7 @@ void manager::update_plan_hiding(size_t team_index)
 				t.get_side_actions()->show();
 		}
 	}
-	resources::teams->at(team_index).get_side_actions()->validate_actions();
+	validate_viewer_actions();
 }
 void manager::update_plan_hiding()
 	{update_plan_hiding(viewer_team());}
@@ -368,10 +381,10 @@ void manager::on_viewer_change(size_t team_index)
 		update_plan_hiding(team_index);
 }
 
-void manager::on_change_controller(int side, team& t)
+void manager::on_change_controller(int side, const team& t)
 {
 	wb::side_actions& sa = *t.get_side_actions();
-	if(t.is_human()) //< we own this side now
+	if(t.is_local_human()) // we own this side now
 	{
 		//tell everyone to clear this side's actions -- we're starting anew
 		resources::whiteboard->queue_net_cmd(sa.team_index(),sa.make_net_cmd_clear());
@@ -379,19 +392,19 @@ void manager::on_change_controller(int side, team& t)
 		//refresh the hidden_ attribute of every team's side_actions
 		update_plan_hiding();
 	}
-	else if(t.is_ai() || t.is_network_ai()) //< no one owns this side anymore
-		sa.clear(); //< clear its plans away -- the ai doesn't plan ... yet
-	else if(t.is_network()) //< Another client is taking control of the side
+	else if(t.is_local_ai() || t.is_network_ai()) // no one owns this side anymore
+		sa.clear(); // clear its plans away -- the ai doesn't plan ... yet
+	else if(t.is_network()) // Another client is taking control of the side
 	{
-		if(side==viewer_side()) //< They're taking OUR side away!
-			hide_all_plans(); //< give up knowledge of everyone's plans, in case we became an observer
+		if(side==viewer_side()) // They're taking OUR side away!
+			hide_all_plans(); // give up knowledge of everyone's plans, in case we became an observer
 
 		//tell them our plans -- they may not have received them up to this point
-		size_t num_teams = resources::teams->size();
+		size_t num_teams = resources::gameboard->teams().size();
 		for(size_t i=0; i<num_teams; ++i)
 		{
-			team& local_team = resources::teams->at(i);
-			if(local_team.is_human() && !local_team.is_enemy(side))
+			team& local_team = resources::gameboard->teams().at(i);
+			if(local_team.is_local_human() && !local_team.is_enemy(side))
 				resources::whiteboard->queue_net_cmd(i,local_team.get_side_actions()->make_net_cmd_refresh());
 		}
 	}
@@ -409,11 +422,13 @@ bool manager::current_side_has_actions()
 
 void manager::validate_viewer_actions()
 {
-	assert(!executing_actions_);
 	LOG_WB << "'gamestate_mutated_' flag dirty, validating actions.\n";
 	gamestate_mutated_ = false;
-	if (viewer_actions()->empty()) return;
-	viewer_actions()->validate_actions();
+	if(has_planned_unit_map()) {
+		real_map();
+	} else {
+		future_map();
+	}
 }
 
 //helper fcn
@@ -438,13 +453,13 @@ static void draw_numbers(map_location const& hex, side_actions::numbers_t number
 	{
 		int number = numbers_to_draw[i];
 
-		std::string number_text = boost::lexical_cast<std::string>(number);
+		std::string number_text = std::to_string(number);
 		size_t font_size;
 		if (int(i) == main_number) font_size = 19;
 		else if (secondary_numbers.find(i)!=secondary_numbers.end()) font_size = 17;
 		else font_size = 15;
 
-		SDL_Color color = team::get_side_color(static_cast<int>(team_numbers[i]+1));
+		color_t color = team::get_side_color(static_cast<int>(team_numbers[i]+1));
 		const double x_in_hex = x_origin + x_offset;
 		const double y_in_hex = y_origin + y_offset;
 		resources::screen->draw_text_in_hex(hex, display::LAYER_ACTIONS_NUMBERING,
@@ -458,14 +473,15 @@ static void draw_numbers(map_location const& hex, side_actions::numbers_t number
 namespace
 {
 	//Helper struct that finds all units teams whose planned actions are currently visible
-	//Only used by manager::pre_draw() and post_draw()
+	//Only used by manager::pre_draw().
+	//Note that this structure is used as a functor.
 	struct move_owners_finder: public visitor
 	{
 
 	public:
 		move_owners_finder(): move_owners_() { }
 
-		void operator()(action_ptr action) {
+		void operator()(action* action) {
 			action->accept(*this);
 		}
 
@@ -476,7 +492,7 @@ namespace
 		virtual void visit(move_ptr move) {
 			if(size_t id = move->get_unit_id()) {
 				move_owners_.insert(id);
-		}
+			}
 		}
 
 		virtual void visit(attack_ptr attack) {
@@ -498,12 +514,13 @@ namespace
 
 void manager::pre_draw()
 {
-	if (can_modify_game_state() && has_actions())
-	{
-		units_owning_moves_ = move_owners_finder().get_units_owning_moves();
-		BOOST_FOREACH(size_t unit_id, units_owning_moves_)
-		{
-			unit_map::iterator unit_iter = resources::units->find(unit_id);
+	if (can_modify_game_state() && has_actions() && unit_map_lock_.unique()) {
+		move_owners_finder move_finder;
+		for_each_action(std::ref(move_finder));
+		units_owning_moves_ = move_finder.get_units_owning_moves();
+
+		for (size_t unit_id : units_owning_moves_) {
+			unit_map::iterator unit_iter = resources::gameboard->units().find(unit_id);
 			assert(unit_iter.valid());
 			ghost_owner_unit(&*unit_iter);
 		}
@@ -512,38 +529,14 @@ void manager::pre_draw()
 
 void manager::post_draw()
 {
-	BOOST_FOREACH(size_t unit_id, units_owning_moves_)
+	for (size_t unit_id : units_owning_moves_)
 	{
-		unit_map::iterator unit_iter = resources::units->find(unit_id);
-		if (unit_iter.valid()) { 
+		unit_map::iterator unit_iter = resources::gameboard->units().find(unit_id);
+		if (unit_iter.valid()) {
 			unghost_owner_unit(&*unit_iter);
 		}
 	}
 	units_owning_moves_.clear();
-}
-
-namespace
-{
-	//Only used by manager::draw_hex()
-	struct draw_visitor
-		: private enable_visit_all<draw_visitor>
-	{
-		friend class enable_visit_all<draw_visitor>;
-
-	public:
-		draw_visitor(map_location const& hex): hex_(hex) {}
-
-		using enable_visit_all<draw_visitor>::visit_all;
-
-	private:
-		//"Inherited" from enable_visit_all
-		bool process(size_t /*team_index*/, team&, side_actions&, side_actions::iterator itor)
-			{ (*itor)->draw_hex(hex_);   return true; }
-		//using default pre_visit_team()
-		//using default post_visit_team()
-
-		map_location const& hex_;
-	};
 }
 
 void manager::draw_hex(const map_location& hex)
@@ -557,38 +550,35 @@ void manager::draw_hex(const map_location& hex)
 	if (!wait_for_side_init_ && has_actions())
 	{
 		//call draw() for all actions
-		draw_visitor(hex).visit_all();
+		for_each_action(std::bind(&action::draw_hex, std::placeholders::_1, hex));
 
 		//Info about the action numbers to be displayed on screen.
 		side_actions::numbers_t numbers;
-		BOOST_FOREACH(team& t, *resources::teams)
+		for (team& t : resources::gameboard->teams())
 		{
 			side_actions& sa = *t.get_side_actions();
 			if(!sa.hidden())
 				sa.get_numbers(hex,numbers);
 		}
-		draw_numbers(hex,numbers); //< helper fcn
+		draw_numbers(hex,numbers); // helper fcn
 	}
 
 }
 
 void manager::on_mouseover_change(const map_location& hex)
 {
-	BOOST_FOREACH(map_location const& hex, hidden_unit_hexes_)
-		resources::screen->remove_exclusive_draw(hex);
-	hidden_unit_hexes_.clear();
 
 	map_location selected_hex = resources::controller->get_mouse_handler_base().get_selected_hex();
 	bool hex_has_unit;
-	{ wb::future_map future; //< start planned unit map scope
-		hex_has_unit = resources::units->find(selected_hex) != resources::units->end();
+	{ wb::future_map future; // start planned unit map scope
+		hex_has_unit = resources::gameboard->units().find(selected_hex) != resources::gameboard->units().end();
 	} // end planned unit map scope
 	if (!((selected_hex.valid() && hex_has_unit)
 			|| has_temp_move() || wait_for_side_init_ || executing_actions_))
 	{
 		if (!highlighter_)
 		{
-			highlighter_.reset(new highlight_visitor(*resources::units, viewer_actions()));
+			highlighter_.reset(new highlighter(viewer_actions()));
 		}
 		highlighter_->set_mouseover_hex(hex);
 		highlighter_->highlight();
@@ -620,11 +610,11 @@ void manager::send_network_data()
 		config packet;
 		config& wb_cfg = packet.add_child("whiteboard",buf_cfg);
 		wb_cfg["side"] = static_cast<int>(team_index+1);
-		wb_cfg["team_name"] = resources::teams->at(team_index).team_name();
+		wb_cfg["to_sides"] = resources::gameboard->teams().at(team_index).allied_human_teams();
 
 		buf_cfg = config();
 
-		network::send_data(packet,0,"whiteboard");
+		resources::controller->send_to_wesnothd(packet, "whiteboard");
 
 		size_t count = wb_cfg.child_count("net_cmd");
 		LOG_WB << "Side " << (team_index+1) << " sent wb data (" << count << " cmds).\n";
@@ -638,14 +628,15 @@ void manager::process_network_data(config const& cfg)
 		size_t count = wb_cfg.child_count("net_cmd");
 		LOG_WB << "Received wb data (" << count << ").\n";
 
-		team& team_from = resources::teams->at(wb_cfg["side"]-1);
-		BOOST_FOREACH(side_actions::net_cmd const& cmd, wb_cfg.child_range("net_cmd"))
+		team& team_from = resources::gameboard->teams().at(wb_cfg["side"]-1);
+		for(side_actions::net_cmd const& cmd : wb_cfg.child_range("net_cmd"))
 			team_from.get_side_actions()->execute_net_cmd(cmd);
 	}
 }
 
 void manager::queue_net_cmd(size_t team_index, side_actions::net_cmd const& cmd)
 {
+	assert(team_index < net_buffer_.size());
 	net_buffer_[team_index].add_child("net_cmd",cmd);
 }
 
@@ -658,11 +649,7 @@ void manager::create_temp_move()
 	 * (This section has multiple return paths.)
 	 */
 
-	if(!active_
-			|| wait_for_side_init_
-			|| executing_actions_
-			|| is_observer()
-			|| resources::controller->is_linger_mode())
+	if ( !active_ || !can_modify_game_state() )
 		return;
 
 	pathfind::marked_route const& route =
@@ -670,17 +657,19 @@ void manager::create_temp_move()
 
 	if (route.steps.empty() || route.steps.size() < 2) return;
 
-	unit const* selected_unit =
+	unit* temp_moved_unit =
 			future_visible_unit(resources::controller->get_mouse_handler_base().get_selected_hex(), viewer_side());
-	if (!selected_unit) return;
-	if (selected_unit->side() != resources::screen->viewing_side()) return;
+	if (!temp_moved_unit) temp_moved_unit =
+			future_visible_unit(resources::controller->get_mouse_handler_base().get_last_hex(), viewer_side());
+	if (!temp_moved_unit) return;
+	if (temp_moved_unit->side() != resources::screen->viewing_side()) return;
 
 	/*
 	 * DONE CHECKING PRE-CONDITIONS, CREATE THE TEMP MOVE
 	 * (This section has only one return path.)
 	 */
 
-	temp_move_unit_underlying_id_ = selected_unit->underlying_id();
+	temp_move_unit_underlying_id_ = temp_moved_unit->underlying_id();
 
 	//@todo: May be appropriate to replace these separate components by a temporary
 	//      wb::move object
@@ -725,22 +714,19 @@ void manager::create_temp_move()
 
 			if(path.size() >= 2)
 			{
-				if(!fake_unit)
+				// Bug #20299 demonstrates a situation where an incorrect fake/ghosted unit can be used.
+				// So before assuming that a pre-existing fake_unit can be re-used, check that its ID matches the unit being moved.
+				if(!fake_unit || fake_unit.get_unit_ptr()->id() != temp_moved_unit->id())
 				{
 					// Create temp ghost unit
-					fake_unit.reset(new game_display::fake_unit(*selected_unit));
-					fake_unit->place_on_game_display( resources::screen);
-					fake_unit->set_ghosted(true);
+					fake_unit = fake_unit_ptr(unit_ptr (new unit(*temp_moved_unit)), resources::fake_units);
+					fake_unit->anim_comp().set_ghosted(true);
 				}
 
-				unit_display::move_unit(path, *fake_unit, *resources::teams,
-						false); //get facing right
+				unit_display::move_unit(path, fake_unit.get_unit_ptr(), false); //get facing right
+				fake_unit->anim_comp().invalidate(*game_display::get_singleton());
 				fake_unit->set_location(*curr_itor);
-				fake_unit->set_ghosted(true);
-
-				//if destination is over another unit, temporarily hide it
-				resources::screen->add_exclusive_draw(fake_unit->get_location(), *fake_unit);
-				hidden_unit_hexes_.push_back(fake_unit->get_location());
+				fake_unit->anim_comp().set_ghosted(true);
 			}
 			else //zero-hex path -- don't bother drawing a fake unit
 				fake_unit.reset();
@@ -748,6 +734,9 @@ void manager::create_temp_move()
 			prev_itor = curr_itor;
 		}
 	}
+	//in case path shortens on next step and one ghosted unit has to be removed
+	int ind = fake_units_.size() - 1;
+	fake_units_[ind]->anim_comp().invalidate(*game_display::get_singleton());
 	//toss out old arrows and fake units
 	move_arrows_.resize(turn+1);
 	fake_units_.resize(turn+1);
@@ -756,6 +745,11 @@ void manager::create_temp_move()
 void manager::erase_temp_move()
 {
 	move_arrows_.clear();
+	for(fake_unit_ptr const& tmp : fake_units_) {
+		if(tmp) {
+			tmp->anim_comp().invalidate(*game_display::get_singleton());
+		}
+	}
 	fake_units_.clear();
 	route_.reset();
 	temp_move_unit_underlying_id_ = 0;
@@ -770,7 +764,7 @@ void manager::save_temp_move()
 		assert(u);
 		size_t first_turn = sa.get_turn_num_of(*u);
 
-		on_save_action(u);
+		validate_viewer_actions();
 
 		assert(move_arrows_.size() == fake_units_.size());
 		size_t size = move_arrows_.size();
@@ -800,7 +794,7 @@ void manager::save_temp_move()
 
 unit_map::iterator manager::get_temp_move_unit() const
 {
-	return resources::units->find(temp_move_unit_underlying_id_);
+	return resources::gameboard->units().find(temp_move_unit_underlying_id_);
 }
 
 void manager::save_temp_attack(const map_location& attacker_loc, const map_location& defender_loc, int weapon_choice)
@@ -824,7 +818,7 @@ void manager::save_temp_attack(const map_location& attacker_loc, const map_locat
 			assert(route_->steps.back() == attacker_loc);
 			source_hex = route_->steps.front();
 
-			fake_unit->set_disabled_ghosted(true);
+			fake_unit->anim_comp().set_disabled_ghosted(true);
 		}
 		else
 		{
@@ -839,7 +833,7 @@ void manager::save_temp_attack(const map_location& attacker_loc, const map_locat
 		unit* attacking_unit = future_visible_unit(source_hex);
 		assert(attacking_unit);
 
-		on_save_action(attacking_unit);
+		validate_viewer_actions();
 
 		side_actions& sa = *viewer_actions();
 		sa.queue_attack(sa.get_turn_num_of(*attacking_unit),*attacking_unit,defender_loc,weapon_choice,*route_,move_arrow,fake_unit);
@@ -865,8 +859,6 @@ bool manager::save_recruit(const std::string& name, int side_num, const map_loca
 		}
 		else
 		{
-			on_save_action(NULL);
-
 			side_actions& sa = *viewer_actions();
 			unit* recruiter;
 			{ wb::future_map raii;
@@ -896,8 +888,6 @@ bool manager::save_recall(const unit& unit, int side_num, const map_location& re
 		}
 		else
 		{
-			on_save_action(NULL);
-
 			side_actions& sa = *viewer_actions();
 			size_t turn = sa.num_turns();
 			if(turn > 0)
@@ -915,16 +905,10 @@ void manager::save_suppose_dead(unit& curr_unit, map_location const& loc)
 {
 	if(active_ && !executing_actions_ && !resources::controller->is_linger_mode())
 	{
-		on_save_action(&curr_unit);
+		validate_viewer_actions();
 		side_actions& sa = *viewer_actions();
 		sa.queue_suppose_dead(sa.get_turn_num_of(curr_unit),curr_unit,loc);
 	}
-}
-
-void manager::on_save_action(unit const* u) const
-{
-	if(u)
-		viewer_actions()->remove_invalid_of(u);
 }
 
 void manager::contextual_execute()
@@ -938,10 +922,10 @@ void manager::contextual_execute()
 		variable_finalizer<bool> finally(executing_actions_, false);
 
 		action_ptr action;
-		side_actions::iterator it;
+		side_actions::iterator it = viewer_actions()->end();
 		unit const* selected_unit = future_visible_unit(resources::controller->get_mouse_handler_base().get_selected_hex(), viewer_side());
 		if (selected_unit &&
-				(it = viewer_actions()->find_first_action_of(selected_unit)) != viewer_actions()->end())
+				(it = viewer_actions()->find_first_action_of(*selected_unit)) != viewer_actions()->end())
 		{
 			executing_actions_ = true;
 			viewer_actions()->execute(it);
@@ -996,7 +980,7 @@ bool manager::execute_all_actions()
 
 	if (resources::whiteboard->has_planned_unit_map())
 	{
-		ERR_WB << "Modifying action queue while temp modifiers are applied!!!\n";
+		ERR_WB << "Modifying action queue while temp modifiers are applied!!!" << std::endl;
 	}
 
 	//LOG_WB << "Before executing all actions, " << *sa << "\n";
@@ -1005,15 +989,6 @@ bool manager::execute_all_actions()
 	{
 		bool action_successful = sa->execute(sa->begin());
 
-		// Interrupt if an attack is waiting for a random seed from the server
-		if ( rand_rng::has_new_seed_callback())
-		{
-			//leave executing_all_actions_ to true, we'll resume once attack completes
-			finalize_executing_all_actions.clear();
-
-			events::commands_disabled++; //to be decremented by continue_execute_all()
-			return false;
-		}
 		// Interrupt on incomplete action
 		if (!action_successful)
 		{
@@ -1023,47 +998,29 @@ bool manager::execute_all_actions()
 	return true;
 }
 
-void manager::continue_execute_all()
-{
-	if (executing_all_actions_ && !rand_rng::has_new_seed_callback()) {
-		events::commands_disabled--;
-		if (execute_all_actions() && preparing_to_end_turn_) {
-			resources::controller->force_end_turn();
-		}
-	}
-}
-
 void manager::contextual_delete()
 {
 	validate_viewer_actions();
-	if (can_enable_modifier_hotkeys())
-	{
+	if(can_enable_modifier_hotkeys()) {
 		erase_temp_move();
 
 		action_ptr action;
-		side_actions::iterator it;
+		side_actions::iterator it = viewer_actions()->end();
 		unit const* selected_unit = future_visible_unit(resources::controller->get_mouse_handler_base().get_selected_hex(), viewer_side());
-		if (selected_unit &&
-				(it = viewer_actions()->find_first_action_of(selected_unit)) != viewer_actions()->end())
-		{
+		if(selected_unit && (it = viewer_actions()->find_first_action_of(*selected_unit)) != viewer_actions()->end()) {
 			///@todo Shouldn't it be "find_last_action_of" instead of "find_first_action_of" above?
 			viewer_actions()->remove_action(it);
 			///@todo Shouldn't we probably deselect the unit at this point?
-		}
-		else if (highlighter_ && (action = highlighter_->get_delete_target()) &&
-				(it = viewer_actions()->get_position_of(action)) != viewer_actions()->end())
-		{
+		} else if(highlighter_ && (action = highlighter_->get_delete_target()) && (it = viewer_actions()->get_position_of(action)) != viewer_actions()->end()) {
 			viewer_actions()->remove_action(it);
-			viewer_actions()->remove_invalid_of(action->get_unit());
+			validate_viewer_actions();
 			highlighter_->set_mouseover_hex(highlighter_->get_mouseover_hex());
 			highlighter_->highlight();
-		}
-		else //we already check above for viewer_actions()->empty()
-		{
+		} else { //we already check above for viewer_actions()->empty()
 			it = (viewer_actions()->end() - 1);
 			action = *it;
 			viewer_actions()->remove_action(it);
-			viewer_actions()->remove_invalid_of(action->get_unit());
+			validate_viewer_actions();
 		}
 	}
 }
@@ -1071,12 +1028,11 @@ void manager::contextual_delete()
 void manager::contextual_bump_up_action()
 {
 	validate_viewer_actions();
-	if(can_enable_reorder_hotkeys())
-	{
+	if(can_enable_reorder_hotkeys()) {
 		action_ptr action = highlighter_->get_bump_target();
-		if (action)
-		{
+		if(action) {
 			viewer_actions()->bump_earlier(viewer_actions()->get_position_of(action));
+			validate_viewer_actions(); // Redraw arrows
 		}
 	}
 }
@@ -1084,26 +1040,26 @@ void manager::contextual_bump_up_action()
 void manager::contextual_bump_down_action()
 {
 	validate_viewer_actions();
-	if(can_enable_reorder_hotkeys())
-	{
+	if(can_enable_reorder_hotkeys()) {
 		action_ptr action = highlighter_->get_bump_target();
-		if (action)
-		{
+		if(action) {
 			viewer_actions()->bump_later(viewer_actions()->get_position_of(action));
+			validate_viewer_actions(); // Redraw arrows
 		}
 	}
 }
 
 bool manager::has_actions() const
 {
-	assert(resources::teams);
+	assert(resources::gameboard);
 	return wb::has_actions();
 }
 
 bool manager::unit_has_actions(unit const* unit) const
 {
-	assert(resources::teams);
-	return viewer_actions()->unit_has_actions(unit);
+	assert(unit != nullptr);
+	assert(resources::gameboard);
+	return viewer_actions()->unit_has_actions(*unit);
 }
 
 int manager::get_spent_gold_for(int side)
@@ -1111,14 +1067,7 @@ int manager::get_spent_gold_for(int side)
 	if(wait_for_side_init_)
 		return 0;
 
-	return resources::teams->at(side - 1).get_side_actions()->get_gold_spent();
-}
-
-void manager::clear_undo()
-{
-	apply_shroud_changes(*resources::undo_stack, viewer_side());
-	resources::undo_stack->clear();
-	resources::redo_stack->clear();
+	return resources::gameboard->teams().at(side - 1).get_side_actions()->get_gold_spent();
 }
 
 void manager::options_dlg()
@@ -1135,7 +1084,7 @@ void manager::options_dlg()
 	options.push_back(_("HIDE ALL allies’ plans"));
 
 	//populate list of networked allies
-	BOOST_FOREACH(team &t, *resources::teams)
+	for(team &t : resources::gameboard->teams())
 	{
 		//Exclude enemies, AIs, and local players
 		if(t.is_enemy(v_side) || !t.is_network())
@@ -1151,7 +1100,7 @@ void manager::options_dlg()
 			options.push_back(vgettext("Hide plans for $player", t_vars));
 	}
 
-	gui2::tsimple_item_selector dlg("", _("Whiteboard Options"), options);
+	gui2::dialogs::simple_item_selector dlg("", _("Whiteboard Options"), options);
 	dlg.show(resources::screen->video());
 	selection = dlg.selected_index();
 
@@ -1161,12 +1110,14 @@ void manager::options_dlg()
 	switch(selection)
 	{
 	case 0:
-		BOOST_FOREACH(team* t, allies)
+		for(team* t : allies) {
 			team_plans_hidden_[t->side()-1]=false;
+		}
 		break;
 	case 1:
-		BOOST_FOREACH(team* t, allies)
+		for(team* t : allies) {
 			team_plans_hidden_[t->side()-1]=true;
+		}
 		break;
 	default:
 		if(selection > 1)
@@ -1193,13 +1144,12 @@ void manager::set_planned_unit_map()
 		return;
 	}
 	if (planned_unit_map_active_) {
-		WRN_WB << "Not building planned unit map: already set.\n";
+		WRN_WB << "Not building planned unit map: already set." << std::endl;
 		return;
 	}
 
-	validate_actions_if_needed();
 	log_scope2("whiteboard", "Building planned unit map");
-	mapbuilder_.reset(new mapbuilder(*resources::units));
+	mapbuilder_.reset(new mapbuilder(resources::gameboard->units()));
 	mapbuilder_->build_map();
 
 	planned_unit_map_active_ = true;
@@ -1246,10 +1196,12 @@ future_map::future_map():
 
 future_map::~future_map()
 {
+	try {
 	if (!resources::whiteboard)
 		return;
 	if (!initial_planned_unit_map_ && resources::whiteboard->has_planned_unit_map())
 		resources::whiteboard->set_real_unit_map();
+	} catch (...) {}
 }
 
 future_map_if_active::future_map_if_active():
@@ -1270,16 +1222,18 @@ future_map_if_active::future_map_if_active():
 
 future_map_if_active::~future_map_if_active()
 {
+	try {
 	if (!resources::whiteboard)
 		return;
 	if (!initial_planned_unit_map_ && resources::whiteboard->has_planned_unit_map())
 		resources::whiteboard->set_real_unit_map();
+	} catch (...) {}
 }
 
 
 real_map::real_map():
 		initial_planned_unit_map_(resources::whiteboard && resources::whiteboard->has_planned_unit_map()),
-		unit_map_lock_(resources::whiteboard ? resources::whiteboard->unit_map_lock_ : boost::shared_ptr<bool>(new bool(false)))
+		unit_map_lock_(resources::whiteboard ? resources::whiteboard->unit_map_lock_ : std::shared_ptr<bool>(new bool(false)))
 {
 	if (!resources::whiteboard)
 		return;
@@ -1296,11 +1250,6 @@ real_map::~real_map()
 	{
 		resources::whiteboard->set_planned_unit_map();
 	}
-}
-
-bool unit_comparator_predicate::operator()(unit const& unit)
-{
-	return unit_.id() == unit.id();
 }
 
 } // end namespace wb

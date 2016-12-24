@@ -1,7 +1,6 @@
-/* $Id: astarsearch.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
    Copyright (C) 2003 by David White <dave@whitevine.net>
-                 2005 - 2012 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
+                 2005 - 2015 by Guillaume Melquiond <guillaume.melquiond@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,7 +16,7 @@
 #include "global.hpp"
 
 #include "log.hpp"
-#include "map.hpp"
+#include "map/map.hpp"
 #include "pathfind/pathfind.hpp"
 #include "pathfind/teleport.hpp"
 
@@ -28,6 +27,9 @@ static lg::log_domain log_engine("engine");
 #define LOG_PF LOG_STREAM(info, log_engine)
 #define DBG_PF LOG_STREAM(debug, log_engine)
 #define ERR_PF LOG_STREAM(err, log_engine)
+
+namespace pathfind {
+
 
 namespace {
 double heuristic(const map_location& src, const map_location& dst)
@@ -79,7 +81,7 @@ struct node {
 		, in(bad_search_counter)
 	{
 	}
-	node(double s, const map_location &c, const map_location &p, const map_location &dst, bool i, const pathfind::teleport_map* teleports):
+	node(double s, const map_location &c, const map_location &p, const map_location &dst, bool i, const teleport_map* teleports):
 		g(s), h(heuristic(c, dst)), t(g + h), curr(c), prev(p), in(search_counter + i)
 	{
 		if (teleports && !teleports->empty()) {
@@ -128,34 +130,33 @@ public:
 };
 
 class indexer {
-	size_t h_, w_;
+	size_t w_;
 
 public:
-	indexer(size_t a, size_t b) : h_(a), w_(b) { }
+	indexer(size_t w) : w_(w) { }
 	size_t operator()(const map_location& loc) {
-		return loc.y * h_ + loc.x;
+		return loc.y * w_ + loc.x;
 	}
 };
-}
+}//anonymous namespace
 
 
-pathfind::plain_route pathfind::a_star_search(const map_location& src, const map_location& dst,
-                            double stop_at, const cost_calculator *calc, const size_t width,
-                            const size_t height,
-                            const teleport_map *teleports) {
+plain_route a_star_search(const map_location& src, const map_location& dst,
+                          double stop_at, const cost_calculator& calc,
+                          const size_t width, const size_t height,
+                          const teleport_map *teleports, bool border) {
 	//----------------- PRE_CONDITIONS ------------------
-	assert(src.valid(width, height));
-	assert(dst.valid(width, height));
-	assert(calc != NULL);
-	assert(stop_at <= calc->getNoPathValue());
+	assert(src.valid(width, height, border));
+	assert(dst.valid(width, height, border));
+	assert(stop_at <= calc.getNoPathValue());
 	//---------------------------------------------------
 
 	DBG_PF << "A* search: " << src << " -> " << dst << '\n';
 
-	if (calc->cost(dst, 0) >= stop_at) {
+	if (calc.cost(dst, 0) >= stop_at) {
 		LOG_PF << "aborted A* search because Start or Dest is invalid\n";
-		pathfind::plain_route locRoute;
-		locRoute.move_cost = int(calc->getNoPathValue());
+		plain_route locRoute;
+		locRoute.move_cost = int(calc.getNoPathValue());
 		return locRoute;
 	}
 
@@ -165,13 +166,13 @@ pathfind::plain_route pathfind::a_star_search(const map_location& src, const map
 		search_counter += 2;
 
 	static std::vector<node> nodes;
-	nodes.resize(width * height);  // this create uninitalized nodes
+	nodes.resize(width * height);  // this create uninitialized nodes
 
-	indexer index(width, height);
+	indexer index(width);
 	comp node_comp(nodes);
 
 	nodes[index(dst)].g = stop_at + 1;
-	nodes[index(src)] = node(0, src, map_location::null_location, dst, true, teleports);
+	nodes[index(src)] = node(0, src, map_location::null_location(), dst, true, teleports);
 
 	std::vector<int> pq;
 	pq.push_back(index(src));
@@ -186,32 +187,28 @@ pathfind::plain_route pathfind::a_star_search(const map_location& src, const map
 
 		if (n.t >= nodes[index(dst)].g) break;
 
-		std::vector<map_location> locs;
+		std::vector<map_location> locs(6);
 
-		int i;
 		if (teleports && !teleports->empty()) {
 
 			std::set<map_location> allowed_teleports;
 			teleports->get_adjacents(allowed_teleports, n.curr);
+			locs.insert(locs.end(), allowed_teleports.begin(), allowed_teleports.end());
+		}
 
-			i = allowed_teleports.size() +6;
-			locs = std::vector<map_location>(i);
-
-			std::copy(allowed_teleports.begin(), allowed_teleports.end(), locs.begin() + 6);
-		} else
-		{ locs = std::vector<map_location>(6); i = 6;}
+		int i = locs.size();
 
 		get_adjacent_tiles(n.curr, &locs[0]);
 
 		for (; i-- > 0;) {
-			if (!locs[i].valid(width, height)) continue;
+			if (!locs[i].valid(width, height, border)) continue;
 			if (locs[i] == n.curr) continue;
 			node& next = nodes[index(locs[i])];
 
 			double thresh = (next.in - search_counter <= 1u) ? next.g : stop_at + 1;
 			// cost() is always >= 1  (assumed and needed by the heuristic)
 			if (n.g + 1 >= thresh) continue;
-			double cost = n.g + calc->cost(locs[i], n.g);
+			double cost = n.g + calc.cost(locs[i], n.g);
 			if (cost >= thresh) continue;
 
 			bool in_list = next.in == search_counter + 1;
@@ -227,20 +224,22 @@ pathfind::plain_route pathfind::a_star_search(const map_location& src, const map
 		}
 	}
 
-	pathfind::plain_route route;
+	plain_route route;
 	if (nodes[index(dst)].g <= stop_at) {
 		DBG_PF << "found solution; calculating it...\n";
 		route.move_cost = static_cast<int>(nodes[index(dst)].g);
-		for (node curr = nodes[index(dst)]; curr.prev != map_location::null_location; curr = nodes[index(curr.prev)]) {
+		for (node curr = nodes[index(dst)]; curr.prev != map_location::null_location(); curr = nodes[index(curr.prev)]) {
 			route.steps.push_back(curr.curr);
 		}
 		route.steps.push_back(src);
 		std::reverse(route.steps.begin(), route.steps.end());
 	} else {
 		LOG_PF << "aborted a* search  " << "\n";
-		route.move_cost = static_cast<int>(calc->getNoPathValue());
+		route.move_cost = static_cast<int>(calc.getNoPathValue());
 	}
 
 	return route;
 }
 
+
+}//namespace pathfind

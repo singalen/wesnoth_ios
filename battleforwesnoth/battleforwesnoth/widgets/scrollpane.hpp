@@ -1,6 +1,5 @@
-/* $Id: scrollpane.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2004 - 2012 by Philippe Plantier <ayin@anathas.org>
+   Copyright (C) 2004 - 2016 by Philippe Plantier <ayin@anathas.org>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org
 
    This program is free software; you can redistribute it and/or modify
@@ -21,8 +20,8 @@
 #include <map>
 #include <vector>
 
-#include "SDL.h"
-#include "../sdl_utils.hpp"
+#include <SDL.h>
+#include "sdl/surface.hpp"
 #include "scrollarea.hpp"
 
 namespace gui {
@@ -33,7 +32,7 @@ class scrollpane : public scrollarea
 public:
 	struct scrollpane_widget {
 		scrollpane_widget(widget* w, int x=0, int y=0, int z_order=0)
-			: w(w), x(x), y(y), z_order(z_order) {};
+			: w(w), x(x), y(y), z_order(z_order) {}
 
 		widget* w;
 		int x;

@@ -1,6 +1,5 @@
-/* $Id: tips.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2010 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2010 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -22,11 +21,13 @@
 
 class config;
 
-namespace gui2 {
+namespace gui2
+{
 
-class ttip;
+class game_tip;
 
-namespace tips {
+namespace tip_of_the_day
+{
 
 /**
  * Loads the tips from a config.
@@ -35,7 +36,7 @@ namespace tips {
  *
  * @returns                       The loaded tips.
  */
-std::vector<ttip> load(const config& cfg);
+std::vector<game_tip> load(const config& cfg);
 
 /**
  * Shuffles the tips.
@@ -46,24 +47,29 @@ std::vector<ttip> load(const config& cfg);
  *
  * @returns                       The filtered tips in random order.
  */
-std::vector<ttip> shuffle(const std::vector<ttip>& tips);
+std::vector<game_tip> shuffle(const std::vector<game_tip>& tips);
 
-} // namespace tips {
+} // namespace tip_of_the_day
 
 /** The tips of day structure. */
-class ttip
+class game_tip
 {
 public:
-
-	const t_string& text() const { return text_; }
-	const t_string& source() const { return source_; }
+	const t_string& text() const
+	{
+		return text_;
+	}
+	const t_string& source() const
+	{
+		return source_;
+	}
 
 private:
-	friend std::vector<ttip> tips::load(const config&);
-	friend std::vector<ttip> tips::shuffle(const std::vector<ttip>& tips);
-	ttip(const t_string& text
-			, const t_string& source
-			, const std::string& unit_filter);
+	friend std::vector<game_tip> tip_of_the_day::load(const config&);
+	friend std::vector<game_tip> tip_of_the_day::shuffle(const std::vector<game_tip>& tips);
+	game_tip(const t_string& text,
+		 const t_string& source,
+		 const std::string& unit_filter);
 
 	/** The text of the tip. */
 	t_string text_;
@@ -84,4 +90,3 @@ private:
 } // namespace gui2
 
 #endif
-

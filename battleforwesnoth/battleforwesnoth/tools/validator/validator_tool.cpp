@@ -1,6 +1,5 @@
-/* $Id: validator_tool.cpp 54635 2012-07-08 17:01:49Z mordante $ */
 /*
-   Copyright (C) 2011 - 2012 by Sytyi Nick <nsytyi@gmail.com>
+   Copyright (C) 2011 - 2016 by Sytyi Nick <nsytyi@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -42,7 +41,7 @@ int main(int argc, char *argv[]){
 		}
 		else if (val == "--help" || val == "-h") {
 			std::cout << "usage: " << argv[0]
-					<< " [-hV] [-s <schema_file>] ]\n"
+					<< " [-hV] [-i <input_file>] [-s <schema_file>]\n"
 					<< " -h, --help\t\t\t"
 					<< "Shows this usage message.\n"
 					<< " -s, --schema <schema_file>\t"
@@ -65,7 +64,7 @@ int main(int argc, char *argv[]){
 	try {
 		preproc_map preproc(
 				game_config::config_cache::instance().get_preproc_map());
-		scoped_istream stream = preprocess_file(input,
+		filesystem::scoped_istream stream = preprocess_file(input,
 												&preproc);
 		read(cfg, *stream, &validator);
 	} catch(config::error & t) {

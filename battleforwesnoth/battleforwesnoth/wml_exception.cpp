@@ -1,6 +1,5 @@
-/* $Id: wml_exception.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2007 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2007 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -23,16 +22,15 @@
 #include "global.hpp"
 #include "wml_exception.hpp"
 
-#include "display.hpp"
 #include "gettext.hpp"
 #include "gui/dialogs/message.hpp"
-#include "formula_string_utils.hpp"
+#include "formula/string_utils.hpp"
 #include "log.hpp"
 
 static lg::log_domain log_engine("engine");
 #define WRN_NG LOG_STREAM(warn, log_engine)
 
-void wml_exception(
+void throw_wml_exception(
 		  const char* cond
 		, const char* file
 		, const int line
@@ -41,17 +39,22 @@ void wml_exception(
 		, const std::string& dev_message)
 {
 	std::ostringstream sstr;
-	sstr << "Condition '" << cond << "' failed at "
-		<< file << ":" << line << " in function '" << function << "'.";
+	if(cond) {
+		sstr << "Condition '" << cond << "' failed at ";
+	} else {
+		sstr << "Unconditional failure at ";
+	}
+
+	sstr << file << ":" << line << " in function '" << function << "'.";
 
 	if(!dev_message.empty()) {
 		sstr << " Extra development information: " << dev_message;
 	}
 
-	throw twml_exception(message, sstr.str());
+	throw wml_exception(message, sstr.str());
 }
 
-void twml_exception::show(display &disp)
+void wml_exception::show(CVideo &video)
 {
 	std::ostringstream sstr;
 
@@ -62,7 +65,7 @@ void twml_exception::show(display &disp)
 		<< _("When reporting the bug please include the following error message :")
 		<< "\n" << dev_message;
 
-	gui2::show_error_message(disp.video(), sstr.str());
+	gui2::show_error_message(video, sstr.str());
 }
 
 std::string missing_mandatory_wml_key(
@@ -147,7 +150,7 @@ const config::attribute_value& get_renamed_config_attribute(
 
 	result = cfg.get(deprecated_key);
 	if(result) {
-		lg::wml_error
+		lg::wml_error()
 			<< deprecated_renamed_wml_key_warning(
 				  deprecated_key
 				, key

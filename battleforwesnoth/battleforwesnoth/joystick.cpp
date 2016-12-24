@@ -1,6 +1,5 @@
-/* $Id: joystick.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2011 - 2012 by Fabian Mueller
+   Copyright (C) 2011 - 2016 by Fabian Mueller
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -16,8 +15,10 @@
 #include "joystick.hpp"
 #include "preferences.hpp"
 #include "log.hpp"
-
-#define PI 3.14159265
+#include "sdl/surface.hpp"
+#include "utils/math.hpp"
+#include <boost/math/constants/constants.hpp>
+using namespace boost::math::constants;
 
 static lg::log_domain log_joystick("joystick");
 #define ERR_JOY LOG_STREAM(err, log_joystick)
@@ -36,6 +37,22 @@ joystick_manager::~joystick_manager() {
 	close();
 }
 
+
+static bool attached(
+		  const std::vector<SDL_Joystick*>& joysticks
+		, const size_t index)
+{
+	return SDL_JoystickGetAttached(joysticks[index]) == SDL_TRUE;
+}
+
+static const char* name(
+		  const std::vector<SDL_Joystick*>& joysticks
+		, const size_t index)
+{
+	return SDL_JoystickName(joysticks[index]);
+}
+
+
 bool joystick_manager::close() {
 	if(SDL_WasInit(SDL_INIT_JOYSTICK) == 0)
 		return true;
@@ -44,10 +61,10 @@ bool joystick_manager::close() {
 	bool all_closed = true;
 
 	for (int i = 0; i<joysticks; i++)  {
-		if (SDL_JoystickOpened(i)) {
+		if (attached(joysticks_, i)) {
 			SDL_JoystickClose(joysticks_[i]);
 			LOG_JOY << "Closed Joystick" << i;
-		    LOG_JOY << "Name: " << SDL_JoystickName(i);
+		    LOG_JOY << "Name: " << name(joysticks_, i);
 		} else {
 			ERR_JOY << "Joystick" << i << " closing failed.";
 			all_closed = false;
@@ -84,12 +101,12 @@ bool joystick_manager::init() {
 		joysticks_.resize(i+1);
 		joysticks_[i] = SDL_JoystickOpen(i);
 
-		if (joysticks_[i] && SDL_JoystickOpened(i)) {
+		if (joysticks_[i] && attached(joysticks_, i)) {
 
 			joystick_found = true;
 
 		    LOG_JOY << "Opened Joystick" << i;
-		    LOG_JOY << "Name: " << SDL_JoystickName(i);
+		    LOG_JOY << "Name: " << name(joysticks_, i);
 		    LOG_JOY << "Number of Axes: " << SDL_JoystickNumAxes(joysticks_[i]);
 		    LOG_JOY << "Number of Buttons: " << SDL_JoystickNumButtons(joysticks_[i]);
 		    LOG_JOY << "Number of Balls: " << SDL_JoystickNumBalls(joysticks_[i]);
@@ -124,7 +141,7 @@ std::pair<double, double> joystick_manager::get_mouse_axis_pair() {
 		return std::make_pair(0.0, 0.0);
 
 	// TODO do some math to normalize over the value - deadzone.
-	//const double relation = abs( (double)values.first / (double)values.second );
+	//const double relation = std::abs( (double)values.first / (double)values.second );
 	//const int range_x = values.first - round_double(relation * deadzone);
 	//const int range_y = values.second - ((1.0 - relation) * deadzone);
 	//double x_value = ((double)(values.first - deadzone) / (double)(32768 - deadzone)) *
@@ -204,7 +221,7 @@ std::pair<double, double> joystick_manager::get_polar_coordinates(int joystick_x
 	const double radius = (sqrt(pow(values.first, 2.0f) + pow(values.second, 2.0f))) / 32768.0;
 	const double angle = (atan2(
 			  static_cast<double>(values.second)
-			, static_cast<double>(values.first))) * 180.0 / PI;
+			, static_cast<double>(values.first))) * 180.0 / pi<double>();
 
 	return std::make_pair(radius, angle);
 }
@@ -217,11 +234,11 @@ std::pair<int, int> joystick_manager::get_axis_pair(int joystick_xaxis, int xaxi
 	int x_axis = 0, y_axis = 0;
 	bool get_xaxis = false, get_yaxis = false;
 
-	if(SDL_JoystickOpened(joystick_xaxis))
+	if(attached(joysticks_, joystick_xaxis))
 		if(SDL_JoystickNumAxes(joysticks_[joystick_xaxis]) > xaxis)
 			get_xaxis = true;
 
-	if(SDL_JoystickOpened(joystick_yaxis))
+	if(attached(joysticks_, joystick_yaxis))
 		if(SDL_JoystickNumAxes(joysticks_[joystick_yaxis]) > yaxis)
 			get_yaxis = true;
 
@@ -238,7 +255,7 @@ int joystick_manager::get_axis(int joystick_axis, int axis) {
 	if(!SDL_WasInit(SDL_INIT_JOYSTICK))
 		return 0;
 
-	if(SDL_JoystickOpened(joystick_axis))
+	if(attached(joysticks_, joystick_axis))
 		if(SDL_JoystickNumAxes(joysticks_[joystick_axis]) > axis)
 			return SDL_JoystickGetAxis(joysticks_[joystick_axis], axis);
 	return 0;
@@ -267,9 +284,8 @@ bool joystick_manager::update_highlighted_hex(map_location& highlighted_hex, con
 	//const bool greater_deadzone = radius > deadzone;
 	//const bool greater_threshold2 = radius > threshold2;
 
-	int x = selected_hex.x + round_double(x_axis / 3200);
-	int y = selected_hex.y + round_double(y_axis / 3200);
-	highlighted_hex = map_location(x,y);
+	highlighted_hex = selected_hex;
+	highlighted_hex.add(round_double(x_axis / 3200), round_double(y_axis / 3200));
 
 	//if (!greater_threshold) {
 	//	counter_ = 0;
@@ -328,20 +344,19 @@ bool joystick_manager::update_highlighted_hex(map_location& highlighted_hex) {
 	return true;
 }
 
-const map_location joystick_manager::get_direction(const map_location& loc, joystick_manager::DIRECTION direction) {
-
-	int x = loc.x;
-	int y = loc.y;
+const map_location joystick_manager::get_direction(const map_location& loc, joystick_manager::DIRECTION direction)
+{
+	map_location l = loc;
 
 	switch(direction) {
-		case NORTH:      return map_location(x, y - 1);
-		case SOUTH:      return map_location(x, y + 1);
-		case SOUTH_EAST: return map_location(x + 1, y + (1+is_odd(x))/2 );
-		case SOUTH_WEST: return map_location(x - 1, y + (1+is_odd(x))/2 );
-		case NORTH_EAST: return map_location(x + 1, y - (1+is_even(x))/2 );
-		case NORTH_WEST: return map_location(x - 1, y - (1+is_even(x))/2 );
-		case WEST:       return map_location(x - 1, y);
-		case EAST:       return map_location(x + 1, y);
+		case NORTH:      return l.get_direction(map_location::NORTH);
+		case SOUTH:      return l.get_direction(map_location::SOUTH);
+		case SOUTH_EAST: return l.get_direction(map_location::SOUTH_EAST);
+		case SOUTH_WEST: return l.get_direction(map_location::SOUTH_WEST);
+		case NORTH_EAST: return l.get_direction(map_location::NORTH_EAST);
+		case NORTH_WEST: return l.get_direction(map_location::NORTH_WEST);
+		case WEST:       l.add(-1, 0); return l;
+		case EAST:       l.add(1, 0); return l;
 		default:
 			assert(false);
 			return map_location();
@@ -363,7 +378,7 @@ double joystick_manager::get_angle() {
 
 	const double angle = (atan2(
 				  static_cast<double>(y_axis)
-				, static_cast<double>(x_axis))) * 180.0 / PI;
+				, static_cast<double>(x_axis))) * 180.0 / pi<double>();
 
 	return angle;
 }
@@ -371,13 +386,13 @@ double joystick_manager::get_angle() {
 
 const map_location joystick_manager::get_next_hex(int x_axis, int y_axis, map_location loc)  {
 
-	map_location new_loc = map_location::null_location;
+	map_location new_loc = map_location::null_location();
 
 	if (x_axis == 0) return (y_axis > 0) ? get_direction(loc, SOUTH) : get_direction(loc, NORTH);
 	if (y_axis == 0) return (x_axis > 0) ? get_direction(loc, EAST) : get_direction(loc, WEST);
 	const double angle = (atan2(
 			  static_cast<double>(y_axis)
-			, static_cast<double>(x_axis))) * 180.0 / PI;
+			, static_cast<double>(x_axis))) * 180.0 / pi<double>();
 
 	if (angle < -112.5 && angle > -157.5)
 		new_loc = get_direction(loc, NORTH_WEST);

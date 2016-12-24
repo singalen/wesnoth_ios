@@ -1,6 +1,5 @@
-/* $Id: ban.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Pauli Nieminen <paniemin@cc.hut.fi>
+   Copyright (C) 2008 - 2016 by Pauli Nieminen <paniemin@cc.hut.fi>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -23,8 +22,6 @@
 #include <queue>
 #include <ctime>
 
-#include <boost/shared_ptr.hpp>
-
 class config;
 
 namespace wesnothd {
@@ -33,7 +30,7 @@ namespace wesnothd {
 
 	std::ostream& operator<<(std::ostream& o, const banned& n);
 
-	typedef boost::shared_ptr<banned> banned_ptr;
+	typedef std::shared_ptr<banned> banned_ptr;
 
 	/** We want to move the lowest value to the top. */
 	struct banned_compare {
@@ -82,6 +79,7 @@ namespace wesnothd {
 
 		std::string get_human_end_time() const;
 		std::string get_human_start_time() const;
+		std::string get_human_time_span() const;
 		static std::string get_human_time(const time_t&);
 
 		std::string get_reason() const

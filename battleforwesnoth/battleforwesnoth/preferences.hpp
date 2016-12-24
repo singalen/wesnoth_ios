@@ -1,6 +1,5 @@
-/* $Id: preferences.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -18,13 +17,19 @@
 #ifndef PREFERENCES_HPP_INCLUDED
 #define PREFERENCES_HPP_INCLUDED
 
-class config;
 class display;
 
-#include "game_config.hpp"
-#include "terrain_translation.hpp"
+#include "config.hpp"
+#include "terrain/translation.hpp"
+
+#include <SDL.h>
 
 #include <utility>
+
+namespace hotkey {
+	class hotkey_item;
+}
+
 
 namespace preferences {
 
@@ -34,17 +39,29 @@ namespace preferences {
 		~base_manager();
 	};
 
+	extern const int min_window_width;
+	extern const int min_window_height;
+
+	extern const int def_window_width;
+	extern const int def_window_height;
+
+	extern const int min_font_scaling;
+	extern const int max_font_scaling;
+
 	void write_preferences();
 
 	void set(const std::string& key, const std::string &value);
 	void set(const std::string& key, char const *value);
-	void set(const std::string &key, bool value);
-	void set(const std::string &key, int value);
+	void set(const std::string& key, bool value);
+	void set(const std::string& key, int value);
+	void set(const std::string& key, const config::attribute_value& value);
 	void clear(const std::string& key);
 	void set_child(const std::string& key, const config& val);
 	const config &get_child(const std::string &key);
 	std::string get(const std::string& key);
-	bool get(const std::string &key, bool def);
+	std::string get(const std::string& key, const std::string& def);
+	bool get(const std::string& key, bool def);
+	config::attribute_value get_as_attribute(const std::string& key);
 	void erase(const std::string& key);
 	bool have_setting(const std::string& key);
 
@@ -52,23 +69,30 @@ namespace preferences {
 
 	config* get_prefs();
 
-	bool fullscreen();
-	void _set_fullscreen(bool ison);
+	std::string core_id();
+	void set_core_id(const std::string& root);
 
 	bool scroll_to_action();
-	void _set_scroll_to_action(bool ison);
-
-	int min_allowed_width();
-	int min_allowed_height();
+	void set_scroll_to_action(bool ison);
 
 	std::pair<int,int> resolution();
 	void _set_resolution(const std::pair<int,int>& res);
+
+	bool maximized();
+	void _set_maximized(bool ison);
+
+	bool fullscreen();
+	void _set_fullscreen(bool ison);
 
 	bool turbo();
 	void _set_turbo(bool ison);
 
 	double turbo_speed();
 	void save_turbo_speed(const double speed);
+
+	int font_scaling();
+	void set_font_scaling(int scale);
+	int font_scaled(int size);
 
 	bool idle_anim();
 	void _set_idle_anim(const bool ison);
@@ -78,6 +102,9 @@ namespace preferences {
 
 	std::string language();
 	void set_language(const std::string& s);
+
+	std::string gui_theme();
+	void set_gui_theme(const std::string& s);
 
 	// Don't rename it to sound() because of a gcc-3.3 branch bug,
 	// which will cause it to conflict with the sound namespace.
@@ -105,6 +132,9 @@ namespace preferences {
 	int music_volume();
 	void set_music_volume(int vol);
 
+	bool stop_music_in_background();
+	void set_stop_music_in_background(bool ison);
+
 	bool turn_bell();
 	bool set_turn_bell(bool ison);
 
@@ -116,9 +146,43 @@ namespace preferences {
 	// Proxies for preferences_dialog
 	void load_hotkeys();
 	void save_hotkeys();
+	void clear_hotkeys();
 
 	void add_alias(const std::string& alias, const std::string& command);
 	const config &get_alias();
+
+
+	std::string allied_color();
+	void set_allied_color(const std::string& color_id);
+
+	std::string enemy_color();
+	void set_enemy_color(const std::string& color_id);
+
+	std::string unmoved_color();
+	void set_unmoved_color(const std::string& color_id);
+
+	std::string partial_color();
+	void set_partial_color(const std::string& color_id);
+
+	std::string moved_color();
+	void set_moved_color(const std::string& color_id);
+
+
+	bool show_allied_orb();
+	void set_show_allied_orb(bool show_orb);
+
+	bool show_enemy_orb();
+	void set_show_enemy_orb(bool show_orb);
+
+	bool show_moved_orb();
+	void set_show_moved_orb(bool show_orb);
+
+	bool show_unmoved_orb();
+	void set_show_unmoved_orb(bool show_orb);
+
+	bool show_partial_orb();
+	void set_show_partial_orb(bool show_orb);
+
 
 	bool use_color_cursors();
 	void _set_color_cursors(bool value);
@@ -172,6 +236,24 @@ namespace preferences {
 	bool animate_map();
 	void set_animate_map(bool value);
 
+	bool animate_water();
+	void set_animate_water(bool value);
+
+	bool minimap_movement_coding();
+	void toggle_minimap_movement_coding();
+
+	bool minimap_terrain_coding();
+	void toggle_minimap_terrain_coding();
+
+	bool minimap_draw_units();
+	void toggle_minimap_draw_units();
+
+	bool minimap_draw_villages();
+	void toggle_minimap_draw_villages();
+
+	bool minimap_draw_terrain();
+	void toggle_minimap_draw_terrain();
+
 	bool show_standing_animations();
 	void set_show_standing_animations(bool value);
 
@@ -179,7 +261,7 @@ namespace preferences {
 	void set_show_fps(bool value);
 
 	bool ellipses();
-	void _set_ellipses(bool ison);
+	void set_ellipses(bool ison);
 
 	bool grid();
 	void _set_grid(bool ison);
@@ -188,6 +270,15 @@ namespace preferences {
 
 	bool use_twelve_hour_clock_format();
 	void set_use_twelve_hour_clock_format(bool value);
+
+	bool disable_auto_moves();
+	void set_disable_auto_moves(bool value);
+
+	bool disable_loadingscreen_animation();
+	void set_disable_loadingscreen_animation(bool value);
+
+	bool damage_prediction_allow_monte_carlo_simulation();
+	void set_damage_prediction_allow_monte_carlo_simulation(bool value);
 
 } // end namespace preferences
 

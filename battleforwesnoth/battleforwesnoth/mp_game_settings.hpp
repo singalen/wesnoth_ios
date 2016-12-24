@@ -1,6 +1,5 @@
-/* $Id: mp_game_settings.hpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2003 - 2012 by Jörg Hinrichs
+   Copyright (C) 2003 - 2016 by JÃ¶rg Hinrichs
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -19,17 +18,17 @@
 #define MP_GAME_SETTINGS_HPP_INCLUDED
 
 #include "config.hpp"
-#include "savegame_config.hpp"
+#include "gettext.hpp"
+#include "utils/make_enum.hpp"
+#include "version.hpp"
 
-struct mp_game_settings : public savegame::savegame_config
+#include <boost/optional.hpp>
+
+struct mp_game_settings
 {
 	mp_game_settings();
 	mp_game_settings(const config& cfg);
-	mp_game_settings(const mp_game_settings& settings);
 
-	void reset();
-
-	void set_from_config(const config& game_cfg);
 	config to_config() const;
 
 	// The items returned while configuring the game
@@ -38,9 +37,18 @@ struct mp_game_settings : public savegame::savegame_config
 	std::string password;
 	std::string hash;
 	std::string mp_era;
+	std::string mp_era_addon_id;
 	std::string mp_scenario;
+	std::string mp_scenario_name;
+	std::string mp_campaign;
+	std::vector<std::string> active_mods;
+	std::map<std::string, std::string> side_users;
 
+	bool show_connect;
+
+	int num_turns;
 	int village_gold;
+	int village_support;
 	int xp_modifier;
 	int mp_countdown_init_time;
 	int mp_countdown_reservoir_time;
@@ -52,17 +60,34 @@ struct mp_game_settings : public savegame::savegame_config
 	bool fog_game;
 	bool shroud_game;
 	bool allow_observers;
+	bool registered_users_only;
 	bool shuffle_sides;
-	bool share_view;
-	bool share_maps;
 
 	bool saved_game;
 
-	/**
-	 * If the game is to be randomly generated, the map generator
-	 * will create the scenario data in this variable
-	 */
-	config scenario_data;
+	MAKE_ENUM(RANDOM_FACTION_MODE,
+		(DEFAULT, N_("Independent"))
+		(NO_MIRROR, N_("No Mirror"))
+		(NO_ALLY_MIRROR, N_("No Ally Mirror"))
+	)
+
+	RANDOM_FACTION_MODE random_faction_mode;
+
+	config options;
+
+	struct addon_version_info {
+		boost::optional<version_info> version;
+		boost::optional<version_info> min_version;
+
+		explicit addon_version_info(const config &);
+		void write(config &) const;
+	};
+
+	std::map<std::string, addon_version_info> addons; // the key is the addon_id
+
+	// Takes a config with addon metadata (id =, version =, min_version =), formatted similarly to how mp_game_settings is written that is,
+	// and adds this as a requirement, updating the min_version if there was already an entry for this addon_id.
+	void update_addon_requirements(const config & addon_cfg);
 };
 
 #endif

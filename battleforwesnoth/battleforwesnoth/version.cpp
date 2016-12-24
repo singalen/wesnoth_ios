@@ -1,6 +1,5 @@
-/* $Id: version.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2008 - 2012 by Ignacio R. Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2008 - 2016 by Ignacio R. Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -14,27 +13,22 @@
 */
 
 #include "version.hpp"
+#include "lexical_cast.hpp"
 #include "serialization/string_utils.hpp"
-#include "util.hpp"
 
 #include <cassert>
+#include <functional>
 
-version_info::version_info(const version_info& o)
-	: nums_                 (o.nums_),
-	  special_              (o.special_),
-	  special_separator_    (o.special_separator_),
-	  sane_                 (o.sane_)
-{
-}
+#include <boost/algorithm/string.hpp>
 
 version_info::version_info()
-	: nums_(3,0), special_(""), special_separator_('\0'), sane_(true)
+	: nums_(3,0), special_(""), special_separator_('\0')
 {
 }
 
-version_info::version_info(unsigned int major, unsigned int minor, unsigned int revision_level, bool sane,
+version_info::version_info(unsigned int major, unsigned int minor, unsigned int revision_level,
                            char special_separator, const std::string& special)
-	: nums_(3,0), special_(special), special_separator_(special_separator), sane_(sane)
+	: nums_(3,0), special_(special), special_separator_(special_separator)
 {
 	nums_[0] = major;
 	nums_[1] = minor;
@@ -45,17 +39,16 @@ version_info::version_info(const std::string& str)
 	: nums_(3,0)
 	, special_("")
 	, special_separator_('\0')
-	, sane_(true)
 {
 	std::string v = str;
-	utils::strip(v);
+	boost::trim(v);
 
 	if(v.empty())
 		return;
 
 	//
 	// The breakpoint is where the "special" version component begins.
-	// For 1.1.2a it would at the index of the char 'a'. For 1.1.4+svn it is at '+'.
+	// For 1.1.2a it would at the index of the char 'a'. For 1.1.4+dev it is at '+'.
 	//
 	// For 1.5.2 it is at npos.
 	//
@@ -91,27 +84,9 @@ version_info::version_info(const std::string& str)
 		nums_.resize(s, 0);
 	}
 
-	try {
-		for(size_t i = 0; (i < s); ++i) {
-			nums_[i] = lexical_cast<unsigned int>(components[i]);
-		}
+	for(size_t i = 0; (i < s); ++i) {
+		nums_[i] = lexical_cast_default<unsigned int>(components[i]);
 	}
-	catch(bad_lexical_cast const&) {
-		// FIXME: actually, this is virtually impossible to occur
-		// due to the find_first_not_of() call above...
-		sane_ = false;
-	}
-}
-
-void version_info::assign(const version_info& o)
-{
-	if(&o == this) return;
-
-	this->sane_ = o.sane_;
-	this->special_separator_ = o.special_separator_;
-	this->special_ = o.special_;
-	this->nums_.clear();
-	this->nums_ = o.nums_;
 }
 
 std::string version_info::str() const
@@ -163,7 +138,7 @@ unsigned int version_info::revision_level() const {
 }
 
 bool version_info::is_canonical() const {
-	return nums_.size() <= 3 && sane_;
+	return nums_.size() <= 3;
 }
 
 namespace {
@@ -187,8 +162,8 @@ namespace {
 			return false;
 		}
 
-		unsigned int const& lvalue = l[k];
-		unsigned int const& rvalue = r[k];
+		const unsigned int& lvalue = l[k];
+		const unsigned int& rvalue = r[k];
 
 		_Toperator o;
 		_Tfallback_operator fallback_o;
@@ -206,8 +181,6 @@ namespace {
 #endif
 	bool version_numbers_comparison_internal(const version_info& l, const version_info& r, COMP_TYPE o)
 	{
-		if((!l.good()) || !r.good()) throw version_info::not_sane_exception();
-
 		std::vector<unsigned int> lc = l.components();
 		std::vector<unsigned int> rc = r.components();
 
@@ -228,8 +201,8 @@ namespace {
 		{
 			case EQUAL: case NOT_EQUAL: {
 				for(size_t i = 0; i < csize; ++i) {
-					unsigned int const& lvalue = lc[i];
-					unsigned int const& rvalue = rc[i];
+					const unsigned int& lvalue = lc[i];
+					const unsigned int& rvalue = rc[i];
 					if(o == NOT_EQUAL) {
 						if((result = (lvalue != rvalue))) {
 #ifdef _MSC_VER

@@ -1,6 +1,5 @@
-/* $Id: campaign_selection.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2009 - 2012 by Mark de Wever <koraq@xs4all.nl>
+   Copyright (C) 2009 - 2016 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,7 +16,11 @@
 
 #include "gui/dialogs/campaign_selection.hpp"
 
+#include "game_preferences.hpp"
+#include "gui/auxiliary/find_widget.hpp"
 #include "gui/dialogs/helper.hpp"
+#include "gui/dialogs/campaign_settings.hpp"
+#include "gui/widgets/button.hpp"
 #include "gui/widgets/image.hpp"
 #ifdef GUI2_EXPERIMENTAL_LISTBOX
 #include "gui/widgets/list.hpp"
@@ -29,13 +32,18 @@
 #include "gui/widgets/settings.hpp"
 #include "gui/widgets/tree_view.hpp"
 #include "gui/widgets/tree_view_node.hpp"
+#include "gui/widgets/toggle_button.hpp"
 #include "gui/widgets/window.hpp"
+#include "lexical_cast.hpp"
 #include "serialization/string_utils.hpp"
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
+#include "utils/functional.hpp"
+#include "video.hpp"
 
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /*WIKI
  * @page = GUIWindowDefinitionWML
@@ -48,13 +56,13 @@ namespace gui2 {
  *
  * @begin{table}{dialog_widgets}
  *
- * campaign_list & & listbox & m &
- *         A listbox that contains all available campaigns. $
+ * campaign_tree & & tree_view & m &
+ *         A tree_view that contains all available campaigns. $
  *
  * -icon & & image & o &
  *         The icon for the campaign. $
  *
- * -name & & control & o &
+ * -name & & styled_widget & o &
  *         The name of the campaign. $
  *
  * -victory & & image & o &
@@ -69,7 +77,7 @@ namespace gui2 {
  * -image & & image & o &
  *         The image for the campaign. $
  *
- * -description & & control & o &
+ * -description & & styled_widget & o &
  *         The description of the campaign. $
  *
  * @end{table}
@@ -77,193 +85,149 @@ namespace gui2 {
 
 REGISTER_DIALOG(campaign_selection)
 
-void tcampaign_selection::campaign_selected(twindow& window)
+void campaign_selection::campaign_selected(window& window)
 {
-	if(new_widgets && false) {
-		ttree_view& tree = find_widget<ttree_view>(&window
-				, "campaign_tree"
-				, false);
+	tree_view& tree = find_widget<tree_view>(&window, "campaign_tree", false);
 
-		if(tree.empty()) {
-			return;
-		}
-
-		assert(tree.selected_item());
-		const unsigned choice =
-				lexical_cast<unsigned>(tree.selected_item()->id());
-
-		tmulti_page& multi_page = find_widget<tmulti_page>(
-				&window, "campaign_details", false);
-		multi_page.select_page(choice);
-	} else {
-		const int selected_row =
-				find_widget<tlistbox>(&window, "campaign_list", false)
-					.get_selected_row();
-
-		tmulti_page& multi_page = find_widget<tmulti_page>(
-				&window, "campaign_details", false);
-
-		multi_page.select_page(selected_row);
+	if(tree.empty()) {
+		return;
 	}
+
+	assert(tree.selected_item());
+	if(tree.selected_item()->id() != "") {
+		const unsigned choice = lexical_cast<unsigned>(tree.selected_item()->id());
+
+		multi_page& pages = find_widget<multi_page>(&window, "campaign_details", false);
+		pages.select_page(choice);
+		engine_.set_current_level(choice);
+	}
+
 }
 
-void tcampaign_selection::pre_show(CVideo& /*video*/, twindow& window)
+void campaign_selection::show_settings(CVideo& video) {
+	campaign_settings settings_dlg(engine_);
+	settings_dlg.show(video);
+}
+
+void campaign_selection::pre_show(window& window)
 {
-	if(new_widgets && false) {
-		/***** Setup campaign tree. *****/
-		ttree_view& tree = find_widget<ttree_view>(&window
-				, "campaign_tree"
-				, false);
+	/***** Setup campaign tree. *****/
+	tree_view& tree = find_widget<tree_view>(&window, "campaign_tree", false);
 
-		tree.set_selection_change_callback(boost::bind(
-				  &tcampaign_selection::campaign_selected
-				, this
-				, boost::ref(window)));
+	tree.set_selection_change_callback(
+		std::bind(&campaign_selection::campaign_selected, this, std::ref(window)));
 
-		window.keyboard_capture(&tree);
+	window.keyboard_capture(&tree);
 
-		string_map tree_group_field;
-		std::map<std::string, string_map> tree_group_item;
+	/***** Setup campaign details. *****/
+	multi_page& pages = find_widget<multi_page>(&window, "campaign_details", false);
 
-		tree_group_field["label"] = "Campaigns won";
-		tree_group_item["tree_view_node_label"] = tree_group_field;
-		ttree_view_node& completed =
-				tree.add_node("campaign_group", tree_group_item);
+	unsigned id = 0;
+	for(const auto & level : engine_.get_levels_by_type_unfiltered(ng::level::TYPE::SP_CAMPAIGN)) {
+		const config& campaign = level->data();
 
-		tree_group_field["label"] = "Campaigns to conquer";
-		tree_group_item["tree_view_node_label"] = tree_group_field;
-		ttree_view_node& not_completed =
-				tree.add_node("campaign_group", tree_group_item);
+		/*** Add tree item ***/
+		std::map<std::string, string_map> data;
+		string_map item;
 
-		/***** Setup campaign details. *****/
-		tmulti_page& multi_page = find_widget<tmulti_page>(
-				&window, "campaign_details", false);
+		item["label"] = campaign["icon"];
+		data.emplace("icon", item);
 
-		unsigned id = 0;
-		BOOST_FOREACH(const config &campaign, campaigns_) {
+		item["label"] = campaign["name"];
+		data.emplace("name", item);
+
+		item["label"] = campaign["completed"].to_bool() ? "misc/laurel.png" : "misc/blank-hex.png";
+		data.emplace("victory", item);
+
+		tree.add_node("campaign", data).set_id(std::to_string(id++));
+
+		/*** Add detail item ***/
+		item.clear();
+		data.clear();
+
+		item["label"] = campaign["description"];
+		item["use_markup"] = "true";
+
+		if(!campaign["description_alignment"].empty()) {
+			item["text_alignment"] = campaign["description_alignment"];
+		}
+
+		data.emplace("description", item);
+
+		item["label"] = campaign["image"];
+		data.emplace("image", item);
+
+		pages.add_page(data);
+	}
+
+	if(!engine_.get_const_extras_by_type(ng::create_engine::MOD).empty()) {
+		std::map<std::string, string_map> data;
+		string_map item;
+
+		item["label"] = "Modifications";
+		data.emplace("tree_view_node_label", item);
+
+		tree_view_node& mods_node = tree.add_node("campaign_group", data);
+		std::vector<std::string> enabled = engine_.active_mods();
+
+		id = 0;
+		for(const auto& mod : engine_.get_const_extras_by_type(ng::create_engine::MOD)) {
+			data.clear();
+			item.clear();
+
+			bool active = std::find(enabled.begin(), enabled.end(), mod->id) != enabled.end();
 
 			/*** Add tree item ***/
-			tree_group_field["label"] = campaign["icon"];
-			tree_group_item["icon"] = tree_group_field;
+			item["label"] = mod->name;
+			data.emplace("checkb", item);
 
-			tree_group_field["label"] = campaign["name"];
-			tree_group_item["name"] = tree_group_field;
+			tree_view_node& node = mods_node.add_child("modification", data);
 
-			if (campaign["completed"].to_bool()) {
-				completed.add_child("campaign", tree_group_item)
-						.set_id(lexical_cast<std::string>(id++));
-			} else {
-				not_completed.add_child("campaign", tree_group_item)
-						.set_id(lexical_cast<std::string>(id++));
-			}
+			toggle_button* checkbox = dynamic_cast<toggle_button*>(node.find("checkb", true));
+			VALIDATE(checkbox, missing_widget("checkb"));
 
-			/*** Add detail item ***/
-			string_map detail_item;
-			std::map<std::string, string_map> detail_page;
+			checkbox->set_value(active);
+			checkbox->set_label(mod->name);
+			checkbox->set_callback_state_change(std::bind(&campaign_selection::mod_toggled, this, id, _1));
 
-			detail_item["label"] = campaign["description"];
-			detail_item["use_markup"] = "true";
-			detail_page.insert(std::make_pair("description", detail_item));
-#ifndef USE_TINY_GUI
-			detail_item["label"] = campaign["image"];
-			detail_page.insert(std::make_pair("image", detail_item));
-#endif
-			multi_page.add_page(detail_page);
-		}
-
-		if(completed.empty()) {
-			tree.remove_node(&completed);
-		}
-
-		if(not_completed.empty()) {
-			tree.remove_node(&not_completed);
-		}
-
-	} else {
-		/***** Hide the tree view. *****/
-		if(ttree_view* tree = find_widget<ttree_view>(
-				&window, "campaign_tree", false, false)) {
-
-			tree->set_visible(twidget::INVISIBLE);
-		}
-
-		/***** Setup campaign list. *****/
-		tlistbox& list =
-				find_widget<tlistbox>(&window, "campaign_list", false);
-#ifdef GUI2_EXPERIMENTAL_LISTBOX
-		connect_signal_notify_modified(list, boost::bind(
-				  &tcampaign_selection::campaign_selected
-				, this
-				, boost::ref(window)));
-#else
-		list.set_callback_value_change(dialog_callback
-				<tcampaign_selection
-				, &tcampaign_selection::campaign_selected>);
-#endif
-			window.keyboard_capture(&list);
-
-		/***** Setup campaign details. *****/
-		tmulti_page& multi_page = find_widget<tmulti_page>(
-				&window, "campaign_details", false);
-
-		BOOST_FOREACH(const config &c, campaigns_) {
-
-			/*** Add list item ***/
-			string_map list_item;
-			std::map<std::string, string_map> list_item_item;
-
-			list_item["label"] = c["icon"];
-			list_item_item.insert(std::make_pair("icon", list_item));
-
-			list_item["label"] = c["name"];
-			list_item_item.insert(std::make_pair("name", list_item));
-
-			list.add_row(list_item_item);
-
-			tgrid* grid = list.get_row_grid(list.get_item_count() - 1);
-			assert(grid);
-
-			twidget* widget = grid->find("victory", false);
-			if (widget && !c["completed"].to_bool()) {
-				widget->set_visible(twidget::HIDDEN);
-			}
-
-			/*** Add detail item ***/
-			string_map detail_item;
-			std::map<std::string, string_map> detail_page;
-
-			detail_item["label"] = c["description"];
-			detail_item["use_markup"] = "true";
-			detail_page.insert(std::make_pair("description", detail_item));
-#ifndef USE_TINY_GUI
-			detail_item["label"] = c["image"];
-			detail_page.insert(std::make_pair("image", detail_item));
-#endif
-			multi_page.add_page(detail_page);
+			++id;
 		}
 	}
+
 	campaign_selected(window);
-}
 
-void tcampaign_selection::post_show(twindow& window)
-{
-	if(new_widgets && false) {
-		ttree_view& tree = find_widget<ttree_view>(&window
-				, "campaign_tree"
-				, false);
-
-		if(tree.empty()) {
-			return;
-		}
-
-		assert(tree.selected_item());
-		choice_ = lexical_cast<unsigned>(tree.selected_item()->id());
-
-	} else {
-		choice_ = find_widget<tlistbox>(
-				&window, "campaign_list", false).get_selected_row();
+	/***** Setup advanced settings button *****/
+	button* advanced_settings_button =
+			find_widget<button>(&window, "advanced_settings", false, false);
+	if(advanced_settings_button) {
+		advanced_settings_button->connect_click_handler(
+			std::bind(&campaign_selection::show_settings, this, std::ref(window.video())));
 	}
 }
 
-} // namespace gui2
+void campaign_selection::post_show(window& window)
+{
+	tree_view& tree = find_widget<tree_view>(&window, "campaign_tree", false);
 
+	if(tree.empty()) {
+		return;
+	}
+
+	assert(tree.selected_item());
+	if(tree.selected_item()->id() != "") {
+		choice_ = lexical_cast<unsigned>(tree.selected_item()->id());
+	}
+
+	deterministic_ = find_widget<toggle_button>(&window, "checkbox_deterministic", false).get_value_bool();
+
+	preferences::set_modifications(engine_.active_mods(), false);
+}
+
+void campaign_selection::mod_toggled(int id, widget &)
+{
+	engine_.set_current_mod_index(id);
+	engine_.toggle_current_mod();
+}
+
+} // namespace dialogs
+} // namespace gui2

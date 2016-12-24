@@ -1,6 +1,5 @@
-/* $Id: attack_prediction_display.cpp 52533 2012-01-07 02:35:17Z shadowmaster $ */
 /*
-   Copyright (C) 2006 - 2012 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
+   Copyright (C) 2006 - 2016 by Joerg Hinrichs <joerg.hinrichs@alice-dsl.de>
    wesnoth playturn Copyright (C) 2003 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
@@ -16,13 +15,17 @@
 
 #include "attack_prediction_display.hpp"
 
+#include "actions/attack.hpp"
 #include "attack_prediction.hpp"
 #include "gettext.hpp"
+#include "game_board.hpp"
 #include "game_display.hpp"
 #include "language.hpp"
-#include "marked-up_text.hpp"
+#include "font/marked-up_text.hpp"
+#include "font/standard_colors.hpp"
 #include "resources.hpp"
-#include "unit_abilities.hpp"
+#include "units/unit.hpp"
+#include "units/abilities.hpp"
 
 // Conversion routine for both unscathed and damage change percentage.
 static void format_prob(char str_buf[10], double prob)
@@ -45,14 +48,13 @@ const int battle_prediction_pane::inter_column_gap_ = 30;
 const int battle_prediction_pane::inter_units_gap_ = 30;
 const int battle_prediction_pane::max_hp_distrib_rows_ = 10;
 
-battle_prediction_pane::battle_prediction_pane(const battle_context &bc,
+battle_prediction_pane::battle_prediction_pane(battle_context &bc,
 		const map_location &attacker_loc, const map_location &defender_loc) :
 	gui::preview_pane(resources::screen->video()),
-	bc_(bc),
 	attacker_loc_(attacker_loc),
 	defender_loc_(defender_loc),
-	attacker_(*resources::units->find(attacker_loc)),
-	defender_(*resources::units->find(defender_loc)),
+	attacker_(*resources::gameboard->units().find(attacker_loc)),
+	defender_(*resources::gameboard->units().find(defender_loc)),
 	attacker_label_(),
 	defender_label_(),
 	attacker_label_width_(0),
@@ -84,9 +86,8 @@ battle_prediction_pane::battle_prediction_pane(const battle_context &bc,
 	dialog_height_(0)
 {
 	// Predict the battle outcome.
-	combatant attacker_combatant(bc.get_attacker_stats());
-	combatant defender_combatant(bc.get_defender_stats());
-	attacker_combatant.fight(defender_combatant);
+	const combatant& attacker_combatant = bc.get_attacker_combatant();
+	const combatant& defender_combatant = bc.get_defender_combatant();
 
 	const battle_context_unit_stats& attacker_stats = bc.get_attacker_stats();
 	const battle_context_unit_stats& defender_stats = bc.get_defender_stats();
@@ -149,19 +150,19 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 	char str_buf[10];
 
 	// With a weapon.
-	if(stats.weapon != NULL) {
+	if(stats.weapon != nullptr) {
 
 		// Set specials context (for safety, it should not have changed normally).
 		const attack_type *weapon = stats.weapon;
-		weapon->set_specials_context(u_loc, opp_loc, *resources::units, stats.is_attacker, opp_weapon);
+		weapon->set_specials_context(u_loc, opp_loc, stats.is_attacker, opp_weapon);
 
 		// Get damage modifiers.
 		unit_ability_list dmg_specials = weapon->get_specials("damage");
 		unit_abilities::effect dmg_effect(dmg_specials, weapon->damage(), stats.backstab_pos);
 
 		// Get the SET damage modifier, if any.
-		const unit_abilities::individual_effect *set_dmg_effect = NULL;
-		unit_abilities::effect_list::const_iterator i;
+		const unit_abilities::individual_effect *set_dmg_effect = nullptr;
+		unit_abilities::effect::const_iterator i;
 		for(i = dmg_effect.begin(); i != dmg_effect.end(); ++i) {
 			if(i->type == unit_abilities::SET) {
 				set_dmg_effect = &*i;
@@ -170,7 +171,7 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 		}
 
 		// Either user the SET modifier or the base weapon damage.
-		if(set_dmg_effect == NULL) {
+		if(set_dmg_effect == nullptr) {
 			left_strings.push_back(weapon->name());
 			str.str("");
 			str << weapon->damage();
@@ -200,7 +201,7 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 			if(i->type == unit_abilities::MUL) {
 				left_strings.push_back((*i->ability)["name"]);
 				str.str("");
-				str << "* " << (i->value / 100);
+				str << "× " << (i->value / 100);
 				if(i->value % 100) {
 					str << "." << ((i->value % 100) / 10);
 					if(i->value % 10) str << (i->value % 10);
@@ -210,7 +211,7 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 		}
 
 		// Time of day modifier.
-		int tod_modifier = combat_modifier(u_loc, u.alignment(), u.is_fearless());
+		int tod_modifier = combat_modifier(resources::gameboard->units(), resources::gameboard->map(), u_loc, u.alignment(), u.is_fearless());
 		if(tod_modifier != 0) {
 			left_strings.push_back(_("Time of day"));
 			str.str("");
@@ -220,7 +221,7 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 
 		// Leadership bonus.
 		int leadership_bonus = 0;
-		under_leadership(*resources::units, u_loc, &leadership_bonus);
+		under_leadership(resources::gameboard->units(), u_loc, &leadership_bonus);
 		if(leadership_bonus != 0) {
 			left_strings.push_back(_("Leadership"));
 			str.str("");
@@ -240,7 +241,7 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 			str << string_table["type_" + weapon->type()];
 			left_strings.push_back(str.str());
 			str.str("");
-			str << "* " << (resistance_modifier / 100) << "." << ((resistance_modifier % 100) / 10);
+			str << "× " << (resistance_modifier / 100) << "." << ((resistance_modifier % 100) / 10);
 			right_strings.push_back(str.str());
 		}
 
@@ -253,7 +254,7 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 		// Total damage.
 		left_strings.push_back(_("Total damage"));
 		str.str("");
-		str << stats.damage << utils::unicode_en_dash << stats.num_blows << " (" << stats.chance_to_hit << "%)";
+		str << stats.damage << font::weapon_numbers_sep << stats.num_blows << " (" << stats.chance_to_hit << "%)";
 		right_strings.push_back(str.str());
 
 	// Without a weapon.
@@ -267,7 +268,7 @@ void battle_prediction_pane::get_unit_strings(const battle_context_unit_stats& s
 	format_prob(str_buf, u_unscathed);
 	right_strings.push_back(str_buf);
 
-#if 0 // might not be en English!
+#if 0 // might not be in English!
 	// Fix capitalization of left strings.
 	for(int i = 0; i < (int) left_strings.size(); i++)
 		if(left_strings[i].size() > 0) left_strings[i][0] = toupper(left_strings[i][0]);
@@ -342,7 +343,7 @@ void battle_prediction_pane::draw_unit(int x_off, int damage_line_skip, int left
 									   const std::string& label, int label_width,
 									   surface& hp_distrib, int hp_distrib_width)
 {
-	surface screen = resources::screen->get_screen_surface();
+	surface& screen = resources::screen->get_screen_surface();
 	int i;
 
 	// NOTE. A preview pane is not made to be used alone and it is not
@@ -429,33 +430,33 @@ void battle_prediction_pane::get_hp_distrib_surface(const std::vector<std::pair<
 	// Create the surface.
 	surf = create_neutral_surface(width, height);
 
-	// Dsiable alpha channel to avoid problem with sdl_blit
-	SDL_SetAlpha(surf, 0, SDL_ALPHA_OPAQUE);
+	// Disable alpha channel to avoid problem with sdl_blit
+	adjust_surface_alpha(surf, SDL_ALPHA_OPAQUE);
 
-	SDL_Rect clip_rect = create_rect(0, 0, width, height);
-	Uint32 grey_color = SDL_MapRGBA(surf->format, 0xb7, 0xc1, 0xc1, 255);
+	SDL_Rect clip_rect = sdl::create_rect(0, 0, width, height);
+	Uint32 grey_color = SDL_MapRGBA(surf->format, 0xb7, 0xc1, 0xc1, SDL_ALPHA_OPAQUE);
 
-	Uint32 background_color = SDL_MapRGBA(surf->format, 25, 25, 25, 255);
-	sdl_fill_rect(surf, &clip_rect, background_color);
+	Uint32 background_color = SDL_MapRGBA(surf->format, 25, 25, 25, SDL_ALPHA_OPAQUE);
+	sdl::fill_rect(surf, &clip_rect, background_color);
 
 	// Draw the surrounding borders and separators.
-	SDL_Rect top_border_rect = create_rect(0, 0, width, 2);
-	sdl_fill_rect(surf, &top_border_rect, grey_color);
+	SDL_Rect top_border_rect = sdl::create_rect(0, 0, width, 2);
+	sdl::fill_rect(surf, &top_border_rect, grey_color);
 
-	SDL_Rect bottom_border_rect = create_rect(0, height - 2, width, 2);
-	sdl_fill_rect(surf, &bottom_border_rect, grey_color);
+	SDL_Rect bottom_border_rect = sdl::create_rect(0, height - 2, width, 2);
+	sdl::fill_rect(surf, &bottom_border_rect, grey_color);
 
-	SDL_Rect left_border_rect = create_rect(0, 0, 2, height);
-	sdl_fill_rect(surf, &left_border_rect, grey_color);
+	SDL_Rect left_border_rect = sdl::create_rect(0, 0, 2, height);
+	sdl::fill_rect(surf, &left_border_rect, grey_color);
 
-	SDL_Rect right_border_rect = create_rect(width - 2, 0, 2, height);
-	sdl_fill_rect(surf, &right_border_rect, grey_color);
+	SDL_Rect right_border_rect = sdl::create_rect(width - 2, 0, 2, height);
+	sdl::fill_rect(surf, &right_border_rect, grey_color);
 
-	SDL_Rect hp_sep_rect = create_rect(hp_sep, 0, 2, height);
-	sdl_fill_rect(surf, &hp_sep_rect, grey_color);
+	SDL_Rect hp_sep_rect = sdl::create_rect(hp_sep, 0, 2, height);
+	sdl::fill_rect(surf, &hp_sep_rect, grey_color);
 
-	SDL_Rect percent_sep_rect = create_rect(width - percent_sep - 2, 0, 2, height);
-	sdl_fill_rect(surf, &percent_sep_rect, grey_color);
+	SDL_Rect percent_sep_rect = sdl::create_rect(width - percent_sep - 2, 0, 2, height);
+	sdl::fill_rect(surf, &percent_sep_rect, grey_color);
 
 	// Draw the rows (lower HP values are at the bottom).
 	for(int i = 0; i < static_cast<int>(hp_prob_vector.size()); i++) {
@@ -465,11 +466,11 @@ void battle_prediction_pane::get_hp_distrib_surface(const std::vector<std::pair<
 		int hp = hp_prob_vector[hp_prob_vector.size() - i - 1].first;
 		double prob = hp_prob_vector[hp_prob_vector.size() - i - 1].second;
 
-		SDL_Color row_color;
+		color_t row_color;
 
 		// Death line is red.
 		if(hp == 0) {
-			SDL_Color color = {0xe5, 0, 0, 0};
+			color_t color = {0xe5, 0, 0, SDL_ALPHA_OPAQUE};
 			row_color = color;
 		}
 
@@ -477,17 +478,17 @@ void battle_prediction_pane::get_hp_distrib_surface(const std::vector<std::pair<
 		else if(hp < static_cast<int>(stats.hp)) {
 			// Stone is grey.
 			if(opp_stats.petrifies) {
-				SDL_Color color = {0x9a, 0x9a, 0x9a, 0};
+				color_t color = {0x9a, 0x9a, 0x9a, SDL_ALPHA_OPAQUE};
 				row_color = color;
 			} else {
-				SDL_Color color = {0xf4, 0xc9, 0, 0};
+				color_t color = {0xf4, 0xc9, 0, SDL_ALPHA_OPAQUE};
 				row_color = color;
 			}
 		}
 
 		// Current hitpoints value and above is green.
 		else {
-			SDL_Color color = {0x08, 0xca, 0, 0};
+			color_t color = {0x08, 0xca, 0, SDL_ALPHA_OPAQUE};
 			row_color = color;
 		}
 
@@ -502,17 +503,17 @@ void battle_prediction_pane::get_hp_distrib_surface(const std::vector<std::pair<
 
 		int bar_len = std::max<int>(static_cast<int>((prob * (bar_space - 4)) + 0.5), 2);
 
-		SDL_Rect bar_rect_1 = create_rect(hp_sep + 4, 6 + (fs + 2) * i, bar_len, 8);
-		sdl_fill_rect(surf, &bar_rect_1, blend_rgb(surf, row_color.r, row_color.g, row_color.b, 100));
+		SDL_Rect bar_rect_1 = sdl::create_rect(hp_sep + 4, 6 + (fs + 2) * i, bar_len, 8);
+		sdl::fill_rect(surf, &bar_rect_1, blend_rgba(surf, row_color.r, row_color.g, row_color.b, row_color.a, 100));
 
-		SDL_Rect bar_rect_2 = create_rect(hp_sep + 4, 7 + (fs + 2) * i, bar_len, 6);
-		sdl_fill_rect(surf, &bar_rect_2, blend_rgb(surf, row_color.r, row_color.g, row_color.b, 66));
+		SDL_Rect bar_rect_2 = sdl::create_rect(hp_sep + 4, 7 + (fs + 2) * i, bar_len, 6);
+		sdl::fill_rect(surf, &bar_rect_2, blend_rgba(surf, row_color.r, row_color.g, row_color.b, row_color.a, 66));
 
-		SDL_Rect bar_rect_3 = create_rect(hp_sep + 4, 8 + (fs + 2) * i, bar_len, 4);
-		sdl_fill_rect(surf, &bar_rect_3, blend_rgb(surf, row_color.r, row_color.g, row_color.b, 33));
+		SDL_Rect bar_rect_3 = sdl::create_rect(hp_sep + 4, 8 + (fs + 2) * i, bar_len, 4);
+		sdl::fill_rect(surf, &bar_rect_3, blend_rgba(surf, row_color.r, row_color.g, row_color.b, row_color.a, 33));
 
-		SDL_Rect bar_rect_4 = create_rect(hp_sep + 4, 9 + (fs + 2) * i, bar_len, 2);
-		sdl_fill_rect(surf, &bar_rect_4, blend_rgb(surf, row_color.r, row_color.g, row_color.b, 0));
+		SDL_Rect bar_rect_4 = sdl::create_rect(hp_sep + 4, 9 + (fs + 2) * i, bar_len, 2);
+		sdl::fill_rect(surf, &bar_rect_4, blend_rgba(surf, row_color.r, row_color.g, row_color.b, row_color.a, 0));
 
 		// Draw probability percentage, aligned right.
 		format_prob(str_buf, prob);
@@ -521,31 +522,3 @@ void battle_prediction_pane::get_hp_distrib_surface(const std::vector<std::pair<
 						 width - prob_width - 4, 2 + (fs + 2) * i, 0, TTF_STYLE_NORMAL);
 	}
 }
-
-Uint32 battle_prediction_pane::blend_rgb(const surface& surf, unsigned char r, unsigned char g, unsigned char b, unsigned char drop)
-{
-	// We simply decrement each component.
-	if(r < drop) r = 0; else r -= drop;
-	if(g < drop) g = 0; else g -= drop;
-	if(b < drop) b = 0; else b -= drop;
-
-	return SDL_MapRGB(surf->format, r, g, b);
-}
-
-attack_prediction_displayer::RESULT attack_prediction_displayer::button_pressed(int selection)
-{
-	// Get the selected weapon, if any.
-	const size_t index = size_t(selection);
-
-	if(index < bc_vector_.size()) {
-		battle_prediction_pane battle_pane(bc_vector_[index], attacker_loc_, defender_loc_);
-		std::vector<gui::preview_pane*> preview_panes;
-		preview_panes.push_back(&battle_pane);
-
-		gui::show_dialog(*resources::screen, NULL, _("Damage Calculations"), "", gui::OK_ONLY, NULL, &preview_panes);
-	}
-
-	return gui::CONTINUE_DIALOG;
-}
-
-

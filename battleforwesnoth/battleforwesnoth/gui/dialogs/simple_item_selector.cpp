@@ -1,6 +1,5 @@
-/* $Id: simple_item_selector.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2010 - 2012 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
+   Copyright (C) 2010 - 2016 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,19 +16,21 @@
 
 #include "gui/dialogs/simple_item_selector.hpp"
 
+#include "gui/auxiliary/find_widget.hpp"
 #include "gui/widgets/button.hpp"
 #include "gui/widgets/label.hpp"
 #ifdef GUI2_EXPERIMENTAL_LISTBOX
-	#include "gui/widgets/list.hpp"
+#include "gui/widgets/list.hpp"
 #else
-	#include "gui/widgets/listbox.hpp"
+#include "gui/widgets/listbox.hpp"
 #endif
 #include "gui/widgets/settings.hpp"
 #include "gui/widgets/window.hpp"
 
-#include <boost/foreach.hpp>
-
-namespace gui2 {
+namespace gui2
+{
+namespace dialogs
+{
 
 /*WIKI
  * @page = GUIWindowDefinitionWML
@@ -44,13 +45,13 @@ namespace gui2 {
  * title & & label & m &
  *         Dialog title label. $
  *
- * message & & control & m &
+ * message & & styled_widget & m &
  *         Text label displaying a description or instructions. $
  *
  * listbox & & listbox & m &
  *         Listbox displaying user choices. $
  *
- * -item & & control & m &
+ * -item & & styled_widget & m &
  *         Widget which shows a listbox item label. $
  *
  * ok & & button & m &
@@ -64,7 +65,11 @@ namespace gui2 {
 
 REGISTER_DIALOG(simple_item_selector)
 
-tsimple_item_selector::tsimple_item_selector(const std::string& title, const std::string& message, list_type const& items, bool title_uses_markup, bool message_uses_markup)
+simple_item_selector::simple_item_selector(const std::string& title,
+											 const std::string& message,
+											 list_type const& items,
+											 bool title_uses_markup,
+											 bool message_uses_markup)
 	: index_(-1)
 	, single_button_(false)
 	, items_(items)
@@ -75,17 +80,18 @@ tsimple_item_selector::tsimple_item_selector(const std::string& title, const std
 	register_label("message", true, message, message_uses_markup);
 }
 
-void tsimple_item_selector::pre_show(CVideo& /*video*/, twindow& window)
+void simple_item_selector::pre_show(window& window)
 {
-	tlistbox& list = find_widget<tlistbox>(&window, "listbox", false);
+	listbox& list = find_widget<listbox>(&window, "listbox", false);
 	window.keyboard_capture(&list);
 
-	BOOST_FOREACH(const tsimple_item_selector::item_type& it, items_) {
+	for(const auto & it : items_)
+	{
 		std::map<std::string, string_map> data;
 		string_map column;
 
 		column["label"] = it;
-		data.insert(std::make_pair("item", column));
+		data.emplace("item", column);
 
 		list.add_row(data);
 	}
@@ -96,8 +102,8 @@ void tsimple_item_selector::pre_show(CVideo& /*video*/, twindow& window)
 
 	index_ = -1;
 
-	tbutton& button_ok = find_widget<tbutton>(&window, "ok", false);
-	tbutton& button_cancel = find_widget<tbutton>(&window, "cancel", false);
+	button& button_ok = find_widget<button>(&window, "ok", false);
+	button& button_cancel = find_widget<button>(&window, "cancel", false);
 
 	if(!ok_label_.empty()) {
 		button_ok.set_label(ok_label_);
@@ -108,18 +114,18 @@ void tsimple_item_selector::pre_show(CVideo& /*video*/, twindow& window)
 	}
 
 	if(single_button_) {
-		button_cancel.set_visible(gui2::twidget::INVISIBLE);
+		button_cancel.set_visible(gui2::widget::visibility::invisible);
 	}
 }
 
-void tsimple_item_selector::post_show(twindow& window)
+void simple_item_selector::post_show(window& window)
 {
-	if(get_retval() != twindow::OK) {
+	if(get_retval() != window::OK) {
 		return;
 	}
 
-	tlistbox& list = find_widget<tlistbox>(&window, "listbox", false);
+	listbox& list = find_widget<listbox>(&window, "listbox", false);
 	index_ = list.get_selected_row();
 }
-
-}
+} // namespace dialogs
+} // namespace gui2

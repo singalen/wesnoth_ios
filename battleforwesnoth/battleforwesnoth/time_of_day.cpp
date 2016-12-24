@@ -1,6 +1,5 @@
-/* $Id: time_of_day.cpp 54625 2012-07-08 14:26:21Z loonycyborg $ */
 /*
-   Copyright (C) 2003 - 2012 by David White <dave@whitevine.net>
+   Copyright (C) 2003 - 2016 by David White <dave@whitevine.net>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
 
    This program is free software; you can redistribute it and/or modify
@@ -17,8 +16,9 @@
 
 #include "config.hpp"
 #include "time_of_day.hpp"
+#include "gettext.hpp"
 
-#include <boost/foreach.hpp>
+#include <iostream>
 
 std::ostream &operator<<(std::ostream &s, const tod_color& c){
 	s << c.r << "," << c.g << "," << c.b;
@@ -29,7 +29,9 @@ std::ostream &operator<<(std::ostream &s, const tod_color& c){
 time_of_day::time_of_day(const config& cfg):
 	lawful_bonus(cfg["lawful_bonus"]),
 	bonus_modified(0),
-	image(cfg["image"]), name(cfg["name"].t_str()), id(cfg["id"]),
+	image(cfg["image"]), name(cfg["name"].t_str()),
+	description(cfg["description"].t_str()),
+	id(cfg["id"]),
 	image_mask(cfg["mask"]),
 	color(cfg["red"], cfg["green"], cfg["blue"]),
 	sounds(cfg["sound"])
@@ -37,14 +39,15 @@ time_of_day::time_of_day(const config& cfg):
 }
 
 time_of_day::time_of_day()
-: lawful_bonus(0)
-, bonus_modified(0)
-, image()
-, name("NULL_TOD")
-, id("nulltod")
-, image_mask()
-, color(0,0,0)
-, sounds()
+	: lawful_bonus(0)
+	, bonus_modified(0)
+	, image()
+	, name(N_("Stub Time of Day"))
+	, description(N_("This Time of Day is only a Stub!"))
+	, id("nulltod")
+	, image_mask()
+	, color(0,0,0)
+	, sounds()
 {
 }
 
@@ -56,21 +59,22 @@ void time_of_day::write(config& cfg) const
 	cfg["blue"] = color.b;
 	cfg["image"] = image;
 	cfg["name"] = name;
+	cfg["description"] = description;
 	cfg["id"] = id;
 	cfg["mask"] = image_mask;
+	cfg["sound"] = sounds;
 }
 
-void time_of_day::parse_times(const config& cfg, std::vector<time_of_day>& normal_times)
+void time_of_day::parse_times(const config& cfg, std::vector<time_of_day>& times)
 {
-	BOOST_FOREACH(const config &t, cfg.child_range("time")) {
-		normal_times.push_back(time_of_day(t));
+	for(const config &t : cfg.child_range("time")) {
+		times.push_back(time_of_day(t));
 	}
 
-	if(normal_times.empty())
+	if(times.empty())
 	{
 		// Make sure we have at least default time
-		config dummy_cfg;
-		normal_times.push_back(time_of_day(dummy_cfg));
+		times.push_back(time_of_day());
 	}
 }
 
