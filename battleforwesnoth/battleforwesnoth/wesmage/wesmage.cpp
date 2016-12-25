@@ -21,6 +21,7 @@
 #include "wesmage/exit.hpp"
 #include "wesmage/filter.hpp"
 #include "wesmage/options.hpp"
+#include "utils.hpp"
 
 #include <SDL_image.h>
 

@@ -18,6 +18,7 @@
 #include "wesmage/exit.hpp"
 
 #include "utils/functional.hpp"
+#include "utils.hpp"
 
 #include <iostream>
 #include <cassert>

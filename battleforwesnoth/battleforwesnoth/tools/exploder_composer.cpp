@@ -13,6 +13,7 @@
 */
 
 #include "tools/exploder_composer.hpp"
+#include "utils.hpp"
 #include <SDL_image.h>
 
 #include <iostream>
