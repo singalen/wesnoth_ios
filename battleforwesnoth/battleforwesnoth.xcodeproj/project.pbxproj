@@ -7,6 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C20DB9D1E11E23B00D7BE84 /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C20DB9C1E11E23B00D7BE84 /* libboost.a */; };
+		1C20DB9E1E11E27800D7BE84 /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C20DB9C1E11E23B00D7BE84 /* libboost.a */; };
+		1C20DB9F1E11E57600D7BE84 /* libSDL2_image.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9C51E1052C000E48A19 /* libSDL2_image.a */; };
+		1C20DBA01E11E57600D7BE84 /* libSDL2_mixer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9CB1E1052D100E48A19 /* libSDL2_mixer.a */; };
+		1C20DBA11E11E57600D7BE84 /* libSDL2_ttf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9D11E1052E600E48A19 /* libSDL2_ttf.a */; };
+		1C20DBA21E11E57600D7BE84 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9BD1E10529800E48A19 /* libSDL2.a */; };
+		1C20DBA41E11E58000D7BE84 /* libSDL2_image.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9C51E1052C000E48A19 /* libSDL2_image.a */; };
+		1C20DBA51E11E58000D7BE84 /* libSDL2_mixer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9CB1E1052D100E48A19 /* libSDL2_mixer.a */; };
+		1C20DBA61E11E58000D7BE84 /* libSDL2_ttf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9D11E1052E600E48A19 /* libSDL2_ttf.a */; };
+		1C20DBA71E11E58000D7BE84 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CDFD9BD1E10529800E48A19 /* libSDL2.a */; };
+		1C20DBAA1E11F92700D7BE84 /* Appirater.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C20DBA91E11F92600D7BE84 /* Appirater.m */; };
+		1C20DBAB1E1235F400D7BE84 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CBB85EA1E0F0A040058696A /* utils.cpp */; };
+		1C20DBAC1E12360F00D7BE84 /* exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CBB85E41E0F0A040058696A /* exception.cpp */; };
+		1C20DBAD1E12361B00D7BE84 /* rect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CBB85E61E0F0A040058696A /* rect.cpp */; };
+		1C20DBAE1E12361B00D7BE84 /* surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CBB85E81E0F0A040058696A /* surface.cpp */; };
+		1C20DBAF1E12361B00D7BE84 /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CBB85EC1E0F0A040058696A /* window.cpp */; };
+		1C20DBB01E12362900D7BE84 /* Appirater.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C20DBA91E11F92600D7BE84 /* Appirater.m */; };
 		1C810007F1091BFFDBB5E069 /* recall_list_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810524D202BD0605BA9E07 /* recall_list_manager.cpp */; };
 		1C81000ED9575A6A17FA0779 /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C81070CAEE54DC947C56123 /* filter.cpp */; };
 		1C81001BCC56BFA387325513 /* client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810DE129482DEB89984BD5 /* client.cpp */; };
@@ -1471,6 +1488,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1C20DB9C1E11E23B00D7BE84 /* libboost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost.a; path = ../lib/iOS_boost_1_60/libs/boost/ios/libboost.a; sourceTree = "<group>"; };
+		1C20DBA91E11F92600D7BE84 /* Appirater.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Appirater.m; sourceTree = "<group>"; };
 		1C81000A1DE7F2FDCEC2F4EB /* register_widget.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = register_widget.hpp; sourceTree = "<group>"; };
 		1C81000A8C92F53EA82F2601 /* display_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = display_context.hpp; sourceTree = "<group>"; };
 		1C81000D2B16E716AF539B40 /* synced_user_choice.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = synced_user_choice.hpp; sourceTree = "<group>"; };
@@ -2634,6 +2653,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C20DB9F1E11E57600D7BE84 /* libSDL2_image.a in Frameworks */,
+				1C20DBA01E11E57600D7BE84 /* libSDL2_mixer.a in Frameworks */,
+				1C20DBA11E11E57600D7BE84 /* libSDL2_ttf.a in Frameworks */,
+				1C20DBA21E11E57600D7BE84 /* libSDL2.a in Frameworks */,
+				1C20DB9D1E11E23B00D7BE84 /* libboost.a in Frameworks */,
 				A69DB6D4196A676100230816 /* libogg.a in Frameworks */,
 				3C5B804516399A2100898722 /* libiconv.a in Frameworks */,
 				3C5B804616399A2100898722 /* libjpeg.a in Frameworks */,
@@ -2663,6 +2687,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C20DBA41E11E58000D7BE84 /* libSDL2_image.a in Frameworks */,
+				1C20DBA51E11E58000D7BE84 /* libSDL2_mixer.a in Frameworks */,
+				1C20DBA61E11E58000D7BE84 /* libSDL2_ttf.a in Frameworks */,
+				1C20DBA71E11E58000D7BE84 /* libSDL2.a in Frameworks */,
+				1C20DB9E1E11E27800D7BE84 /* libboost.a in Frameworks */,
 				3CBF24A016456C89008D46F4 /* libogg.a in Frameworks */,
 				3C97C1E91631D08B00BFE895 /* libiconv.a in Frameworks */,
 				3C97C1BE1631CC8000BFE895 /* libjpeg.a in Frameworks */,
@@ -3234,6 +3263,7 @@
 		3C8A3653160766FD0017F0EE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1C20DB9C1E11E23B00D7BE84 /* libboost.a */,
 				3C591DB21623349000DC0C26 /* libz.1.2.5.dylib */,
 				3C15F682160B778500895032 /* QuartzCore.framework */,
 				3CFE11A31608E29A00DC330D /* AudioToolbox.framework */,
@@ -3249,6 +3279,7 @@
 		3C8A365A160766FD0017F0EE /* battleforwesnoth */ = {
 			isa = PBXGroup;
 			children = (
+				1C20DBA91E11F92600D7BE84 /* Appirater.m */,
 				3C8A3977160767960017F0EE /* SConscript */,
 				3C8A3978160767960017F0EE /* SConstruct */,
 				3C8A36741607678C0017F0EE /* about.cpp */,
@@ -4787,6 +4818,7 @@
 				3C5B7E2516399A2100898722 /* validation.cpp in Sources */,
 				3C5B7E2616399A2100898722 /* actions.cpp in Sources */,
 				3C5B7E2716399A2100898722 /* ai.cpp in Sources */,
+				1C20DBB01E12362900D7BE84 /* Appirater.m in Sources */,
 				3C5B7E2816399A2100898722 /* aspect.cpp in Sources */,
 				3C5B7E2916399A2100898722 /* component.cpp in Sources */,
 				3C5B7E2A16399A2100898722 /* contexts.cpp in Sources */,
@@ -4910,6 +4942,7 @@
 				3C5B7F1816399A2100898722 /* ldump.cpp in Sources */,
 				3C5B7F1916399A2100898722 /* lfunc.cpp in Sources */,
 				3C5B7F1A16399A2100898722 /* lgc.cpp in Sources */,
+				1C20DBAF1E12361B00D7BE84 /* window.cpp in Sources */,
 				3C5B7F1C16399A2100898722 /* liolib.cpp in Sources */,
 				3C5B7F1D16399A2100898722 /* llex.cpp in Sources */,
 				3C5B7F1E16399A2100898722 /* lmathlib.cpp in Sources */,
@@ -5019,6 +5052,7 @@
 				3C5B801716399A2100898722 /* fclang.c in Sources */,
 				3C5B801816399A2100898722 /* fclist.c in Sources */,
 				3C5B801916399A2100898722 /* fcmatch.c in Sources */,
+				1C20DBAD1E12361B00D7BE84 /* rect.cpp in Sources */,
 				3C5B801A16399A2100898722 /* fcmatrix.c in Sources */,
 				3C5B801B16399A2100898722 /* fcname.c in Sources */,
 				3C5B801C16399A2100898722 /* fcpat.c in Sources */,
@@ -5050,6 +5084,7 @@
 				1C810452788E2EC8C63773F7 /* font_config.cpp in Sources */,
 				1C810260B874B7990EB9A3C1 /* text_surface.cpp in Sources */,
 				1C8101A3F645FBF0D95F108E /* marked-up_text.cpp in Sources */,
+				1C20DBAC1E12360F00D7BE84 /* exception.cpp in Sources */,
 				1C810978C39F93AD7FEEEED2 /* standard_colors.cpp in Sources */,
 				1C81094457C7681DD041CC14 /* text_formatting.cpp in Sources */,
 				1C810E8568C0AE9C64F70F42 /* formula.cpp in Sources */,
@@ -5075,6 +5110,7 @@
 				1C810990A218F25737913272 /* flg_manager.cpp in Sources */,
 				1C810A1D79B975AB242C25AC /* multiplayer.cpp in Sources */,
 				1C81023A4C55FFDA8970CD62 /* playcampaign.cpp in Sources */,
+				1C20DBAB1E1235F400D7BE84 /* utils.cpp in Sources */,
 				1C8104047635C50C5C562311 /* singleplayer.cpp in Sources */,
 				1C8104FAC3D6E5530B887186 /* create_engine.cpp in Sources */,
 				1C810B9B78D0BFFD363D6980 /* mp_game_utils.cpp in Sources */,
@@ -5299,6 +5335,7 @@
 				1C8109F76869CFB8ACF1D356 /* lua_unit_type.cpp in Sources */,
 				1C810D818EEDECFAA6E833D5 /* mapgen_lua_kernel.cpp in Sources */,
 				1C8104609003FEBE1795EF88 /* application_lua_kernel.cpp in Sources */,
+				1C20DBAE1E12361B00D7BE84 /* surface.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5312,6 +5349,7 @@
 				3C8A3A75160767980017F0EE /* validation.cpp in Sources */,
 				3C8A3A76160767980017F0EE /* actions.cpp in Sources */,
 				3C8A3A77160767980017F0EE /* ai.cpp in Sources */,
+				1C20DBAA1E11F92700D7BE84 /* Appirater.m in Sources */,
 				3C8A3A78160767980017F0EE /* aspect.cpp in Sources */,
 				3C8A3A79160767980017F0EE /* component.cpp in Sources */,
 				3C8A3A7A160767980017F0EE /* contexts.cpp in Sources */,
@@ -6115,7 +6153,7 @@
 					"\"$(SRCROOT)/../lib/glib/gmodule\"",
 					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
-					"SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/lib/ios",
+					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
 				PREFIXPATH = /dailin/Wesnoth/lib;
 				PRODUCT_NAME = "battleforwesnoth-iPad";
@@ -6222,7 +6260,7 @@
 					"\"$(SRCROOT)/../lib/glib/gmodule\"",
 					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
-					"SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/lib/ios",
+					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PREFIXPATH = /dailin/Wesnoth/lib;
@@ -6382,7 +6420,7 @@
 					"\"$(SRCROOT)/../lib/glib/gmodule\"",
 					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
-					"SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/lib/ios",
+					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
 				PREFIXPATH = Users/vic/src/wesnoth/wesnoth_ios/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -6490,7 +6528,7 @@
 					"\"$(SRCROOT)/../lib/glib/gmodule\"",
 					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
-					"SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/lib/ios",
+					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PREFIXPATH = Users/vic/src/wesnoth/wesnoth_ios/lib;
