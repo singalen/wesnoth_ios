@@ -81,7 +81,7 @@ void *_alloca(size_t size);
 
 
 /* Special i386 GCC implementation */
-#if 0 &&defined(__i386__) && defined(__GNUC__) && !defined(__BEOS__)
+#if defined(__i386__) && defined(__GNUC__) && !defined(__BEOS__)
 #  define VORBIS_FPU_CONTROL
 /* both GCC and MSVC are kinda stupid about rounding/casting to int.
    Because of encapsulation constraints (GCC can't see inside the asm

@@ -18,7 +18,7 @@ INCPATH += -I"$(PREFIX)/usr/lib/gcc/arm-apple-darwin10/4.2.1/include"
 INCPATH += -I"$(PREFIX)/usr/include"
 INCPATH += -I"."
 INCPATH += -I"../pixman-0.21.2/pixman"
-INCPATH += -I"../freetype-2.4.3/include"
+INCPATH += -I"../freetype-2.4.12/include"
 INCPATH += -I"../fontconfig-2.8.0/fontconfig"
 INCPATH += -I"../libpng-1.4.4/include/libpng14"
 

@@ -525,7 +525,7 @@
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../lib/pixman-0.21.2/pixman\"",
-					"\"$(SRCROOT)/../../../lib/freetype-2.4.3/include\"",
+					"\"$(SRCROOT)/../../../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0/fontconfig\"",
 					"\"$(SRCROOT)/../../../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../../../lib/cairo-1.10.0\"",
@@ -552,7 +552,7 @@
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../lib/pixman-0.21.2/pixman\"",
-					"\"$(SRCROOT)/../../../lib/freetype-2.4.3/include\"",
+					"\"$(SRCROOT)/../../../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0/fontconfig\"",
 					"\"$(SRCROOT)/../../../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../../../lib/cairo-1.10.0\"",

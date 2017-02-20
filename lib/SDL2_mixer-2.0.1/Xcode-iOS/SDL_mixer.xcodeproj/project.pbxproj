@@ -62,8 +62,8 @@
 		AA60219617653A9800662B9C /* tables.h in Headers */ = {isa = PBXBuildFile; fileRef = AA60217117653A9800662B9C /* tables.h */; };
 		AA60219917653B8700662B9C /* dynamic_modplug.c in Sources */ = {isa = PBXBuildFile; fileRef = AA60219717653B8700662B9C /* dynamic_modplug.c */; };
 		AA60219A17653B8700662B9C /* dynamic_modplug.h in Headers */ = {isa = PBXBuildFile; fileRef = AA60219817653B8700662B9C /* dynamic_modplug.h */; };
-		AA644294175B0E0600A2125A /* bitwise.c in Sources */ = {isa = PBXBuildFile; fileRef = AA644292175B0E0600A2125A /* bitwise.c */; };
-		AA644295175B0E0600A2125A /* framing.c in Sources */ = {isa = PBXBuildFile; fileRef = AA644293175B0E0600A2125A /* framing.c */; };
+		1C29BBEB1E5983DE00A701E9 /* bitwise.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBE91E5983DE00A701E9 /* bitwise.c */; };
+		1C29BBEC1E5983DE00A701E9 /* framing.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBEA1E5983DE00A701E9 /* framing.c */; };
 		AA64429E175B0E2500A2125A /* asm_arm.h in Headers */ = {isa = PBXBuildFile; fileRef = AA644296175B0E2500A2125A /* asm_arm.h */; };
 		AA64429F175B0E2500A2125A /* backends.h in Headers */ = {isa = PBXBuildFile; fileRef = AA644297175B0E2500A2125A /* backends.h */; };
 		AA6442A0175B0E2500A2125A /* block.c in Sources */ = {isa = PBXBuildFile; fileRef = AA644298175B0E2500A2125A /* block.c */; };
@@ -236,8 +236,8 @@
 		AA60217117653A9800662B9C /* tables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tables.h; path = src/tables.h; sourceTree = "<group>"; };
 		AA60219717653B8700662B9C /* dynamic_modplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dynamic_modplug.c; path = ../dynamic_modplug.c; sourceTree = "<group>"; };
 		AA60219817653B8700662B9C /* dynamic_modplug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dynamic_modplug.h; path = ../dynamic_modplug.h; sourceTree = "<group>"; };
-		AA644292175B0E0600A2125A /* bitwise.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bitwise.c; path = "libogg-1.3.1/src/bitwise.c"; sourceTree = "<group>"; };
-		AA644293175B0E0600A2125A /* framing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = framing.c; path = "libogg-1.3.1/src/framing.c"; sourceTree = "<group>"; };
+		1C29BBE91E5983DE00A701E9 /* bitwise.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bitwise.c; path = "../../libogg-1.3.1/src/bitwise.c"; sourceTree = "<group>"; };
+		1C29BBEA1E5983DE00A701E9 /* framing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = framing.c; path = "../../libogg-1.3.1/src/framing.c"; sourceTree = "<group>"; };
 		AA644296175B0E2500A2125A /* asm_arm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = asm_arm.h; path = "libvorbisidec-1.2.1/asm_arm.h"; sourceTree = "<group>"; };
 		AA644297175B0E2500A2125A /* backends.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = backends.h; path = "libvorbisidec-1.2.1/backends.h"; sourceTree = "<group>"; };
 		AA644298175B0E2500A2125A /* block.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = block.c; path = "libvorbisidec-1.2.1/block.c"; sourceTree = "<group>"; };
@@ -462,7 +462,7 @@
 			children = (
 				AA644296175B0E2500A2125A /* asm_arm.h */,
 				AA644297175B0E2500A2125A /* backends.h */,
-				AA644292175B0E0600A2125A /* bitwise.c */,
+				1C29BBE91E5983DE00A701E9 /* bitwise.c */,
 				AA644298175B0E2500A2125A /* block.c */,
 				AA644299175B0E2500A2125A /* block.h */,
 				AA64429A175B0E2500A2125A /* codebook.c */,
@@ -471,7 +471,7 @@
 				AA64429D175B0E2500A2125A /* config_types.h */,
 				AA6442A6175B0E5000A2125A /* floor0.c */,
 				AA6442A7175B0E5000A2125A /* floor1.c */,
-				AA644293175B0E0600A2125A /* framing.c */,
+				1C29BBEA1E5983DE00A701E9 /* framing.c */,
 				AA6442A8175B0E5000A2125A /* info.c */,
 				AA6442A9175B0E5000A2125A /* ivorbiscodec.h */,
 				AA6442AA175B0E5000A2125A /* ivorbisfile.h */,
@@ -649,8 +649,8 @@
 				AA5F0F0914B6A6490036992F /* dynamic_fluidsynth.c in Sources */,
 				AA5F0F0C14B6A6490036992F /* fluidsynth.c in Sources */,
 				AA5F0F0E14B6A6490036992F /* music_modplug.c in Sources */,
-				AA644294175B0E0600A2125A /* bitwise.c in Sources */,
-				AA644295175B0E0600A2125A /* framing.c in Sources */,
+				1C29BBEB1E5983DE00A701E9 /* bitwise.c in Sources */,
+				1C29BBEC1E5983DE00A701E9 /* framing.c in Sources */,
 				AA6442A0175B0E2500A2125A /* block.c in Sources */,
 				AA6442A2175B0E2500A2125A /* codebook.c in Sources */,
 				AA6442BB175B0E5000A2125A /* floor0.c in Sources */,
@@ -711,6 +711,14 @@
 			buildSettings = {
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1.1.0;
+				HEADER_SEARCH_PATHS = (
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+					"\"$(SRCROOT)/../../libogg-1.3.1/include\"",
+					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\"",
+					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\"",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = "";
@@ -724,6 +732,14 @@
 			buildSettings = {
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1.1.0;
+				HEADER_SEARCH_PATHS = (
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+					"\"$(SRCROOT)/../../libogg-1.3.1/include\"",
+					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\"",
+					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\"",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				LIBRARY_STYLE = STATIC;
 				OTHER_CFLAGS = "";
@@ -750,11 +766,12 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)",
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1 = "\"$(SRCROOT)/../../SDL/include\"";
-				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2 = "\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\" \"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\" \"$(SRCROOT)/../external/libvorbisidec-1.2.1\" \"$(SRCROOT)/../external/libogg-1.3.1/include\"";
+				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2 = "\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\" \"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\" \"$(SRCROOT)/../external/libvorbisidec-1.2.1\" \"$(SRCROOT)/../../libogg-1.3.1/include\"";
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -779,11 +796,12 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)",
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
+					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1 = "\"$(SRCROOT)/../../SDL/include\"";
-				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2 = "\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\" \"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\" \"$(SRCROOT)/../external/libvorbisidec-1.2.1\" \"$(SRCROOT)/../external/libogg-1.3.1/include\"";
+				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2 = "\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\" \"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\" \"$(SRCROOT)/../external/libvorbisidec-1.2.1\" \"$(SRCROOT)/../../libogg-1.3.1/include\"";
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;

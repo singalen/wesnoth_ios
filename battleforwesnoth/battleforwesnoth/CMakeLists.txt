@@ -682,7 +682,7 @@ set(wesnoth-main_SRC
 	desktop/notifications.cpp
 	desktop/open.cpp
 	desktop/paths.cpp
-	desktop/version.cpp
+	desktop/os_version.cpp
 	display_chat_manager.cpp
 	editor/action/action.cpp
 	editor/action/action_item.cpp

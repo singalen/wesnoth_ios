@@ -17,7 +17,7 @@ INCPATH += -I"$(SDK)/usr/include"
 INCPATH += -I"$(PREFIX)/usr/lib/gcc/arm-apple-darwin10/4.2.1/include"
 INCPATH += -I"$(PREFIX)/usr/include"
 INCPATH += -I"."
-INCPATH += -I"../freetype-2.4.3/include"
+INCPATH += -I"../freetype-2.4.12/include"
 INCPATH += -I"../xml2/include"
 #Build Switch
 CFLAGS  += $(INCPATH) \

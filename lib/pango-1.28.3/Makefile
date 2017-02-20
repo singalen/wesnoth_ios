@@ -22,7 +22,7 @@ INCPATH += -I"../glib/glib"
 INCPATH += -I"../glib/gobject"
 INCPATH += -I"../glib/gmodule"
 INCPATH += -I"../glib/android"
-INCPATH += -I"../freetype-2.4.3/include"
+INCPATH += -I"../freetype-2.4.12/include"
 INCPATH += -I"../fontconfig-2.8.0"
 INCPATH += -I"../cairo-1.10.0/src"
 #Build Switch

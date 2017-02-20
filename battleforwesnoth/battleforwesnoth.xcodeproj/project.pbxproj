@@ -24,6 +24,17 @@
 		1C20DBAE1E12361B00D7BE84 /* surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CBB85E81E0F0A040058696A /* surface.cpp */; };
 		1C20DBAF1E12361B00D7BE84 /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CBB85EC1E0F0A040058696A /* window.cpp */; };
 		1C20DBB01E12362900D7BE84 /* Appirater.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C20DBA91E11F92600D7BE84 /* Appirater.m */; };
+		1C29BBF41E5A147000A701E9 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF31E5A147000A701E9 /* SystemConfiguration.framework */; };
+		1C29BBF61E5A175C00A701E9 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF51E5A175C00A701E9 /* ImageIO.framework */; };
+		1C29BBF81E5A17C700A701E9 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF71E5A17C700A701E9 /* AVFoundation.framework */; };
+		1C29BBFA1E5A182900A701E9 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF91E5A182800A701E9 /* MobileCoreServices.framework */; };
+		1C29BC0A1E5A327300A701E9 /* apple_notification.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBFD1E5A327300A701E9 /* apple_notification.mm */; };
+		1C29BC0B1E5A327300A701E9 /* clipboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBFE1E5A327300A701E9 /* clipboard.cpp */; };
+		1C29BC0C1E5A327300A701E9 /* dbus_notification.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BC001E5A327300A701E9 /* dbus_notification.cpp */; };
+		1C29BC0D1E5A327300A701E9 /* notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BC021E5A327300A701E9 /* notifications.cpp */; };
+		1C29BC0E1E5A327300A701E9 /* open.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BC041E5A327300A701E9 /* open.cpp */; };
+		1C29BC0F1E5A327300A701E9 /* paths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BC061E5A327300A701E9 /* paths.cpp */; };
+		1C29BC101E5A327300A701E9 /* os_version.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BC081E5A327300A701E9 /* os_version.cpp */; };
 		1C810007F1091BFFDBB5E069 /* recall_list_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810524D202BD0605BA9E07 /* recall_list_manager.cpp */; };
 		1C81000ED9575A6A17FA0779 /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C81070CAEE54DC947C56123 /* filter.cpp */; };
 		1C81001BCC56BFA387325513 /* client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810DE129482DEB89984BD5 /* client.cpp */; };
@@ -1490,6 +1501,18 @@
 /* Begin PBXFileReference section */
 		1C20DB9C1E11E23B00D7BE84 /* libboost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost.a; path = ../lib/iOS_boost_1_60/libs/boost/ios/libboost.a; sourceTree = "<group>"; };
 		1C20DBA91E11F92600D7BE84 /* Appirater.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Appirater.m; sourceTree = "<group>"; };
+		1C29BBF31E5A147000A701E9 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		1C29BBF51E5A175C00A701E9 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		1C29BBF71E5A17C700A701E9 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		1C29BBF91E5A182800A701E9 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		1C29BBFD1E5A327300A701E9 /* apple_notification.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = apple_notification.mm; path = desktop/apple_notification.mm; sourceTree = "<group>"; };
+		1C29BBFE1E5A327300A701E9 /* clipboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = clipboard.cpp; path = desktop/clipboard.cpp; sourceTree = "<group>"; };
+		1C29BC001E5A327300A701E9 /* dbus_notification.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dbus_notification.cpp; path = desktop/dbus_notification.cpp; sourceTree = "<group>"; };
+		1C29BC021E5A327300A701E9 /* notifications.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = notifications.cpp; path = desktop/notifications.cpp; sourceTree = "<group>"; };
+		1C29BC041E5A327300A701E9 /* open.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = open.cpp; path = desktop/open.cpp; sourceTree = "<group>"; };
+		1C29BC061E5A327300A701E9 /* paths.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = paths.cpp; path = desktop/paths.cpp; sourceTree = "<group>"; };
+		1C29BC081E5A327300A701E9 /* os_version.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = os_version.cpp; path = desktop/os_version.cpp; sourceTree = "<group>"; };
+		1C29BC091E5A327300A701E9 /* os_version.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = os_version.hpp; path = desktop/os_version.hpp; sourceTree = "<group>"; };
 		1C81000A1DE7F2FDCEC2F4EB /* register_widget.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = register_widget.hpp; sourceTree = "<group>"; };
 		1C81000A8C92F53EA82F2601 /* display_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = display_context.hpp; sourceTree = "<group>"; };
 		1C81000D2B16E716AF539B40 /* synced_user_choice.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = synced_user_choice.hpp; sourceTree = "<group>"; };
@@ -2653,6 +2676,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C29BBFA1E5A182900A701E9 /* MobileCoreServices.framework in Frameworks */,
+				1C29BBF81E5A17C700A701E9 /* AVFoundation.framework in Frameworks */,
+				1C29BBF61E5A175C00A701E9 /* ImageIO.framework in Frameworks */,
+				1C29BBF41E5A147000A701E9 /* SystemConfiguration.framework in Frameworks */,
 				1C20DB9F1E11E57600D7BE84 /* libSDL2_image.a in Frameworks */,
 				1C20DBA01E11E57600D7BE84 /* libSDL2_mixer.a in Frameworks */,
 				1C20DBA11E11E57600D7BE84 /* libSDL2_ttf.a in Frameworks */,
@@ -2720,6 +2747,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1C29BBFB1E5A325600A701E9 /* desktop */ = {
+			isa = PBXGroup;
+			children = (
+				1C29BBFD1E5A327300A701E9 /* apple_notification.mm */,
+				1C29BBFE1E5A327300A701E9 /* clipboard.cpp */,
+				1C29BC001E5A327300A701E9 /* dbus_notification.cpp */,
+				1C29BC021E5A327300A701E9 /* notifications.cpp */,
+				1C29BC041E5A327300A701E9 /* open.cpp */,
+				1C29BC061E5A327300A701E9 /* paths.cpp */,
+				1C29BC081E5A327300A701E9 /* os_version.cpp */,
+				1C29BC091E5A327300A701E9 /* os_version.hpp */,
+			);
+			name = desktop;
+			sourceTree = "<group>";
+		};
 		1C81003501C0B7757CBF2667 /* placer */ = {
 			isa = PBXGroup;
 			children = (
@@ -3263,6 +3305,10 @@
 		3C8A3653160766FD0017F0EE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1C29BBF91E5A182800A701E9 /* MobileCoreServices.framework */,
+				1C29BBF71E5A17C700A701E9 /* AVFoundation.framework */,
+				1C29BBF51E5A175C00A701E9 /* ImageIO.framework */,
+				1C29BBF31E5A147000A701E9 /* SystemConfiguration.framework */,
 				1C20DB9C1E11E23B00D7BE84 /* libboost.a */,
 				3C591DB21623349000DC0C26 /* libz.1.2.5.dylib */,
 				3C15F682160B778500895032 /* QuartzCore.framework */,
@@ -3563,6 +3609,7 @@
 				3C8A36781607678C0017F0EE /* addon */,
 				3C8A367E1607678C0017F0EE /* ai */,
 				1C810EE29817B12BAAC6BFFF /* boost-patched */,
+				1C29BBFB1E5A325600A701E9 /* desktop */,
 				3CCB961716293288007549E6 /* font */,
 				1C8105807F023E073D07E316 /* formula */,
 				1C8108AFF3159DB822FD391D /* game_events */,
@@ -5365,6 +5412,7 @@
 				3C8A3A88160767980017F0EE /* callable_objects.cpp in Sources */,
 				3C8A3A89160767980017F0EE /* candidates.cpp in Sources */,
 				3C8A3A8A160767980017F0EE /* function_table.cpp in Sources */,
+				1C29BC0F1E5A327300A701E9 /* paths.cpp in Sources */,
 				3C8A3A8B160767980017F0EE /* stage_side_formulas.cpp in Sources */,
 				3C8A3A8C160767980017F0EE /* stage_unit_formulas.cpp in Sources */,
 				3C8A3A8D160767980017F0EE /* game_info.cpp in Sources */,
@@ -5397,6 +5445,7 @@
 				3C8A3AEE160767980017F0EE /* iterator.cpp in Sources */,
 				3C8A3AEF160767980017F0EE /* walker_grid.cpp in Sources */,
 				3C8A3AF0160767980017F0EE /* walker_widget.cpp in Sources */,
+				1C29BC0E1E5A327300A701E9 /* open.cpp in Sources */,
 				3C8A3AF2160767980017F0EE /* old_markup.cpp in Sources */,
 				3C8A3AF4160767990017F0EE /* tips.cpp in Sources */,
 				3C8A3B26160767990017F0EE /* description.cpp in Sources */,
@@ -5425,6 +5474,7 @@
 				3C8A3B55160767990017F0EE /* debug.cpp in Sources */,
 				3C8A3B56160767990017F0EE /* drawing.cpp in Sources */,
 				3C8A3B57160767990017F0EE /* generator.cpp in Sources */,
+				1C29BC0B1E5A327300A701E9 /* clipboard.cpp in Sources */,
 				3C8A3B58160767990017F0EE /* grid.cpp in Sources */,
 				3C8A3B59160767990017F0EE /* helper.cpp in Sources */,
 				1CBB85F21E0F0A040058696A /* window.cpp in Sources */,
@@ -5494,6 +5544,7 @@
 				3C8A3BA3160767990017F0EE /* lundump.cpp in Sources */,
 				3C8A3BA4160767990017F0EE /* lvm.cpp in Sources */,
 				3C8A3BA5160767990017F0EE /* lzio.cpp in Sources */,
+				1C29BC0C1E5A327300A701E9 /* dbus_notification.cpp in Sources */,
 				3C8A3BA9160767990017F0EE /* lua_jailbreak_exception.cpp in Sources */,
 				3C8A3BB2160767990017F0EE /* md5.cpp in Sources */,
 				3C8A3BB3160767990017F0EE /* menu_events.cpp in Sources */,
@@ -5554,6 +5605,7 @@
 				3C8A3C41160767990017F0EE /* action.cpp in Sources */,
 				3C8A3C42160767990017F0EE /* attack.cpp in Sources */,
 				3C8A3C44160767990017F0EE /* manager.cpp in Sources */,
+				1C29BC0A1E5A327300A701E9 /* apple_notification.mm in Sources */,
 				3C8A3C45160767990017F0EE /* mapbuilder.cpp in Sources */,
 				3C8A3C46160767990017F0EE /* move.cpp in Sources */,
 				3C8A3C47160767990017F0EE /* recall.cpp in Sources */,
@@ -5641,6 +5693,7 @@
 				1C8108078A55F7AB8690B16E /* lobby_data.cpp in Sources */,
 				1C810C5A875DB169B56D8208 /* lobby_info.cpp in Sources */,
 				1C8105F3257558A5F2FFF201 /* flg_manager.cpp in Sources */,
+				1C29BC101E5A327300A701E9 /* os_version.cpp in Sources */,
 				1C81095CD7D30C75AC1321B2 /* multiplayer.cpp in Sources */,
 				1C81014097AE33FE2917EDC5 /* playcampaign.cpp in Sources */,
 				1C8100A8207998570C5182CB /* singleplayer.cpp in Sources */,
@@ -5752,6 +5805,7 @@
 				1C8108F0128FA96DA009877C /* filter_options.cpp in Sources */,
 				1C81058C52DBF67EBF7474E8 /* manager.cpp in Sources */,
 				1C810B34FF1CDA814250C0A4 /* help.cpp in Sources */,
+				1C29BC0D1E5A327300A701E9 /* notifications.cpp in Sources */,
 				1C810E6A379972348C5A7B3F /* help_browser.cpp in Sources */,
 				1C81018AF174642912786DEE /* help_button.cpp in Sources */,
 				1C81069BE204FDAAF1CB6D43 /* help_impl.cpp in Sources */,
@@ -6110,13 +6164,13 @@
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
 					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../lib/mikmod/include\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1/include\"",
-					"\"$(SRCROOT)/../lib/libogg-1.3.0/include\"",
+					"\"$(SRCROOT)/../lib/libogg-1.3.1/include\"",
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 					"\"$(SRCROOT)/battleforwesnoth/boost-patched\"",
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
@@ -6131,7 +6185,7 @@
 					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
 					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libiconv\"",
@@ -6217,13 +6271,13 @@
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
 					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../lib/mikmod/include\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1/include\"",
-					"\"$(SRCROOT)/../lib/libogg-1.3.0/include\"",
+					"\"$(SRCROOT)/../lib/libogg-1.3.1/include\"",
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 					"\"$(SRCROOT)/battleforwesnoth/boost-patched\"",
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
@@ -6238,7 +6292,7 @@
 					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
 					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libiconv\"",
@@ -6377,13 +6431,13 @@
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
 					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../lib/mikmod/include\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1/include\"",
-					"\"$(SRCROOT)/../lib/libogg-1.3.0/include\"",
+					"\"$(SRCROOT)/../lib/libogg-1.3.1/include\"",
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 					"\"$(SRCROOT)/battleforwesnoth/boost-patched\"",
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
@@ -6398,7 +6452,7 @@
 					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
 					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libiconv\"",
@@ -6485,13 +6539,13 @@
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
 					"\"$(SRCROOT)/../lib/SDL_blitpool/include\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3/include\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../lib/xml2/include\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../lib/mikmod/include\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1/include\"",
-					"\"$(SRCROOT)/../lib/libogg-1.3.0/include\"",
+					"\"$(SRCROOT)/../lib/libogg-1.3.1/include\"",
 					"\"$(SRCROOT)/../lib/tremor/include\"",
 					"\"$(SRCROOT)/battleforwesnoth/boost-patched\"",
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
@@ -6506,7 +6560,7 @@
 					"\"$(SRCROOT)/../lib/boost_1_44_0\"",
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
-					"\"$(SRCROOT)/../lib/freetype-2.4.3\"",
+					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
 					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
 					"\"$(SRCROOT)/../lib/libiconv\"",

@@ -19,7 +19,7 @@
 #include "build_info.hpp"
 #include "desktop/clipboard.hpp"
 #include "desktop/open.hpp"
-#include "desktop/version.hpp"
+#include "desktop/os_version.hpp"
 #include "filesystem.hpp"
 #include "formula/string_utils.hpp"
 #include "game_config.hpp"

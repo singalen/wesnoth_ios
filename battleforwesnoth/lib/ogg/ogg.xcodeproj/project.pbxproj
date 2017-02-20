@@ -28,8 +28,8 @@
 		3CBF22AA1644C078008D46F4 /* libogg.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libogg.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CBF22AD1644C078008D46F4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		3CBF22B11644C078008D46F4 /* ogg-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ogg-Prefix.pch"; sourceTree = "<group>"; };
-		3CBF22C11644C180008D46F4 /* bitwise.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bitwise.c; path = "../../../../lib/libogg-1.3.0/src/bitwise.c"; sourceTree = "<group>"; };
-		3CBF22C21644C180008D46F4 /* framing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = framing.c; path = "../../../../lib/libogg-1.3.0/src/framing.c"; sourceTree = "<group>"; };
+		3CBF22C11644C180008D46F4 /* bitwise.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bitwise.c; path = "../../../../lib/libogg-1.3.1/src/bitwise.c"; sourceTree = "<group>"; };
+		3CBF22C21644C180008D46F4 /* framing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = framing.c; path = "../../../../lib/libogg-1.3.1/src/framing.c"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -199,7 +199,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/libogg-1.3.0/include\"";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/libogg-1.3.1/include\"";
 				OTHER_CFLAGS = (
 					"-ffast-math",
 					"$(OTHER_CFLAGS)",
@@ -219,7 +219,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/libogg-1.3.0/include\"";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/libogg-1.3.1/include\"";
 				OTHER_CFLAGS = (
 					"-ffast-math",
 					"$(OTHER_CFLAGS)",

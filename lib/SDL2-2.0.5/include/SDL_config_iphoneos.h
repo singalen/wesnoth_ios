@@ -116,7 +116,7 @@
 #define SDL_HAPTIC_DUMMY 1
 
 /* Enable MFi joystick support */
-#define SDL_JOYSTICK_MFI 1
+//#define SDL_JOYSTICK_MFI 1
 
 /* Enable Unix style SO loading */
 #define SDL_LOADSO_DLOPEN 1

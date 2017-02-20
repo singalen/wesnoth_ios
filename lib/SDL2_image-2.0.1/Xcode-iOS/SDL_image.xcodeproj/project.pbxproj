@@ -232,7 +232,9 @@
 					LOAD_XV,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../SDL/include";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -272,7 +274,9 @@
 					LOAD_XV,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../SDL/include";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
