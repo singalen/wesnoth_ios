@@ -14,7 +14,7 @@
 
 #define GETTEXT_DOMAIN "wesnoth-lib"
 
-#include "desktop/version.hpp"
+#include "desktop/os_version.hpp"
 
 #include "filesystem.hpp"
 #include "formatter.hpp"

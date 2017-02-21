@@ -571,8 +571,11 @@ bool game_launcher::play_screenshot_mode()
 
 	::init_textdomains(game_config_manager::get()->game_config());
 
+	// FIXME: Make a correct common define.
+#ifndef __APPLE__
 	editor::start(game_config_manager::get()->game_config(), video(),
 	    screenshot_map_, true, screenshot_filename_);
+#endif
 	return false;
 }
 
@@ -983,6 +986,8 @@ void game_launcher::play_replay()
 
 editor::EXIT_STATUS game_launcher::start_editor(const std::string& filename)
 {
+	// FIXME: Make a correct common define.
+#ifndef __APPLE__
 	while(true){
 		game_config_manager::get()->load_game_config_for_editor();
 
@@ -997,6 +1002,7 @@ editor::EXIT_STATUS game_launcher::start_editor(const std::string& filename)
 		game_config_manager::get()->reload_changed_game_config();
 		image::flush_cache();
 	}
+#endif
 	return editor::EXIT_ERROR; // not supposed to happen
 }
 
