@@ -1,4 +1,4 @@
-fai 'poisoner_eval.fai'
+wfl 'poisoner_eval.fai'
 
 {AI_CA_COMBAT_SCORE} + 100 +
 #rate units with regeneration as worse targets #
@@ -16,7 +16,7 @@ min(	map(
 	)
 ) +
 #leader is always a good target! #
-if( target.leader, 50, 0 ) +
+if( target.canrecruit, 50, 0 ) +
 # consider target abilities if needed #
 if( target.abilities,
 	if( index_of('regenerates', target.abilities) != -1, -10, 0 ) +
@@ -26,5 +26,5 @@ if( target.abilities,
 	0
 )
 
-faiend
+wflend
 

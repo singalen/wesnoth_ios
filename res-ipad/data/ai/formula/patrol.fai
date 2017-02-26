@@ -1,4 +1,4 @@
-fai 'patrol.fai'
+wfl 'patrol.fai'
 
 def closest_unit(ai*, me)
 	choose(
@@ -25,7 +25,7 @@ where desired_path = shortest_path( me.loc, me.vars.next_step );
 
 def move_ahead(ai*, me)
 	if( enemy_units,
-		if( distance_between( closest_unit(ai, me).loc, me.loc ) > me.movement_left-1,
+		if( distance_between( closest_unit(ai, me).loc, me.loc ) > me.moves-1,
 			move_partial(
 				me.loc,
 				me.vars.next_step
@@ -50,7 +50,7 @@ def patrol_move(ai*, me)
 	move_ahead(ai,me)
     );
 
-if( me.movement_left = 0,
+if( me.moves = 0,
     end,
     if(attack,
         attack,
@@ -70,4 +70,4 @@ where path_to = if( enemy_units,
 			shortest_path( me.loc, closest_unit(self, me).loc ),
 			[]
 		)
-faiend
+wflend

@@ -65,6 +65,7 @@ int main (int argc, char **argv)
 
     SDL_SetEventFilter(HandleAppEvents, NULL);
 
+	// Just a copy from OS X main(). Does iOS really use these?
     setenv ("SDL_ENABLEAPPEVENTS", "1", 1);
     setenv ("SDL_VIDEO_ALLOW_SCREENSAVER", "1", 1);
 
@@ -75,14 +76,32 @@ int main (int argc, char **argv)
     setenv ("FONTCONFIG_PATH", ".", 1);
     setenv ("FONTCONFIG_FILE", "fonts.conf", 1);
 
-    int status;
+	gArgs.push_back(argv[0]); // Program name
+	for (int i = 1; i < argc; i++) {
+		// Filter out debug arguments that XCode might pass
+		if (strcmp(argv[i], "-ApplePersistenceIgnoreState") == 0) {
+			i++; // Skip the argument
+			continue;
+		}
+		if (strcmp(argv[i], "-NSDocumentRevisionsDebugMode") == 0) {
+			i++; // Skip the argument
+			continue;
+		}
+		// This is passed if launched by double-clicking
+		if (strncmp(argv[i], "-psn", 4) == 0) {
+			continue;
+		}
+		gArgs.push_back(argv[i]);
+	}
+	gArgs.push_back(nullptr);
 
-    /* Set the working directory to the .app's Resources directory */
+
+	/* Set the working directory to the .app's Resources directory */
     // FIXME: What here?
 //    chdir([[[NSBundle mainBundle] resourcePath] fileSystemRepresentation]);
 
     /* Hand off to main application code */
-    status = wesnoth_main(gArgs.size() - 1, gArgs.data());
+    int status = wesnoth_main((int) gArgs.size() - 1, gArgs.data());
 
     /* We're done, thank you for playing */
     exit(status);

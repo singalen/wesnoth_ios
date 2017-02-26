@@ -1,10 +1,5 @@
 --! #textdomain wesnoth
 
--- Backward-compatibility hack to avoid executing the file twice due to
--- old preload events. (To be removed in 1.11.) The hack assumes this
--- file is the first one to be executed.
-if wesnoth.package["lua/helper.lua"] then return end
-
 function wesnoth.game_events.on_load(cfg)
 	if #cfg == 0 then return end
 	local t = {}
@@ -16,38 +11,67 @@ function wesnoth.game_events.on_save()
 	return {}
 end
 
+wesnoth.require "lua/wml-flow.lua"
 wesnoth.require "lua/wml/objectives.lua"
 wesnoth.require "lua/wml/items.lua"
+wesnoth.require "lua/wml/message.lua"
+wesnoth.require "lua/wml/object.lua"
+wesnoth.require "lua/wml/modify_unit.lua"
+wesnoth.require "lua/wml/harm_unit.lua"
+wesnoth.require "lua/wml/find_path.lua"
+wesnoth.require "lua/wml/endlevel.lua"
+wesnoth.require "lua/wml/random_placement.lua"
 
 local helper = wesnoth.require "lua/helper.lua"
 local location_set = wesnoth.require "lua/location_set.lua"
+local utils = wesnoth.require "lua/wml-utils.lua"
 local wml_actions = wesnoth.wml_actions
+local T = helper.set_wml_tag_metatable {}
 
-local function trim(s)
-	local r = string.gsub(s, "^%s*(.-)%s*$", "%1")
-	return r
-end
+function wml_actions.sync_variable(cfg)
+	local names = cfg.name or helper.wml_error "[sync_variable] missing required name= attribute."
+	local result = wesnoth.synchronize_choice(
+		function()
+			local res = {}
+			for name_raw in utils.split(names) do
+				local name = utils.trim(name_raw)
+				local variable_type = string.sub(name, string.len(name)) == "]" and "indexed" or ( wesnoth.get_variable(name .. ".length") > 0 and "array" or "attribute")
+				local variable_info = { name = name, type = variable_type }
+				table.insert(res, { "variable", variable_info })
+				if variable_type == "indexed" then
+					table.insert(variable_info, { "value", wesnoth.get_variable(name) } )
+				elseif variable_type == "array" then
+					for i = 1, wesnoth.get_variable(name .. ".length") do
+						table.insert(variable_info, { "value",  wesnoth.get_variable(string.format("%s[%d]", name, i - 1)) } )
+					end
+				else
+					variable_info.value = wesnoth.get_variable(name)
+				end
+			end
+			return res
+		end
+	)
+	for variable in helper.child_range(result, "variable") do
+		local name = variable.name
 
-local engine_message = wml_actions.message
-
-function wml_actions.message(cfg)
-	local show_if = helper.get_child(cfg, "show_if")
-	if not show_if or wesnoth.eval_conditional(show_if) then
-		engine_message(cfg)
+		if variable.type == "indexed" then
+			wesnoth.set_variable(name, variable[1][2])
+		elseif variable.type == "array" then
+			for index, cfg_pair in ipairs(variable) do
+				wesnoth.set_variable( string.format("%s[%d]", name, index - 1), cfg_pair[2])
+			end
+		else
+			wesnoth.set_variable(name, variable.value)
+		end
 	end
 end
 
 function wml_actions.chat(cfg)
 	local side_list = wesnoth.get_sides(cfg)
-	local message = tostring(cfg.message) or
+	local speaker = tostring(cfg.speaker or "WML")
+	local message = tostring(cfg.message or
 		helper.wml_error "[chat] missing required message= attribute."
-
-	local speaker = cfg.speaker
-	if speaker then
-		speaker = tostring(speaker)
-	else
-		speaker = "WML"
-	end
+	)
 
 	for index, side in ipairs(side_list) do
 		if side.controller == "human" then
@@ -60,7 +84,8 @@ end
 function wml_actions.gold(cfg)
 	local amount = tonumber(cfg.amount) or
 		helper.wml_error "[gold] missing required amount= attribute."
-	for index, team in ipairs(wesnoth.get_sides(nil, cfg, false)) do
+	local sides = wesnoth.get_sides(cfg)
+	for index, team in ipairs(sides) do
 		team.gold = team.gold + amount
 	end
 end
@@ -75,8 +100,8 @@ end
 function wml_actions.clear_variable(cfg)
 	local names = cfg.name or
 		helper.wml_error "[clear_variable] missing required name= attribute."
-	for w in string.gmatch(names, "[^%s,][^,]*") do
-		wesnoth.set_variable(trim(w))
+	for w in utils.split(names) do
+		wesnoth.set_variable(utils.trim(w))
 	end
 end
 
@@ -91,16 +116,13 @@ function wml_actions.store_unit_type_ids(cfg)
 end
 
 function wml_actions.store_unit_type(cfg)
-	local var = cfg.variable or "unit_type"
 	local types = cfg.type or
 		helper.wml_error "[store_unit_type] missing required type= attribute."
-	wesnoth.set_variable(var)
-	local i = 0
-	for w in string.gmatch(types, "[^%s,][^,]*") do
+	local writer = utils.vwriter.init(cfg, "unit_type")
+	for w in utils.split(types) do
 		local unit_type = wesnoth.unit_types[w] or
 			helper.wml_error(string.format("Attempt to store nonexistent unit type '%s'.", w))
-		wesnoth.set_variable(string.format("%s[%d]", var, i), unit_type.__cfg)
-		i = i + 1
+		utils.vwriter.write(writer, unit_type.__cfg)
 	end
 end
 
@@ -119,25 +141,28 @@ function wml_actions.fire_event(cfg)
 	local w2 = helper.get_child(cfg, "secondary_attack")
 	if w2 then w1 = w1 or {} end
 
-	wesnoth.fire_event(cfg.name, x1, y1, x2, y2, w1, w2)
+	if cfg.id and cfg.id ~= "" then wesnoth.fire_event_by_id(cfg.id, x1, y1, x2, y2, w1, w2)
+	elseif cfg.name and cfg.name ~= "" then wesnoth.fire_event(cfg.name, x1, y1, x2, y2, w1, w2)
+	end
 end
 
 function wml_actions.allow_recruit(cfg)
-	for index, team in ipairs(wesnoth.get_sides(nil, cfg, true)) do
+	local unit_types = cfg.type or helper.wml_error("[allow_recruit] missing required type= attribute")
+	for index, team in ipairs(wesnoth.get_sides(cfg)) do
 		local v = team.recruit
-		for type in string.gmatch(cfg.type, "[^%s,][^,]*") do
+		for type in utils.split(unit_types) do
 			table.insert(v, type)
 			wesnoth.add_known_unit(type)
 		end
 		team.recruit = v
-	end
+		end
 end
 
 function wml_actions.allow_extra_recruit(cfg)
 	local recruits = cfg.extra_recruit or helper.wml_error("[allow_extra_recruit] missing required extra_recruit= attribute")
 	for index, unit in ipairs(wesnoth.get_units(cfg)) do
 		local v = unit.extra_recruit
-		for recruit in string.gmatch(recruits, "[^%s,][^,]*") do
+		for recruit in utils.split(recruits) do
 			table.insert(v, recruit)
 			wesnoth.add_known_unit(recruit)
 		end
@@ -146,17 +171,22 @@ function wml_actions.allow_extra_recruit(cfg)
 end
 
 function wml_actions.disallow_recruit(cfg)
-	for index, team in ipairs(wesnoth.get_sides(nil, cfg, true)) do
-		local v = team.recruit
-		for w in string.gmatch(cfg.type, "[^%s,][^,]*") do
-			for i, r in ipairs(v) do
-				if r == w then
-					table.remove(v, i)
-					break
+	local unit_types = cfg.type
+	for index, team in ipairs(wesnoth.get_sides(cfg)) do
+		if unit_types then
+			local v = team.recruit
+			for w in utils.split(unit_types) do
+				for i, r in ipairs(v) do
+					if r == w then
+						table.remove(v, i)
+						break
+					end
 				end
 			end
+			team.recruit = v
+		else
+			team.recruit = nil
 		end
-		team.recruit = v
 	end
 end
 
@@ -164,7 +194,7 @@ function wml_actions.disallow_extra_recruit(cfg)
 	local recruits = cfg.extra_recruit or helper.wml_error("[disallow_extra_recruit] missing required extra_recruit= attribute")
 	for index, unit in ipairs(wesnoth.get_units(cfg)) do
 		local v = unit.extra_recruit
-		for w in string.gmatch(recruits, "[^%s,][^,]*") do
+		for w in utils.split(recruits) do
 			for i, r in ipairs(v) do
 				if r == w then
 					table.remove(v, i)
@@ -178,9 +208,9 @@ end
 
 function wml_actions.set_recruit(cfg)
 	local recruit = cfg.recruit or helper.wml_error("[set_recruit] missing required recruit= attribute")
-	for index, team in ipairs(wesnoth.get_sides(nil, cfg, true)) do
+	for index, team in ipairs(wesnoth.get_sides(cfg)) do
 		local v = {}
-		for w in string.gmatch(recruit, "[^%s,][^,]*") do
+		for w in utils.split(recruit) do
 			table.insert(v, w)
 		end
 		team.recruit = v
@@ -191,7 +221,7 @@ function wml_actions.set_extra_recruit(cfg)
 	local recruits = cfg.extra_recruit or helper.wml_error("[set_extra_recruit] missing required extra_recruit= attribute")
 	local v = {}
 
-	for w in string.gmatch(recruits, "[^%s,][^,]*") do
+	for w in utils.split(recruits) do
 		table.insert(v, w)
 	end
 
@@ -215,7 +245,7 @@ function wml_actions.unit_worth(cfg)
 	local hp = u.hitpoints / u.max_hitpoints
 	local xp = u.experience / u.max_experience
 	local best_adv = ut.cost
-	for w in string.gmatch(ut.__cfg.advances_to, "[^%s,][^,]*") do
+	for w in utils.split(ut.__cfg.advances_to) do
 		local uta = wesnoth.unit_types[w]
 		if uta and uta.cost > best_adv then best_adv = uta.cost end
 	end
@@ -223,28 +253,13 @@ function wml_actions.unit_worth(cfg)
 	wesnoth.set_variable("next_cost", best_adv)
 	wesnoth.set_variable("health", math.floor(hp * 100))
 	wesnoth.set_variable("experience", math.floor(xp * 100))
+	wesnoth.set_variable("recall_cost", ut.recall_cost)
 	wesnoth.set_variable("unit_worth", math.floor(math.max(ut.cost * hp, best_adv * xp)))
-end
-
-function wml_actions.wml_action(cfg)
-	-- The new tag's name
-	local name = cfg.name or
-		helper.wml_error "[wml_action] missing required name= attribute."
-	local code = cfg.lua_function or
-		helper.wml_error "[wml_action] missing required lua_function= attribute."
-	local bytecode, message = loadstring(code)
-	if not bytecode then
-		helper.wml_error("[wml_action] failed to compile Lua code: " .. message)
-	end
-	-- The lua function that is executed when the tag is called
-	local lua_function = bytecode() or
-		helper.wml_error "[wml_action] expects a Lua code returning a function."
-	wml_actions[name] = lua_function
 end
 
 function wml_actions.lua(cfg)
 	local cfg = helper.shallow_literal(cfg)
-	local bytecode, message = loadstring(cfg.code or "")
+	local bytecode, message = load(cfg.code or "")
 	if not bytecode then error("~lua:" .. message, 0) end
 	bytecode(helper.get_child(cfg, "args"))
 end
@@ -253,118 +268,99 @@ function wml_actions.music(cfg)
 	wesnoth.set_music(cfg)
 end
 
-local function handle_event_commands(cfg)
-	-- The WML might be modifying the currently executed WML by mixing
-	-- [insert_tag] with [set_variables] and [clear_variable], so we
-	-- have to be careful not to get confused by tags vanishing during
-	-- the execution, hence the manual handling of [insert_tag].
-	local cmds = helper.shallow_literal(cfg)
-	for i = 1,#cmds do
-		local v = cmds[i]
-		local cmd = v[1]
-		local arg = v[2]
-		local insert_from
-		if cmd == "insert_tag" then
-			cmd = arg.name
-			local from = arg.variable
-			arg = wesnoth.get_variable(from)
-			if type(arg) ~= "table" then
-				-- Corner case: A missing variable is replaced
-				-- by an empty container rather than being ignored.
-				arg = {}
-			elseif string.sub(from, -1) ~= ']' then
-				insert_from = from
+-- This is mainly for use in unit test macros, but maybe it can be useful elsewhere too
+function wml_actions.test_condition(cfg)
+	local logger = cfg.logger or "warning"
+
+	-- This function returns true if it managed to explain the failure
+	local function explain(current_cfg, expect)
+		for i,t in ipairs(current_cfg) do
+			local tag, this_cfg = t[1], t[2]
+			-- Some special cases
+			if tag == "or" or tag == "and" then
+				if explain(this_cfg, expect) then
+					return true
+				end
+			elseif tag == "not" then
+				if explain(this_cfg, not expect) then
+					return true
+				end
+			elseif tag == "true" or tag == "false" then
+				-- We don't explain these ones.
+				return true
+			elseif wesnoth.eval_conditional{t} == expect then
+				local explanation = "The following conditional test %s:"
+				if expect then
+					explanation = explanation:format("passed")
+				else
+					explanation = explanation:format("failed")
+				end
+				explanation = string.format("%s\n\t[%s]", explanation, tag)
+				for k,v in pairs(this_cfg) do
+					if type(k) ~= "number" then
+						local format = "%s\n\t\t%s=%s"
+						local literal = tostring(helper.literal(this_cfg)[k])
+						if literal ~= v then
+							format = format .. "=%s"
+						end
+						explanation = string.format(format, explanation, k, literal, tostring(v))
+					end
+				end
+				explanation = string.format("%s\n\t[/%s]", explanation, tag)
+				if tag == "variable" then
+					explanation = string.format("%s\n\tNote: The variable %s currently has the value %q.", explanation, this_cfg.name, tostring(wesnoth.get_variable(this_cfg.name)))
+				end
+				wesnoth.log(logger, explanation, true)
+				return true
 			end
-			arg = wesnoth.tovconfig(arg)
-		end
-		if not string.find(cmd, "^filter") then
-			cmd = wml_actions[cmd] or
-				helper.wml_error(string.format("[%s] not supported", cmd))
-			if insert_from then
-				local j = 0
-				repeat
-					cmd(arg)
-					j = j + 1
-					if j >= wesnoth.get_variable(insert_from .. ".length") then break end
-					arg = wesnoth.tovconfig(wesnoth.get_variable(string.format("%s[%d]", insert_from, j)))
-				until false
-			else
-				cmd(arg)
-			end
 		end
 	end
-	-- Apply music alterations once all the commands have been processed.
-	wesnoth.set_music()
-end
 
-wml_actions.command = handle_event_commands
-
-local function if_while_handler(max_iter, pass, fail, cfg)
-	for i = 1, max_iter do
-		local t = wesnoth.eval_conditional(cfg) and pass or fail
-		if not t then return end
-		for v in helper.child_range(cfg, t) do
-			handle_event_commands(v)
-		end
-	end
-end
-
-local function if_handler(cfg)
-	if_while_handler(1, "then", "else", cfg)
-end
-
-local function while_handler(cfg)
-	if_while_handler(65536, "do", nil, cfg)
-end
-
-wml_actions["if"] = if_handler
-wml_actions["while"] = while_handler
-
-function wml_actions.switch(cfg)
-	local value = wesnoth.get_variable(cfg.variable)
-	local found = false
-	-- Execute all the [case]s where the value matches.
-	for v in helper.child_range(cfg, "case") do
-		local match = false
-		for w in string.gmatch(v.value, "[^%s,][^,]*") do
-			if w == tostring(value) then match = true ; break end
-		end
-		if match then
-			handle_event_commands(v)
-			found = true
-		end
-	end
-	-- Otherwise execute [else] statements.
-	if not found then
-		for v in helper.child_range(cfg, "else") do
-			handle_event_commands(v)
-		end
-	end
+	-- Use not twice here to convert nil to false
+	explain(cfg, not not cfg.result)
 end
 
 function wml_actions.scroll_to(cfg)
-	local x = tonumber(cfg.x) or helper.wml_error("invalid x= in [scroll_to]")
-	local y = tonumber(cfg.y) or helper.wml_error("invalid y= in [scroll_to]")
-	wesnoth.scroll_to_tile(x, y, cfg.check_fogged)
+	local loc = wesnoth.get_locations( cfg )[1]
+	if not loc then return end
+	if not utils.optional_side_filter(cfg) then return end
+	wesnoth.scroll_to_tile(loc[1], loc[2], cfg.check_fogged, cfg.immediate)
+	if cfg.highlight then
+		wesnoth.highlight_hex(loc[1], loc[2])
+		wml_actions.redraw{}
+	end
 end
 
 function wml_actions.scroll_to_unit(cfg)
 	local u = wesnoth.get_units(cfg)[1]
 	if not u then return end
-	wesnoth.scroll_to_tile(u.x, u.y, cfg.check_fogged)
+	if not utils.optional_side_filter(cfg, "for_side", "for_side") then return end
+	wesnoth.scroll_to_tile(u.x, u.y, cfg.check_fogged, cfg.immediate)
+	if cfg.highlight then
+		wesnoth.highlight_hex(u.x, u.y)
+		wml_actions.redraw{}
+	end
+end
+
+function wml_actions.lock_view(cfg)
+	wesnoth.lock_view(true)
+end
+
+function wml_actions.unlock_view(cfg)
+	wesnoth.lock_view(false)
 end
 
 function wml_actions.select_unit(cfg)
 	local u = wesnoth.get_units(cfg)[1]
 	if not u then return end
-	wesnoth.select_hex(u.x, u.y, cfg.highlight, cfg.fire_event)
+	wesnoth.select_unit(u.x, u.y, cfg.highlight, cfg.fire_event)
 end
 
 function wml_actions.unit_overlay(cfg)
-	local img = cfg.image
+	local img = cfg.image or helper.wml_error( "[unit_overlay] missing required image= attribute" )
 	for i,u in ipairs(wesnoth.get_units(cfg)) do
 		local ucfg = u.__cfg
-		for w in string.gmatch(ucfg.overlays, "[^%s,][^,]*") do
+		for w in utils.split(ucfg.overlays) do
 			if w == img then ucfg = nil end
 		end
 		if ucfg then
@@ -375,13 +371,17 @@ function wml_actions.unit_overlay(cfg)
 end
 
 function wml_actions.remove_unit_overlay(cfg)
-	local img = cfg.image
+	local img = cfg.image or helper.wml_error( "[remove_unit_overlay] missing required image= attribute" )
+
+	-- Loop through all matching units.
 	for i,u in ipairs(wesnoth.get_units(cfg)) do
 		local ucfg = u.__cfg
-		local t = {}
-		for w in string.gmatch(ucfg.overlays, "[^%s,][^,]*") do
-			if w ~= img then table.insert(t, w) end
+		local t = utils.parenthetical_split(ucfg.overlays)
+		-- Remove the specified image from the overlays.
+		for i = #t,1,-1 do
+			if t[i] == img then table.remove(t, i) end
 		end
+		-- Reassemble the list of remaining overlays.
 		ucfg.overlays = table.concat(t, ',')
 		wesnoth.put_unit(ucfg)
 	end
@@ -396,23 +396,16 @@ function wml_actions.store_unit(cfg)
 	local filter = helper.get_child(cfg, "filter") or
 		helper.wml_error "[store_unit] missing required [filter] tag"
 	local kill_units = cfg.kill
-	local mode = cfg.mode
 
-	local var = cfg.variable or "unit"
-	local idx = 0
 	--cache the needed units here, since the filter might reference the to-be-cleared variable(s)
 	local units = wesnoth.get_units(filter)
 	local recall_units = wesnoth.get_recall_units(filter)
-	if mode == "append" then
-		idx = wesnoth.get_variable(var .. ".length")
-	elseif mode ~= "replace" then
-		wesnoth.set_variable(var)
-	end
+
+	local writer = utils.vwriter.init(cfg, "unit")
 
 	for i,u in ipairs(units) do
-		wesnoth.set_variable(string.format("%s[%d]", var, idx), u.__cfg)
-		idx = idx + 1
-		if kill_units then wesnoth.put_unit(u.x, u.y) end
+		utils.vwriter.write(writer, u.__cfg)
+		if kill_units then wesnoth.erase_unit(u) end
 	end
 
 	if (not filter.x or filter.x == "recall") and (not filter.y or filter.y == "recall") then
@@ -420,9 +413,8 @@ function wml_actions.store_unit(cfg)
 			local ucfg = u.__cfg
 			ucfg.x = "recall"
 			ucfg.y = "recall"
-			wesnoth.set_variable(string.format("%s[%d]", var, idx), ucfg)
-			idx = idx + 1
-			if kill_units then wesnoth.extract_unit(u) end
+			utils.vwriter.write(writer, ucfg)
+			if kill_units then wesnoth.erase_unit(u) end
 		end
 	end
 end
@@ -433,11 +425,10 @@ function wml_actions.sound(cfg)
 end
 
 function wml_actions.store_locations(cfg)
-	local var = cfg.variable or "location"
 	-- the variable can be mentioned in a [find_in] subtag, so it
 	-- cannot be cleared before the locations are recovered
 	local locs = wesnoth.get_locations(cfg)
-	wesnoth.set_variable(var)
+	local writer = utils.vwriter.init(cfg, "location")
 	for i, loc in ipairs(locs) do
 		local x, y = loc[1], loc[2]
 		local t = wesnoth.get_terrain(x, y)
@@ -445,7 +436,7 @@ function wml_actions.store_locations(cfg)
 		if wesnoth.get_terrain_info(t).village then
 			res.owner_side = wesnoth.get_village_owner(x, y) or 0
 		end
-		wesnoth.set_variable(string.format("%s[%d]", var, i - 1), res)
+		utils.vwriter.write(writer, res)
 	end
 end
 
@@ -509,100 +500,14 @@ function wml_actions.unhide_unit(cfg)
 	wml_actions.redraw {}
 end
 
---note: when using these, make sure that nothing can throw over the call to end_var_scope
-local function start_var_scope(name)
-	local var = helper.get_variable_array(name) --containers and arrays
-	if #var == 0 then var = wesnoth.get_variable(name) end --scalars (and nil/empty)
-	wesnoth.set_variable(name)
-	return var
-end
-
-local function end_var_scope(name, var)
-	wesnoth.set_variable(name)
-	if type(var) == "table" then
-		helper.set_variable_array(name, var)
-	else
-		wesnoth.set_variable(name, var)
-	end
-end
-
-function wml_actions.modify_unit(cfg)
-	local unit_variable = "LUA_modify_unit"
-
-	local function handle_attributes(cfg, unit_path, toplevel)
-		for current_key, current_value in pairs(helper.shallow_parsed(cfg)) do
-			if type(current_value) ~= "table" and (not toplevel or current_key ~= "type") then
-				wesnoth.set_variable(string.format("%s.%s", unit_path, current_key), current_value)
-			end
-		end
-	end
-
-	local function handle_child(cfg, unit_path)
-		local children_handled = {}
-		local cfg = helper.shallow_parsed(cfg)
-		handle_attributes(cfg, unit_path)
-
-		for current_index, current_table in ipairs(cfg) do
-			local current_tag = current_table[1]
-			local tag_index = children_handled[current_tag] or 0
-			handle_child(current_table[2], string.format("%s.%s[%u]",
-				unit_path, current_tag, tag_index))
-			children_handled[current_tag] = tag_index + 1
-		end
-	end
-
-	local filter = helper.get_child(cfg, "filter") or helper.wml_error "[modify_unit] missing required [filter] tag"
-	local function handle_unit(unit_num)
-		local children_handled = {}
-		local unit_path = string.format("%s[%u]", unit_variable, unit_num)
-		local this_unit = wesnoth.get_variable(unit_path)
-		wesnoth.set_variable("this_unit", this_unit)
-		handle_attributes(cfg, unit_path, true)
-
-		for current_index, current_table in ipairs(helper.shallow_parsed(cfg)) do
-			local current_tag = current_table[1]
-			if current_tag == "filter" then
-				-- nothing
-			elseif current_tag == "object" or current_tag == "trait" then
-				local unit = wesnoth.get_variable(unit_path)
-				unit = wesnoth.create_unit(unit)
-				wesnoth.add_modification(unit, current_tag, current_table[2])
-				unit = unit.__cfg;
-				wesnoth.set_variable(unit_path, unit)
-			else
-				local tag_index = children_handled[current_tag] or 0
-				handle_child(current_table[2], string.format("%s.%s[%u]",
-					unit_path, current_tag, tag_index))
-				children_handled[current_tag] = tag_index + 1
-			end
-		end
-
-		if cfg.type then
-			if cfg.type ~= "" then wesnoth.set_variable(unit_path .. ".advances_to", cfg.type) end
-			wesnoth.set_variable(unit_path .. ".experience", wesnoth.get_variable(unit_path .. ".max_experience"))
-		end
-		wml_actions.kill({ id = this_unit.id, animate = false })
-		wml_actions.unstore_unit { variable = unit_path }
-	end
-
-	wml_actions.store_unit { {"filter", filter}, variable = unit_variable }
-	local max_index = wesnoth.get_variable(unit_variable .. ".length") - 1
-
-	local this_unit = start_var_scope("this_unit")
-	for current_unit = 0, max_index do
-		handle_unit(current_unit)
-	end
-	end_var_scope("this_unit", this_unit)
-
-	wesnoth.set_variable(unit_variable)
-end
-
 function wml_actions.move_unit(cfg)
 	local coordinate_error = "invalid coordinate in [move_unit]"
-	local to_x = tostring(cfg.to_x) or helper.wml_error(coordinate_error)
-	local to_y = tostring(cfg.to_y) or helper.wml_error(coordinate_error)
+	local to_x = tostring(cfg.to_x or helper.wml_error(coordinate_error))
+	local to_y = tostring(cfg.to_y or helper.wml_error(coordinate_error))
 	local fire_event = cfg.fire_event
-	local check_passability = cfg.check_passability; if check_passability == nil then check_passability = true end
+	local muf_force_scroll = cfg.force_scroll
+	local check_passability = cfg.check_passability
+	if check_passability == nil then check_passability = true end
 	cfg = helper.literal(cfg)
 	cfg.to_x, cfg.to_y, cfg.fire_event = nil, nil, nil
 	local units = wesnoth.get_units(cfg)
@@ -617,15 +522,17 @@ function wml_actions.move_unit(cfg)
 			if check_passability then pass_check = current_unit end
 
 			local x, y = xs(), ys()
+			local prevX, prevY = tonumber(current_unit.x), tonumber(current_unit.y)
 			while true do
 				x = tonumber(x) or helper.wml_error(coordinate_error)
 				y = tonumber(y) or helper.wml_error(coordinate_error)
-				x, y = wesnoth.find_vacant_tile(x, y, pass_check)
+				if not (x == prevX and y == prevY) then x, y = wesnoth.find_vacant_tile(x, y, pass_check) end
 				if not x or not y then helper.wml_error("Could not find a suitable hex near to one of the target hexes in [move_unit].") end
 				move_string_x = string.format("%s,%u", move_string_x, x)
 				move_string_y = string.format("%s,%u", move_string_y, y)
 				local next_x, next_y = xs(), ys()
 				if not next_x and not next_y then break end
+				prevX, prevY = x, y
 				x, y = next_x, next_y
 			end
 
@@ -642,7 +549,8 @@ function wml_actions.move_unit(cfg)
 				image_mods = current_unit.image_mods,
 				side = current_unit_cfg.side,
 				x = move_string_x,
-				y = move_string_y
+				y = move_string_y,
+				force_scroll = muf_force_scroll
 			}
 			local x2, y2 = current_unit.x, current_unit.y
 			current_unit.x, current_unit.y = x, y
@@ -674,7 +582,7 @@ end
 
 function wml_actions.terrain(cfg)
 	local terrain = cfg.terrain or helper.wml_error("[terrain] missing required terrain= attribute")
-	cfg = helper.shallow_literal(cfg)
+	cfg = helper.shallow_parsed(cfg)
 	cfg.terrain = nil
 	for i, loc in ipairs(wesnoth.get_locations(cfg)) do
 		wesnoth.set_terrain(loc[1], loc[2], terrain, cfg.layer, cfg.replace_if_failed)
@@ -684,7 +592,8 @@ end
 function wml_actions.delay(cfg)
 	local delay = tonumber(cfg.time) or
 		helper.wml_error "[delay] missing required time= attribute."
-	wesnoth.delay(delay)
+	local accelerate = cfg.accelerate or false
+	wesnoth.delay(delay, accelerate)
 end
 
 function wml_actions.floating_text(cfg)
@@ -692,14 +601,16 @@ function wml_actions.floating_text(cfg)
 	local text = cfg.text or helper.wml_error("[floating_text] missing required text= attribute")
 
 	for i, loc in ipairs(locs) do
-		wesnoth.float_label(loc[1], loc[2], text)
+		wesnoth.float_label(loc[1], loc[2], text, cfg.color)
 	end
 end
 
 function wml_actions.petrify(cfg)
 	for index, unit in ipairs(wesnoth.get_units(cfg)) do
 		unit.status.petrified = true
-		wml_actions.redraw({ side = unit.side }) -- may be unneccessary
+		-- Extract unit and put it back to update animation (not needed for recall units)
+		wesnoth.extract_unit(unit)
+		wesnoth.put_unit(unit)
 	end
 
 	for index, unit in ipairs(wesnoth.get_recall_units(cfg)) do
@@ -710,7 +621,9 @@ end
 function wml_actions.unpetrify(cfg)
 	for index, unit in ipairs(wesnoth.get_units(cfg)) do
 		unit.status.petrified = false
-		wml_actions.redraw({ side = unit.side }) -- may be unneccessary
+		-- Extract unit and put it back to update animation (not needed for recall units)
+		wesnoth.extract_unit(unit)
+		wesnoth.put_unit(unit)
 	end
 
 	for index, unit in ipairs(wesnoth.get_recall_units(cfg)) do
@@ -718,390 +631,113 @@ function wml_actions.unpetrify(cfg)
 	end
 end
 
-function wml_actions.harm_unit(cfg)
-	local filter = helper.get_child(cfg, "filter") or helper.wml_error("[harm_unit] missing required [filter] tag")
-	-- we need to use shallow_literal field, to avoid raising an error if $this_unit (not yet assigned) is used
-	if not cfg.__shallow_literal.amount then helper.wml_error("[harm_unit] has missing required amount= attribute") end
-	local variable = cfg.variable -- kept out of the way to avoid problems
-	local _ = wesnoth.textdomain "wesnoth"
-	-- #textdomain wesnoth
-	local harmer
-
-	local this_unit = start_var_scope("this_unit")
-
-	for index, unit_to_harm in ipairs(wesnoth.get_units(filter)) do
-		if unit_to_harm.valid then
-			-- block to support $this_unit
-			wesnoth.set_variable ( "this_unit" ) -- clearing this_unit
-			wesnoth.set_variable("this_unit", unit_to_harm.__cfg) -- cfg field needed
-			local amount = tonumber(cfg.amount)
-			local animate = cfg.animate -- attacker and defender are special values
-			local delay = cfg.delay or 500
-			local kill = cfg.kill
-			local fire_event = cfg.fire_event
-			local primary_attack = helper.get_child(cfg, "primary_attack")
-			local secondary_attack = helper.get_child(cfg, "secondary_attack")
-			local harmer_filter = helper.get_child(cfg, "filter_second")
-			local experience = cfg.experience
-			if harmer_filter then harmer = wesnoth.get_units(harmer_filter)[1] end
-			-- end of block to support $this_unit
-
-			if animate then
-				if animate ~= "defender" and harmer and harmer.valid then
-					wesnoth.scroll_to_tile(harmer.x, harmer.y, true)
-					wml_actions.animate_unit( { flag = "attack", hits = true, { "filter", { id = harmer.id } },
-						{ "primary_attack", primary_attack },
-						{ "secondary_attack", secondary_attack }, with_bars = true,
-						{ "facing", { x = unit_to_harm.x, y = unit_to_harm.y } } } )
-				end
-				wesnoth.scroll_to_tile(unit_to_harm.x, unit_to_harm.y, true)
-			end
-
-			-- the two functions below are taken straight from the C++ engine, util.cpp and actions.cpp, with a few unuseful parts removed
-			-- may be moved in helper.lua in 1.11
-			local function round_damage( base_damage, bonus, divisor )
-				local rounding
-				if base_damage == 0 then return 0
-				else
-					if bonus < divisor or divisor == 1 then
-						rounding = divisor / 2 - 0
-					else
-						rounding = divisor / 2 - 1
-					end
-					return math.max( 1, math.floor( ( base_damage * bonus + rounding ) / divisor ) )
-				end
-			end
-
-			local function calculate_damage( base_damage, alignment, tod_bonus, resistance )
-				local damage_multiplier = 100
-				if alignment == "lawful" then
-					damage_multiplier = damage_multiplier + tod_bonus
-				elseif alignment == "chaotic" then
-					damage_multiplier = damage_multiplier - tod_bonus
-				elseif alignment == "liminal" then
-					damage_multiplier = damage_multiplier - math.abs( tod_bonus )
-				else -- neutral, do nothing
-				end
-				damage_multiplier = damage_multiplier * resistance -- at this point, a resistance_modifier can be added, as asked by fendrin
-				local damage = round_damage( base_damage, damage_multiplier, 10000 ) -- if harmer.status.slowed, this may be 20000 ?
-				return damage
-			end
-
-			local damage = calculate_damage( amount,
-							 ( cfg.alignment or "neutral" ),
-							 wesnoth.get_time_of_day( { unit_to_harm.x, unit_to_harm.y, true } ).lawful_bonus,
-							 wesnoth.unit_resistance( unit_to_harm, cfg.damage_type or "dummy" )
-						       )
-
-			if unit_to_harm.hitpoints <= damage then
-				if kill == false then damage = unit_to_harm.hitpoints - 1
-				else damage = unit_to_harm.hitpoints
-				end
-			end
-
-			unit_to_harm.hitpoints = unit_to_harm.hitpoints - damage
-			local text = string.format("%d%s", damage, "\n")
-			local add_tab = false
-			local gender = unit_to_harm.__cfg.gender
-
-			local function set_status(name, male_string, female_string, sound)
-				if not cfg[name] or unit_to_harm.status[name] then return end
-				if gender == "female" then
-					text = string.format("%s%s%s", text, tostring(female_string), "\n")
-				else
-					text = string.format("%s%s%s", text, tostring(male_string), "\n")
-				end
-
-				unit_to_harm.status[name] = true
-				add_tab = true
-
-				if animate and sound then -- for unhealable, that has no sound
-					wesnoth.play_sound (sound)
-				end
-			end
-
-			if not unit_to_harm.status.not_living then
-				set_status("poisoned", _"poisoned", _"female^poisoned", "poison.ogg")
-			end
-			set_status("slowed", _"slowed", _"female^slowed", "slowed.wav")
-			set_status("petrified", _"petrified", _"female^petrified", "petrified.ogg")
-			set_status("unhealable", _"unhealable", _"female^unhealable")
-
-			if add_tab then
-				text = string.format("%s%s", "\t", text)
-			end
-
-			if animate and animate ~= "attacker" then
-				if harmer and harmer.valid then
-					wml_actions.animate_unit( { flag = "defend", hits = true, { "filter", { id = unit_to_harm.id } },
-						{ "primary_attack", primary_attack },
-						{ "secondary_attack", secondary_attack }, with_bars = true },
-						{ "facing", { x = harmer.x, y = harmer.y } } )
-				else
-					wml_actions.animate_unit( { flag = "defend", hits = true, { "filter", { id = unit_to_harm.id } },
-						{ "primary_attack", primary_attack },
-						{ "secondary_attack", secondary_attack }, with_bars = true } )
-				end
-			end
-
-			wesnoth.float_label( unit_to_harm.x, unit_to_harm.y, string.format( "<span foreground='red'>%s</span>", text ) )
-
-			local function calc_xp( level ) -- to calculate the experience in case of kill
-				if level == 0 then return 4
-				else return level * 8 end
-			end
-
-			if experience ~= false and harmer and harmer.valid and wesnoth.is_enemy( unit_to_harm.side, harmer.side ) then -- no XP earned for harming friendly units
-				if kill ~= false and unit_to_harm.hitpoints <= 0 then
-					harmer.experience = harmer.experience + calc_xp( unit_to_harm.__cfg.level )
-				else
-					unit_to_harm.experience = unit_to_harm.experience + harmer.__cfg.level
-					harmer.experience = harmer.experience + unit_to_harm.__cfg.level
-				end
-			end
-
-			if kill ~= false and unit_to_harm.hitpoints <= 0 then
-				local function bool( value ) -- support function for kill tag below
-					if value then return true
-					else return false end
-				end
-				wml_actions.kill({ id = unit_to_harm.id, animate = bool( animate ), fire_event = fire_event })
-			end
-
-			if animate then
-				wesnoth.delay(delay)
-			end
-
-			if variable then
-				wesnoth.set_variable(string.format("%s[%d]", variable, index - 1), { harm_amount = damage })
-			end
-
-			-- both may no longer be alive at this point, so double check
-			if experience ~= false and harmer and unit_to_harm.valid and unit_to_harm.experience >= unit_to_harm.max_experience then
-				wml_actions.store_unit { { "filter", { id = unit_to_harm.id } }, variable = "Lua_store_unit", kill = true }
-				wml_actions.unstore_unit { variable = "Lua_store_unit", find_vacant = false, advance = true }
-				wesnoth.set_variable ( "Lua_store_unit", nil )
-			end
-		end
-
-		if experience ~= false and harmer and harmer.valid and harmer.experience >= harmer.max_experience then
-			wml_actions.store_unit { { "filter", { id = harmer.id } }, variable = "Lua_store_unit", kill = true }
-			wml_actions.unstore_unit { variable = "Lua_store_unit", find_vacant = false, advance = true }
-			wesnoth.set_variable ( "Lua_store_unit", nil )
-		end
-
-		wml_actions.redraw {}
-	end
-
-	wesnoth.set_variable ( "this_unit" ) -- clearing this_unit
-	end_var_scope("this_unit", this_unit)
+function wml_actions.heal_unit(cfg)
+	wesnoth.heal_unit(cfg)
 end
 
 function wml_actions.transform_unit(cfg)
 	local transform_to = cfg.transform_to
 
 	for index, unit in ipairs(wesnoth.get_units(cfg)) do
-		local hitpoints = unit.hitpoints
 
 		if transform_to then
 			wesnoth.transform_unit( unit, transform_to )
 		else
+			local hitpoints = unit.hitpoints
 			local experience = unit.experience
-			unit.experience = unit.max_experience
+			local recall_cost = unit.recall_cost
 			local status = helper.get_child( unit.__cfg, "status" )
 
-			wml_actions.store_unit { { "filter", { id = unit.id } }, variable = "Lua_store_unit", kill = true }
-			wml_actions.unstore_unit { variable = "Lua_store_unit", find_vacant = false, advance = true, fire_event = false }
-			wesnoth.set_variable ( "Lua_store_unit")
+			unit.experience = unit.max_experience
+			wesnoth.advance_unit(unit, false, false)
 
+			unit.hitpoints = hitpoints
 			unit.experience = experience
+			recall_cost = unit.recall_cost
 
 			for key, value in pairs(status) do unit.status[key] = value end
+			if unit.status.unpoisonable then unit.status.poisoned = nil end
 		end
-
-		unit.hitpoints = hitpoints
-
-		if unit.status.not_living then unit.status.poisoned = nil end
 	end
 
 	wml_actions.redraw {}
 end
 
 function wml_actions.store_side(cfg)
-	local variable = cfg.variable or "side"
-	local index = 0
-	wesnoth.set_variable(variable)
+	local writer = utils.vwriter.init(cfg, "side")
 	for t, side_number in helper.get_sides(cfg) do
 		local container = {
-				controller = t.controller,
-				recruit = table.concat(t.recruit, ","),
-				fog = t.fog,
-				shroud = t.shroud,
-				hidden = t.hidden,
-				income = t.total_income,
-				village_gold = t.village_gold,
-				name = t.name,
-				team_name = t.team_name,
-				user_team_name = t.user_team_name,
-				color = t.color,
-				colour = t.color,
-				gold = t.gold,
-				side = side_number
-			}
-		wesnoth.set_variable(string.format("%s[%u]", variable, index), container)
-		index = index + 1
+			controller = t.controller,
+			recruit = table.concat(t.recruit, ","),
+			fog = t.fog,
+			shroud = t.shroud,
+			hidden = t.hidden,
+			income = t.total_income,
+			village_gold = t.village_gold,
+			village_support = t.village_support,
+			team_name = t.team_name,
+			user_team_name = t.user_team_name,
+			color = t.color,
+			gold = t.gold,
+			scroll_to_leader = t.scroll_to_leader,
+			flag = t.flag,
+			flag_icon = t.flag_icon,
+			side = side_number
+		}
+		utils.vwriter.write(writer, container)
 	end
-	-- colour deprecated starting with 1.9.0
+end
+
+-- This is the port of the old [modify_ai] into lua. It is different from wesnoth.modify_ai in that it uses a standard side filter.
+-- I don't know why these functions were made to behave differently, but this seems to be the more powerful and useful one according
+-- to mattsc's comments
+function wml_actions.modify_ai(cfg)
+	wesnoth.modify_ai_wml(cfg)
 end
 
 function wml_actions.add_ai_behavior(cfg)
-	local unit = wesnoth.get_units(helper.get_child(cfg, "filter"))[1]
-
-	if not unit then
+	local unit = wesnoth.get_units(helper.get_child(cfg, "filter"))[1] or
 		helper.wml_error("[add_ai_behavior]: no unit specified")
-	end
 
-	local side = cfg.side
+	local side = cfg.side or
+		helper.wml_error("[add_ai_behavior]: no side attribute given")
+
 	local sticky = cfg.sticky or false
 	local loop_id = cfg.loop_id or "main_loop"
 	local eval = cfg.evaluation
 	local exec = cfg.execution
+	local id = cfg.bca_id or ("bca-" .. unit.__cfg.underlying_id)
 
 	local ux = unit.x -- @note: did I get it right that coordinates in C++ differ by 1 from thos in-game(and in Lua)?
 	local uy = unit.y
-
-	if not side then
-		helper.wml_error("[add_ai_behavior]: no side attribute given")
-	end
 
 	if not (eval and exec) then
 		helper.wml_error("[add_ai_behavior]: invalid execution/evaluation handler(s)")
 	end
 
-	local id = "bca-" .. ca_counter
 	local path = "stage[" .. loop_id .. "].candidate_action[" .. id .. "]" -- bca: behavior candidate action
 
-	ca_counter = ca_counter + 1
+	wesnoth.wml_actions.modify_ai {
+		action = "add",
+		engine = "lua",
+		path = path,
+		side = side,
 
-	local conf = {
-		["action"] = "add",
-		["engine"] = "lua",
-		["id"] = id,
-		["name"] = id,
-		["path"] = path,
-
-		{"candidate_action", {
-			["id"] = id,
-			["name"] = id,
-			["engine"] = "lua",
-			["side"] = side,
-			["sticky"] = sticky,
-			["unit_x"] = ux,
-			["unit_y"] = uy,
-			["evaluation"] = eval,
-			["execution"] = exec
-		}},
-
-		["side"] = side
+		T.candidate_action {
+			id = id,
+			name = id,
+			engine = "lua",
+			sticky = sticky,
+			unit_x = ux,
+			unit_y = uy,
+			evaluation = eval,
+			execution = exec
+		},
 	}
-	wesnoth.wml_actions.modify_ai(conf)
-	--wesnoth.message("Adding a behavior")
-end
-
-function wml_actions.find_path(cfg)
-	local filter_unit = (helper.get_child(cfg, "traveler")) or helper.wml_error("[find_path] missing required [traveler] tag")
-	-- only the first unit matching
-	local unit = wesnoth.get_units(filter_unit)[1] or helper.wml_error("[find_path]'s filter didn't match any unit")
-	if not helper.get_child(cfg, "destination") then helper.wml_error( "[find_path] missing required [destination] tag" ) end
-	-- support for $this_unit
-	local this_unit = start_var_scope("this_unit")
-	wesnoth.set_variable ( "this_unit" ) -- clearing this_unit
-	wesnoth.set_variable("this_unit", unit.__cfg) -- cfg field needed
-
-	local filter_location = (helper.get_child(cfg, "destination")) or helper.wml_error("[find_path] missing required [destination] tag")
-	local variable = cfg.variable or "path"
-	local ignore_units = false
-	local ignore_teleport = false
-
-	if cfg.check_zoc == false then --if we do not want to check the ZoCs, we must ignore units
-		ignore_units = true
-	end
-	if cfg.check_teleport == false then --if we do not want to check teleport, we must ignore it
-		ignore_teleport = true
-	end
-
-	local allow_multiple_turns = cfg.allow_multiple_turns
-	local viewing_side
-
-	if not cfg.check_visibility then viewing_side = 0 end -- if check_visiblity then shroud is taken in account
-
-	local locations = wesnoth.get_locations(filter_location) -- only the location with the lowest distance and lowest movement cost will match. If there will still be more than 1, only the 1st maching one.
-	if not allow_multiple_turns then local max_cost = unit.moves end --to avoid wrong calculation on already moved units
-	local current_distance, current_cost = math.huge, math.huge
-	local current_location = {}
-
-	local width,heigth,border = wesnoth.get_map_size() -- data for test below
-
-	for index, location in ipairs(locations) do
-		-- we test if location passed to pathfinder is invalid (border); if is, do nothing, do not return and continue the cycle
-		if location[1] == 0 or location[1] == ( width + 1 ) or location[2] == 0 or location[2] == ( heigth + 1 ) then
-		else
-			local distance = helper.distance_between ( unit.x, unit.y, location[1], location[2] )
-			-- if we pass an unreachable locations an high value will be returned
-			local path, cost = wesnoth.find_path( unit, location[1], location[2], { max_cost = max_cost, ignore_units = ignore_units, ignore_teleport = ignore_teleport, viewing_side = viewing_side } )
-
-			if ( distance < current_distance and cost <= current_cost ) or ( cost < current_cost and distance <= current_distance ) then -- to avoid changing the hex with one with less distance and more cost, or vice versa
-				current_distance = distance
-				current_cost = cost
-				current_location = location
-			end
-		end
-	end
-
-	if #current_location == 0 then wesnoth.message("WML warning","[find_path]'s filter didn't match any location")
-	else
-		local path, cost = wesnoth.find_path( unit, current_location[1], current_location[2], { max_cost = max_cost, ignore_units = ignore_units, ignore_teleport = ignore_teleport, viewing_side = viewing_side } )
-		local turns
-
-		if cost == 0 then -- if location is the same, of course it doesn't cost any MP
-			turns = 0
-		else
-			turns = math.ceil( ( ( cost - unit.moves ) / unit.max_moves ) + 1 )
-		end
-
-		if cost >= 42424242 then -- it's the high value returned for unwalkable or busy terrains
-			wesnoth.set_variable ( string.format("%s", variable), { length = 0 } ) -- set only length, nil all other values
-		return end
-
-		if not allow_multiple_turns and turns > 1 then -- location cannot be reached in one turn
-			wesnoth.set_variable ( string.format("%s", variable), { length = 0 } )
-		return end -- skip the cycles below
-
-		wesnoth.set_variable ( string.format( "%s", variable ), { length = current_distance, from_x = unit.x, from_y = unit.y, to_x = current_location[1], to_y = current_location[2], movement_cost = cost, required_turns = turns } )
-
-		for index, path_loc in ipairs(path) do
-			local sub_path, sub_cost = wesnoth.find_path( unit, path_loc[1], path_loc[2], { max_cost = max_cost, ignore_units = ignore_units, ignore_teleport = ignore_teleport, viewing_side = viewing_side } )
-			local sub_turns
-
-			if sub_cost == 0 then
-				sub_turns = 0
-			else
-				sub_turns = math.ceil( ( ( sub_cost - unit.moves ) / unit.max_moves ) + 1 )
-			end
-
-			wesnoth.set_variable ( string.format( "%s.step[%d]", variable, index - 1 ), { x = path_loc[1], y = path_loc[2], terrain = wesnoth.get_terrain( path_loc[1], path_loc[2] ), movement_cost = sub_cost, required_turns = sub_turns } ) -- this structure takes less space in the inspection window
-		end
-	end
-
-	-- support for $this_unit
-	wesnoth.set_variable ( "this_unit" ) -- clearing this_unit
-	end_var_scope("this_unit", this_unit)
 end
 
 function wml_actions.store_starting_location(cfg)
-	local variable = cfg.variable or "location"
-	wesnoth.set_variable(variable)
-	local index = 0
+	local writer = utils.vwriter.init(cfg, "location")
 	for possibly_wrong_index, side in ipairs(wesnoth.get_sides(cfg)) do
 		local loc = wesnoth.get_starting_location(side.side)
 		if loc then
@@ -1110,8 +746,489 @@ function wml_actions.store_starting_location(cfg)
 			if wesnoth.get_terrain_info(terrain).village then
 				result.owner_side = wesnoth.get_village_owner(loc[1], loc[2]) or 0
 			end
-			wesnoth.set_variable(string.format("%s[%u]", variable, index), result)
-			index = index + 1
+			utils.vwriter.write(writer, result)
 		end
+	end
+end
+
+function wml_actions.store_villages( cfg )
+	local villages = wesnoth.get_villages( cfg )
+	local writer = utils.vwriter.init(cfg, "location")
+	for index, village in ipairs( villages ) do
+		utils.vwriter.write(writer, {
+			x = village[1],
+			y = village[2],
+			terrain = wesnoth.get_terrain( village[1], village[2] ),
+			owner_side = wesnoth.get_village_owner( village[1], village[2] ) or 0
+		})
+	end
+end
+
+function wml_actions.put_to_recall_list(cfg)
+	local units = wesnoth.get_units(cfg)
+
+	for i, unit in ipairs(units) do
+		if cfg.heal then
+			unit.hitpoints = unit.max_hitpoints
+			unit.moves = unit.max_moves
+			unit.attacks_left = unit.max_attacks
+			unit.status.poisoned = false
+			unit.status.slowed = false
+		end
+		wesnoth.put_recall_unit(unit, unit.side)
+	end
+end
+
+function wml_actions.allow_undo(cfg)
+	wesnoth.allow_undo()
+end
+
+function wml_actions.allow_end_turn(cfg)
+	wesnoth.allow_end_turn(true)
+end
+
+function wml_actions.disallow_end_turn(cfg)
+	wesnoth.allow_end_turn(false)
+end
+
+function wml_actions.clear_menu_item(cfg)
+	wesnoth.clear_menu_item(cfg.id)
+end
+
+function wml_actions.set_menu_item(cfg)
+	wesnoth.set_menu_item(cfg.id, cfg)
+end
+
+function wml_actions.place_shroud(cfg)
+	wesnoth.place_shroud(cfg)
+end
+
+function wml_actions.remove_shroud(cfg)
+	wesnoth.remove_shroud(cfg)
+end
+
+function wml_actions.time_area(cfg)
+	if cfg.remove then
+		wml_actions.remove_time_area(cfg)
+	else
+		wesnoth.add_time_area(cfg)
+	end
+end
+
+function wml_actions.remove_time_area(cfg)
+	local id = cfg.id or helper.wml_error("[remove_time_area] missing required id= key")
+
+	for w in utils.split(id) do
+		wesnoth.remove_time_area(w)
+	end
+end
+
+function wml_actions.replace_schedule(cfg)
+	wesnoth.replace_schedule(cfg)
+end
+
+function wml_actions.scroll(cfg)
+	wesnoth.scroll(cfg)
+end
+
+function wml_actions.animate_unit(cfg)
+	wesnoth.animate_unit(cfg)
+end
+
+function wml_actions.color_adjust(cfg)
+	wesnoth.color_adjust(cfg)
+end
+
+function wml_actions.end_turn(cfg)
+	wesnoth.end_turn()
+end
+
+function wml_actions.event(cfg)
+	if cfg.remove then
+		wml_actions.remove_event(cfg)
+	else
+		wesnoth.add_event_handler(cfg)
+	end
+end
+
+function wml_actions.remove_event(cfg)
+	local id = cfg.id or helper.wml_error("[remove_event] missing required id= key")
+
+	for w in utils.split(id) do
+		wesnoth.remove_event_handler(w)
+	end
+end
+
+function wml_actions.inspect(cfg)
+	wesnoth.gamestate_inspector(cfg)
+end
+
+function wml_actions.kill(cfg)
+	wesnoth.kill(cfg)
+end
+
+function wml_actions.label( cfg )
+	local new_cfg = helper.parsed( cfg )
+	for index, location in ipairs( wesnoth.get_locations( cfg ) ) do
+		new_cfg.x, new_cfg.y = location[1], location[2]
+		wesnoth.label( new_cfg )
+	end
+end
+
+function wml_actions.modify_side(cfg)
+	wesnoth.modify_side(cfg)
+end
+
+function wml_actions.open_help(cfg)
+	wesnoth.open_help(cfg.topic)
+end
+
+function wml_actions.redraw(cfg)
+	local clear_shroud = cfg.clear_shroud
+
+	-- Backwards compat, the behavior of the tag was to clear shroud in case that side= is given.
+	if cfg.clear_shroud == nil and cfg.side ~= nil then
+		clear_shroud = true
+	end
+
+	wesnoth.redraw(cfg, clear_shroud)
+end
+
+function wml_actions.print(cfg)
+	wesnoth.print(cfg)
+end
+
+function wml_actions.role(cfg)
+	-- role= and type= are handled differently than in other tags,
+	-- so we need to remove them from the filter
+	local role = cfg.role
+	local filter = helper.shallow_literal(cfg)
+
+	if role == nil then
+		helper.wml_error("missing role= in [role]")
+	end
+
+	local types = {}
+
+	if cfg.type then
+		for value in utils.split(cfg.type) do
+			table.insert(types, utils.trim(value))
+		end
+	end
+
+	filter.role, filter.type = nil, nil
+	local search_map, search_recall, reassign = true, true, true
+	if cfg.search_recall_list == "only" then
+		search_map = false
+	elseif cfg.search_recall_list ~= nil then
+		search_recall = not not cfg.search_recall_list
+	end
+	if cfg.reassign ~= nil then
+		reassign = not not cfg.reassign
+	end
+
+	-- pre-build a new [recall] from the [auto_recall]
+	-- copy only recall-specific attributes, no SUF at all
+	-- the SUF will be id= which we will add in a moment
+	-- keep this in sync with the C++ recall function!!!
+	local recall = nil
+	local child = helper.get_child(cfg, "auto_recall")
+	if child ~= nil then
+		if helper.get_nth_child(cfg, "auto_recall", 2) ~= nil then
+			wesnoth.log("debug", "More than one [auto_recall] found within [role]", true)
+		end
+		local original = helper.shallow_literal(child)
+		recall = {}
+		recall.x = original.x
+		recall.y = original.y
+		recall.show = original.show
+		recall.fire_event = original.fire_event
+		recall.check_passability = original.check_passability
+	end
+
+	if not reassign then
+		if search_map then
+			local unit = wesnoth.get_units{role=role}[1]
+			if unit then
+				return
+			end
+		end
+		if recall and search_recall then
+			local unit = wesnoth.get_recall_units{role=role}[1]
+			if unit then
+				recall.id = unit.id
+				wml_actions.recall(recall)
+				return
+			end
+		end
+	end
+
+	if search_map then
+		-- first attempt to match units on the map
+		local i = 1
+		repeat
+			-- give precedence based on the order specified in type=
+			if #types > 0 then
+				filter.type = types[i]
+			end
+			local unit = wesnoth.get_units(filter)[1]
+			if unit then
+				unit.role = role
+				return
+			end
+			i = i + 1
+		until #types == 0 or i > #types
+	end
+
+	if search_recall then
+		-- then try to match units on the recall lists
+		i = 1
+		repeat
+			if #types > 0 then
+				filter.type = types[i]
+			end
+			local unit = wesnoth.get_recall_units(filter)[1]
+			if unit then
+				unit.role = role
+				if recall then
+					recall.id = unit.id
+					wml_actions.recall(recall)
+				end
+				return
+			end
+			i = i + 1
+		until #types == 0 or i > #types
+	end
+
+	-- no matching unit found, try the [else] tags
+	for else_child in helper.child_range(cfg, "else") do
+		local action = utils.handle_event_commands(else_child, "conditional")
+		if action ~= "none" then return end
+	end
+end
+
+function wml_actions.unsynced(cfg)
+	wesnoth.unsynced(function ()
+		wml_actions.command(cfg)
+	end)
+end
+
+local function on_board(x, y)
+	if type(x) ~= "number" or type(y) ~= "number" then
+		return false
+	end
+	local w, h = wesnoth.get_map_size()
+	return x >= 1 and y >= 1 and x <= w and y <= h
+end
+
+wml_actions.unstore_unit = function(cfg)
+	local variable = cfg.variable or helper.wml_error("[unstore_unit] missing required 'variable' attribute")
+	local unit_cfg = wesnoth.get_variable(variable)
+	local unit = wesnoth.create_unit(unit_cfg)
+	local advance = cfg.advance ~= false
+	local animate = cfg.animate ~= false
+	local x = cfg.x or unit.x or -1
+	local y = cfg.y or unit.y or -1
+	wesnoth.add_known_unit(unit.type)
+	if on_board(x, y) then
+		if cfg.find_vacant then
+			x,y = wesnoth.find_vacant_tile(x, y, cfg.check_passability and unit)
+		end
+		unit:to_map(x, y, cfg.fire_event)
+		local text = nil
+		if unit_cfg.gender == "female" then
+			text = cfg.female_text or cfg.text
+		else
+			text = cfg.male_text or cfg.text
+		end
+		local color = cfg.color
+		if color == nil and cfg.red and cfg.blue and cfg.green then
+			color = cfg.red .. "," .. cfg.green .. "," .. cfg.blue
+		end
+		if text ~= nil and not wesnoth.is_skipping_messages() then
+			wesnoth.float_label(x, y, text, color)
+		end
+		if advance then
+			wesnoth.advance_unit(unit, animate, cfg.fire_event)
+		end
+	else
+		unit:to_recall()
+	end
+end
+
+wml_actions.teleport = function(cfg)
+	local context = wesnoth.current.event_context
+	local filter = helper.get_child(cfg, "filter") or { x = context.x1, y = context.y1 }
+	local unit = wesnoth.get_units(filter)[1]
+	if not unit then
+		-- No error if no unit matches.
+		return
+	end
+	wesnoth.teleport(unit, cfg.x, cfg.y, cfg.check_passability == false, cfg.clear_shroud ~= false, cfg.animate)
+end
+
+function wml_actions.remove_sound_source(cfg)
+	wesnoth.remove_sound_source(cfg.id)
+end
+
+function wml_actions.sound_source(cfg)
+	wesnoth.add_sound_source(cfg)
+end
+
+function wml_actions.deprecated_message(cfg)
+	if not wesnoth.game_config.debug then return end
+	wesnoth.log('wml', cfg.message)
+end
+
+function wml_actions.wml_message(cfg)
+	wesnoth.log(cfg.logger, cfg.message, cfg.to_chat)
+end
+
+local function parse_fog_cfg(cfg)
+	-- Side filter
+	local ssf = helper.get_child(cfg, "filter_side")
+	local sides = wesnoth.get_sides(ssf or {})
+	-- Location filter
+	local locs = wesnoth.get_locations(cfg)
+	return locs, sides
+end
+
+function wml_actions.lift_fog(cfg)
+	local locs, sides = parse_fog_cfg(cfg)
+	for i = 1, #sides do
+		wesnoth.remove_fog(sides[i].side, locs, not cfg.multiturn)
+	end
+end
+
+function wml_actions.reset_fog(cfg)
+	local locs, sides = parse_fog_cfg(cfg)
+	for i = 1, #sides do
+		wesnoth.add_fog(sides[i].side, locs, cfg.reset_view)
+	end
+end
+
+function wml_actions.set_variable(cfg)
+	local name = cfg.name or helper.wml_error "trying to set a variable with an empty name"
+
+	if cfg.value ~= nil then -- check for nil because user may try to set a variable as false
+		wesnoth.set_variable(name, cfg.value)
+	end
+
+	if cfg.literal ~= nil then
+		wesnoth.set_variable(name, helper.shallow_literal(cfg).literal)
+	end
+
+	if cfg.to_variable then
+		wesnoth.set_variable(name, wesnoth.get_variable(cfg.to_variable))
+	end
+
+	if cfg.add then
+		wesnoth.set_variable(name, (tonumber(wesnoth.get_variable(name)) or 0) + (tonumber(cfg.add) or 0))
+	end
+
+	if cfg.sub then
+		wesnoth.set_variable(name, (tonumber(wesnoth.get_variable(name)) or 0) - (tonumber(cfg.sub) or 0))
+	end
+
+	if cfg.multiply then
+		wesnoth.set_variable(name, (tonumber(wesnoth.get_variable(name)) or 0) * (tonumber(cfg.multiply) or 0))
+	end
+
+	if cfg.divide then
+		local divide = tonumber(cfg.divide) or 0
+		if divide == 0 then helper.wml_error("division by zero on variable " .. name) end
+		wesnoth.set_variable(name, (tonumber(wesnoth.get_variable(name)) or 0) / divide)
+	end
+
+	if cfg.modulo then
+		local modulo = tonumber(cfg.modulo) or 0
+		if modulo == 0 then helper.wml_error("division by zero on variable " .. name) end
+		wesnoth.set_variable(name, (tonumber(wesnoth.get_variable(name)) or 0) % modulo)
+	end
+
+	if cfg.abs then
+		wesnoth.set_variable(name, math.abs(tonumber(wesnoth.get_variable(name)) or 0))
+	end
+
+	if cfg.root then
+		if cfg.root == "square" then
+			local radicand = tonumber(wesnoth.get_variable(name)) or 0
+			if radicand < 0 then helper.wml_error("square root of negative number on variable " .. name) end
+			wesnoth.set_variable(name, math.sqrt(radicand))
+		end
+	end
+
+	if cfg.power then
+		wesnoth.set_variable(name, (tonumber(wesnoth.get_variable(name)) or 0) ^ (tonumber(cfg.power) or 0))
+	end
+
+	if cfg.round then
+		local var = tonumber(wesnoth.get_variable(name) or 0)
+		local round_val = cfg.round
+		if round_val == "ceil" then
+			wesnoth.set_variable(name, math.ceil(var))
+		elseif round_val == "floor" then
+			wesnoth.set_variable(name, math.floor(var))
+		else
+			local decimals, discarded = math.modf(tonumber(round_val) or 0)
+			local value = var * (10 ^ decimals)
+			value = helper.round(value)
+			value = value * (10 ^ -decimals)
+			wesnoth.set_variable(name, value)
+		end
+	end
+
+	-- unlike the other math operations, ipart and fpart do not act on
+	-- the value already contained in the variable
+	-- but on the value assigned to the respective key
+	if cfg.ipart then
+		local ivalue, fvalue = math.modf(tonumber(cfg.ipart) or 0)
+		wesnoth.set_variable(name, ivalue)
+	end
+
+	if cfg.fpart then
+		local ivalue, fvalue = math.modf(tonumber(cfg.fpart) or 0)
+		wesnoth.set_variable(name, fvalue)
+	end
+
+	if cfg.string_length ~= nil then
+		wesnoth.set_variable(name, string.len(tostring(cfg.string_length)))
+	end
+
+	if cfg.time then
+		if cfg.time == "stamp" then
+			wesnoth.set_variable(name, wesnoth.get_time_stamp())
+		end
+	end
+
+	if cfg.rand then
+		wesnoth.set_variable(name, helper.rand(tostring(cfg.rand)))
+	end
+
+	local join_child = helper.get_child(cfg, "join")
+	if join_child then
+		local array_name = join_child.variable or helper.wml_error "missing variable= attribute in [join]"
+		local separator = join_child.separator
+		local key_name = join_child.key or "value"
+		local remove_empty = join_child.remove_empty
+
+		local string_to_join = {}
+
+		for i, element in ipairs(helper.get_variable_array(array_name)) do
+			if element[key_name] ~= nil or (not remove_empty) then
+				table.insert(string_to_join, tostring(element[key_name]))
+			end
+		end
+
+		wesnoth.set_variable(name, table.concat(string_to_join, separator))
+	end
+end
+
+function wesnoth.wml_conditionals.proceed_to_next_scenario(cfg)
+	local endlevel_data = wesnoth.get_end_level_data()
+	if not endlevel_data then
+		return false
+	else
+		return endlevel_data.proceed_to_next_level
 	end
 end

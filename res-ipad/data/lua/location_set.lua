@@ -15,7 +15,7 @@ local methods = {}
 local locset_meta = { __index = methods }
 
 function methods:empty()
-	return next(self.values)
+	return (not next(self.values))
 end
 
 function methods:size()
@@ -86,6 +86,12 @@ function methods:filter(f)
 end
 
 function methods:iter(f)
+	if f == nil then
+		local locs = self
+		return coroutine.wrap(function()
+			locs:iter(coroutine.yield)
+		end)
+	end
 	for p,v in pairs(self.values) do
 		local x, y = revindex(p)
 		f(x, y, v)
@@ -97,17 +103,43 @@ function methods:stable_iter(f)
 	for p,v in pairs(self.values) do
 		table.insert(indices, p)
 	end
+	if f == nil then
+		local locs = self
+		return coroutine.wrap(function()
+			locs:stable_iter(coroutine.yield)
+		end)
+	end
 	table.sort(indices)
 	for i,p in ipairs(indices) do
 		local x, y = revindex(p)
-		f(x, y, v)
+		f(x, y, self.values[p])
 	end
 end
 
 function methods:of_pairs(t)
 	local values = self.values
+
 	for i,v in ipairs(t) do
-		values[index(v[1], v[2])] = true
+		local value_table = {}
+		local x_index
+		local y_index
+		if v.x and v.y then
+			x_index = "x"
+			y_index = "y"
+		else
+			x_index = 1
+			y_index = 2
+		end
+		for k,val in pairs(v) do
+			if k ~= x_index and k ~= y_index then
+				value_table[k] = val
+			end
+		end
+		if next(value_table) then
+			values[index(v[x_index], v[y_index])] = value_table
+		else
+			values[index(v[x_index], v[y_index])] = true
+		end
 	end
 end
 
@@ -147,8 +179,11 @@ function methods:to_wml_var(name)
 end
 
 function location_set.create()
-	local w,h,b = wesnoth.get_map_size()
-	assert(h + 2 * b < 9000)
+	if wesnoth.get_map_size then
+		-- If called from the mapgen kernel, there's no map
+		local w,h,b = wesnoth.get_map_size()
+		assert(h + 2 * b < 9000)
+	end
 	return setmetatable({ values = {} }, locset_meta)
 end
 

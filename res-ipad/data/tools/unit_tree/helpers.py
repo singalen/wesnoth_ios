@@ -1,10 +1,9 @@
 """
 Various helpers for use by the wmlunits tool.
 """
-import sys, os, re, glob, shutil, copy, urllib2, subprocess
+import sys, os, re, glob, shutil, copy, urllib.request, urllib.error, urllib.parse, subprocess
 
-import wesnoth.wmlparser2 as wmlparser2
-import wesnoth.wmltools as wmltools
+import wesnoth.wmlparser3 as wmlparser3
 
 def get_datadir(wesnoth_exe):
     p = subprocess.Popen([wesnoth_exe, "--path"],
@@ -81,9 +80,13 @@ class ImageCollector:
             return image
             
         def make_name(x):
-            if x.startswith(options.config_dir): x = x[len(options.config_dir):]
-            if x.startswith("data/core/"): x = x[len("data/core/"):]
-            if x.startswith("images/"): x = x[len("images/"):]
+            x = x.strip("./ ")
+            d = options.config_dir.strip("./ ")
+            if x.startswith(d): x = x[len(d):]
+            d = options.data_dir.strip("./ ")
+            if x.startswith(d): x = x[len(d):]
+            x = x.strip("./ ")
+            if x.startswith("data"): x = x[len("data"):]
             x = x.strip("./ ")
             y = ""
             for c in x:
@@ -111,7 +114,7 @@ class ImageCollector:
         return image.id_name
 
     def copy_and_color_images(self, target_path):
-        for image in self.images_by_ipath.values():
+        for image in list(self.images_by_ipath.values()):
             opath = os.path.join(target_path, "pics", image.id_name)
             try:
                 os.makedirs(os.path.dirname(opath))
@@ -157,8 +160,8 @@ class WesnothList:
         self.movetype_lookup = {}
         self.era_lookup = {}
         self.campaign_lookup = {}
-        self.parser = wmlparser2.Parser(wesnoth_exe, config_dir,
-            data_dir, no_preprocess = False)
+        self.parser = wmlparser3.Parser(wesnoth_exe, config_dir,
+            data_dir)
 
 
     def add_terrains(self):
@@ -180,8 +183,8 @@ class WesnothList:
         """
         self.languages_found = {}
 
-        parser = wmlparser2.Parser(options.wesnoth, options.config_dir,
-            options.data_dir, no_preprocess = False)
+        parser = wmlparser3.Parser(options.wesnoth, options.config_dir,
+            options.data_dir)
         parser.parse_text("{languages}")
 
         for locale in parser.get_all(tag="locale"):
@@ -264,19 +267,24 @@ class WesnothList:
         # Find all unit types.
         newunits = getall("unit_type") + getall("unit")
         for unit in newunits:
-            if unit.get_text_val("do_not_list", "no") == "no" and\
-               unit.get_text_val("hide_help", "no") in ["no", "false"]:
-                uid = unit.get_text_val("id")
-                unit.id = uid
-                if uid in self.unit_lookup:
-                    unit = self.unit_lookup[uid]
-                    # TODO: We might want to compare the two units
-                    # with the same id and if one is different try
-                    # to do something clever like rename it...
-                else:
-                    self.unit_lookup[uid] = unit
-                if not hasattr(unit, "campaigns"): unit.campaigns = []
-                unit.campaigns.append(campaign)
+            uid = unit.get_text_val("id")
+            unit.id = uid
+            
+            if unit.get_text_val("do_not_list", "no") != "no" or\
+               unit.get_text_val("hide_help", "no") not in ["no", "false"]:
+                    unit.hidden = True
+            else:
+                unit.hidden = False
+            
+            if uid in self.unit_lookup:
+                unit = self.unit_lookup[uid]
+                # TODO: We might want to compare the two units
+                # with the same id and if one is different try
+                # to do something clever like rename it...
+            else:
+                self.unit_lookup[uid] = unit
+            if not hasattr(unit, "campaigns"): unit.campaigns = []
+            unit.campaigns.append(campaign)
 
         # Find all races.
         newraces = getall("race")
@@ -337,7 +345,7 @@ class WesnothList:
         """
         
         # handle advancefrom tags
-        for uid, unit in self.unit_lookup.items():
+        for uid, unit in list(self.unit_lookup.items()):
             for advancefrom in unit.get_all(tag = "advancefrom"):
                 fromid = advancefrom.get_text_val("unit")
                 if fromid:
@@ -352,12 +360,12 @@ class WesnothList:
                         fromunit.advance.append(uid)
 
     def find_unit_factions(self):
-        for unit in self.unit_lookup.values():
+        for unit in list(self.unit_lookup.values()):
             unit.factions = []
             unit.eras = []
 
-        for eid, era in self.era_lookup.items():
-            for fid, multiplayer_side in era.faction_lookup.items():
+        for eid, era in list(self.era_lookup.items()):
+            for fid, multiplayer_side in list(era.faction_lookup.items()):
                 for uid in multiplayer_side.units:
                     try:
                         unit = self.unit_lookup[uid]
@@ -374,7 +382,7 @@ class WesnothList:
                     unit.factions.append((eid, fid))
         
         # as a special case, add units from this addon but with no faction
-        for unit in self.unit_lookup.values():
+        for unit in list(self.unit_lookup.values()):
             if unit.campaigns[0] == self.cid:
                 if not unit.factions:
                     if not eid in unit.eras:
@@ -427,7 +435,7 @@ class UnitForest:
         """
 
         # Complete the network
-        for uid, u in self.lookup.items():
+        for uid, u in list(self.lookup.items()):
             for cid in u.child_ids:
                 c = self.lookup.get(cid, None)
                 if not c: continue
@@ -436,7 +444,7 @@ class UnitForest:
                     c.parent_ids.append(uid)
 
         # Put all roots into the forest
-        for uid, u in self.lookup.items():
+        for uid, u in list(self.lookup.items()):
             if not u.parent_ids:
                 self.trees[uid] = u
 
@@ -455,14 +463,14 @@ class UnitForest:
                     u.children.remove(c)
             for c in u.children:
                 recurse(c, already2)
-        for u in self.trees.values():
+        for u in list(self.trees.values()):
             already = {u.id : True}
             recurse(u, already)
 
     def update(self):
         self.create_network()
 
-        self.breadth = sum([x.update_breadth() for x in self.trees.values()])
+        self.breadth = sum([x.update_breadth() for x in list(self.trees.values())])
         return self.breadth
 
     def get_children(self, uid):

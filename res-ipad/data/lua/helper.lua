@@ -39,9 +39,7 @@ end
 --! If @a id is not nil, the "id" attribute of the subtag has to match too.
 --! The function also returns the index of the subtag in the array.
 function helper.get_child(cfg, name, id)
-	-- ipairs cannot be used on a vconfig object
-	for i = 1, #cfg do
-		local v = cfg[i]
+	for i,v in ipairs(cfg) do
 		if v[1] == name then
 			local w = v[2]
 			if not id or w.id == id then return w, i end
@@ -49,36 +47,67 @@ function helper.get_child(cfg, name, id)
 	end
 end
 
+--! Returns the nth subtag of @a cfg with the given @a name.
+--! (Indices start at 1, as always with Lua.)
+--! The function also returns the index of the subtag in the array.
+function helper.get_nth_child(cfg, name, n)
+	for i,v in ipairs(cfg) do
+		if v[1] == name then
+			n = n - 1
+			if n == 0 then return v[2], i end
+		end
+	end
+end
+
+--! Returns the number of subtags of @a with the given @a name.
+function helper.child_count(cfg, name)
+	local n = 0
+	for i,v in ipairs(cfg) do
+		if v[1] == name then
+			n = n + 1
+		end
+	end
+	return n
+end
+
 --! Returns an iterator over all the subtags of @a cfg with the given @a name.
 function helper.child_range(cfg, tag)
+	local iter, state, i = ipairs(cfg)
 	local function f(s)
 		local c
 		repeat
-			local i = s.i
-			c = cfg[i]
+			i,c = iter(s,i)
 			if not c then return end
-			s.i = i + 1
 		until c[1] == tag
 		return c[2]
 	end
-	return f, { i = 1 }
+	return f, state
+end
+
+--! Returns an array from the subtags of @a cfg with the given @a name
+function helper.child_array(cfg, tag)
+	local result = {}
+	for val in helper.child_range(cfg, tag) do
+		table.insert(result, val)
+	end
+	return result
 end
 
 --! Modifies all the units satisfying the given @a filter.
 --! @param vars key/value pairs that need changing.
 --! @note Usable only during WML actions.
 function helper.modify_unit(filter, vars)
-	wesnoth.fire("store_unit", {
+	wml_actions.store_unit({
 		[1] = { "filter", filter },
 		variable = "LUA_modify_unit",
 		kill = true
 	})
 	for i = 0, wesnoth.get_variable("LUA_modify_unit.length") - 1 do
-		local u = "LUA_modify_unit[" .. i .. "]"
+		local u = string.format("LUA_modify_unit[%d]", i)
 		for k, v in pairs(vars) do
 			wesnoth.set_variable(u .. '.' .. k, v)
 		end
-		wesnoth.fire("unstore_unit", {
+		wml_actions.unstore_unit({
 			variable = u,
 			find_vacant = false
 		})
@@ -89,7 +118,7 @@ end
 --! Fakes the move of a unit satisfying the given @a filter to position @a x, @a y.
 --! @note Usable only during WML actions.
 function helper.move_unit_fake(filter, to_x, to_y)
-	wesnoth.fire("store_unit", {
+	wml_actions.store_unit({
 		[1] = { "filter", filter },
 		variable = "LUA_move_unit",
 		kill = false
@@ -97,7 +126,7 @@ function helper.move_unit_fake(filter, to_x, to_y)
 	local from_x = wesnoth.get_variable("LUA_move_unit.x")
 	local from_y = wesnoth.get_variable("LUA_move_unit.y")
 
-	wesnoth.fire("scroll_to", { x=from_x, y=from_y })
+	wml_actions.scroll_to({ x=from_x, y=from_y })
 
 	if to_x < from_x then
 		wesnoth.set_variable("LUA_move_unit.facing", "sw")
@@ -107,14 +136,14 @@ function helper.move_unit_fake(filter, to_x, to_y)
 	wesnoth.set_variable("LUA_move_unit.x", to_x)
 	wesnoth.set_variable("LUA_move_unit.y", to_y)
 
-	wesnoth.fire("kill", {
+	wml_actions.kill({
 		x = from_x,
 		y = from_y,
 		animate = false,
 		fire_event = false
 	})
 
-	wesnoth.fire("move_unit_fake", {
+	wml_actions.move_unit_fake({
 		type      = "$LUA_move_unit.type",
 		gender    = "$LUA_move_unit.gender",
 		variation = "$LUA_move_unit.variation",
@@ -123,12 +152,14 @@ function helper.move_unit_fake(filter, to_x, to_y)
 		y         = from_y .. ',' .. to_y
 	})
 
-	wesnoth.fire("unstore_unit", { variable="LUA_move_unit", find_vacant=true })
-	wesnoth.fire("redraw")
+	wml_actions.unstore_unit({ variable="LUA_move_unit", find_vacant=true })
+	wml_actions.redraw({})
 	wesnoth.set_variable("LUA_move_unit")
 end
 
-local variable_mt = {}
+local variable_mt = {
+	__metatable = "WML variable proxy"
+}
 
 local function get_variable_proxy(k)
 	local v = wesnoth.get_variable(k, true)
@@ -166,6 +197,7 @@ function variable_mt.__newindex(t, k, v)
 end
 
 local root_variable_mt = {
+	__metatable = "WML variables",
 	__index    = function(t, k)    return get_variable_proxy(k)    end,
 	__newindex = function(t, k, v)
 		if type(v) == "function" then
@@ -178,7 +210,7 @@ local root_variable_mt = {
 	end
 }
 
---! Sets the metable of @a t so that it can be used to access WML variables.
+--! Sets the metatable of @a t so that it can be used to access WML variables.
 --! @return @a t.
 --! @code
 --! helper.set_wml_var_metatable(_G)
@@ -189,12 +221,13 @@ function helper.set_wml_var_metatable(t)
 end
 
 local fire_action_mt = {
+	__metatable = "WML actions",
 	__index = function(t, n)
 		return function(cfg) wesnoth.fire(n, cfg) end
 	end
 }
 
---! Sets the metable of @a t so that it can be used to fire WML actions.
+--! Sets the metatable of @a t so that it can be used to fire WML actions.
 --! @return @a t.
 --! @code
 --! W = helper.set_wml_action_metatable {}
@@ -205,12 +238,13 @@ function helper.set_wml_action_metatable(t)
 end
 
 local create_tag_mt = {
+	__metatable = "WML tag builder",
 	__index = function(t, n)
 		return function(cfg) return { n, cfg } end
 	end
 }
 
---! Sets the metable of @a t so that it can be used to create subtags with less brackets.
+--! Sets the metatable of @a t so that it can be used to create subtags with less brackets.
 --! @return @a t.
 --! @code
 --! T = helper.set_wml_tag_metatable {}
@@ -272,7 +306,7 @@ function helper.get_user_choice(attr, options)
 				code = string.format("wesnoth.__user_choice_helper(%d)", k)
 			}}}}}})
 	end
-	wesnoth.fire("message", msg)
+	wml_actions.message(msg)
 	wesnoth.__user_choice_helper = nil
 	return result
 end
@@ -351,20 +385,116 @@ function helper.shallow_parsed(cfg)
 end
 
 function helper.rand (possible_values)
-	wml_actions.set_variable({ name = "LUA_rand", rand = possible_values })
-	local result = wesnoth.get_variable("LUA_rand")
-	wesnoth.set_variable("LUA_rand")
-	return result
+	assert(type(possible_values) == "table" or type(possible_values) == "string", string.format("helper.rand expects a string or table as parameter, got %s instead", type(possible_values)))
+
+	local items = {}
+	local num_choices = 0
+
+	if type(possible_values) == "string" then
+		-- split on commas
+		for word in possible_values:gmatch("[^,]+") do
+			-- does the word contain two dots? If yes, that's a range
+			local dots_start, dots_end = word:find("%.%.")
+			if dots_start then
+				-- split on the dots if so and cast as numbers
+				local low = tonumber(word:sub(1, dots_start-1))
+				local high = tonumber(word:sub(dots_end+1))
+				-- perhaps someone passed a string as part of the range, intercept the issue
+				if not (low and high) then
+					wesnoth.message("Malformed range: " .. possible_values)
+					table.insert(items, word)
+					num_choices = num_choices + 1
+				else
+					if low > high then
+						-- low is greater than high, swap them
+						low, high = high, low
+					end
+
+					-- if both ends represent the same number, then just use that number
+					if low == high then
+						table.insert(items, low)
+						num_choices = num_choices + 1
+					else
+						-- insert a table representing the range
+						table.insert(items, {low, high})
+						-- how many items does the range contain? Increase difference by 1 because we include both ends
+						num_choices = num_choices + (high - low) + 1
+					end
+				end
+			else
+				-- handle as a string
+				table.insert(items, word)
+				num_choices = num_choices + 1
+			end
+		end
+	else
+		num_choices = #possible_values
+		items = possible_values
+		-- We need to parse ranges separately anyway
+		for i, val in ipairs(possible_values) do
+			if type(val) == "table" then
+				assert(#val == 2 and type(val[1]) == "number" and type(val[2]) == "number", "Malformed range for helper.rand")
+				if val[1] > val[2] then
+					val = {val[2], val[1]}
+				end
+				num_choices = num_choices + (val[2] - val[1])
+			end
+		end
+	end
+
+	local idx = wesnoth.random(1, num_choices)
+
+	for i, item in ipairs(items) do
+		if type(item) == "table" then -- that's a range
+			local elems = item[2] - item[1] + 1 -- amount of elements in the range, both ends included
+			if elems >= idx then
+				return item[1] + elems - idx
+			else
+				idx = idx - elems
+			end
+		else -- that's a single element
+			idx = idx - 1
+			if idx == 0 then
+				return item
+			end
+		end
+	end
+
+	return nil
 end
 
 function helper.deprecate(msg, f)
 	return function(...)
 		if msg then
-			wesnoth.message("WML warning", msg)
+			wesnoth.message("warning", msg)
 			-- trigger the message only once
 			msg = nil
 		end
 		return f(...)
+	end
+end
+
+function helper.round( number )
+	-- code converted from util.hpp, round_portable function
+	-- round half away from zero method
+	if number >= 0 then
+		number = math.floor( number + 0.5 )
+	else
+		number = math.ceil ( number - 0.5 )
+	end
+
+	return number
+end
+
+function helper.shuffle( t, random_func)
+	random_func = random_func or wesnoth.random
+	-- since tables are passed by reference, this is an in-place shuffle
+	-- it uses the Fisher-Yates algorithm, also known as Knuth shuffle
+	assert( type( t ) == "table", string.format( "helper.shuffle expects a table as parameter, got %s instead", type( t ) ) )
+	local length = #t
+	for index = length, 2, -1 do
+		local random = random_func( 1, index )
+		t[index], t[random] = t[random], t[index]
 	end
 end
 

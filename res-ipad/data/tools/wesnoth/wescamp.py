@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # vim: tabstop=4: shiftwidth=4: expandtab: softtabstop=4: autoindent:
-# $Id: wescamp.py 52367 2011-12-25 23:36:50Z ai0867 $
+#
 """
    Copyright (C) 2007 by Mark de Wever <koraq@xs4all.nl>
    Part of the Battle for Wesnoth Project http://www.wesnoth.org/
@@ -19,29 +19,37 @@ This utility provides two tools
 * update the translations in a campaign (in the packed campaign)
 """
 
-import sys, os, optparse, tempfile, shutil, logging, socket
+import sys, os.path, argparse, tempfile, shutil, logging, socket
 # in case the wesnoth python package has not been installed
 sys.path.append("data/tools")
-import wmldata as wmldata
+
+print("""
+Note: campaignserver_client has since been moved to Python 3 - the
+easiest way to run this script is to use campaginserver_client from
+an earlier Wesnoth version. And then in the long run convert this
+script to Python 3 as well.
+""")
+sys.exit(1)
 
 #import CampaignClient as libwml
 import wesnoth.campaignserver_client as libwml
 
-#import the svn library
-import wesnoth.libsvn as libsvn
-
 #import the github library
 import wesnoth.libgithub as libgithub
 
+# Some constants
+BUILDSYS_FILE = "build-system.version"
+ADDONVER_FILE = "addon.timestamp"
 
 class tempdir:
     def __init__(self):
         self.path = tempfile.mkdtemp()
         logging.debug("created tempdir '%s'", self.path)
 
-        # for some reason we need to need a variable to shutil otherwise the
-        #__del__() will fail. This is caused by import of campaignserver_client
-        # or libsvn, according to esr it's a bug in Python.
+        # We need to add a reference to shutil, otherwise __del__() will fail.
+        # This is because when the object is destructed other globals may
+        #have already been torn down.
+        # In C++ this is known as the static deinitialization fiasco.
         self.dummy = shutil
 
     def __del__(self):
@@ -49,41 +57,190 @@ class tempdir:
         logging.debug("removed tempdir '%s'", self.path)
 
 if __name__ == "__main__":
-    use_git = False
     git_version = None
-    git_userpass = None
+    git_auth = None
+    quiet_libwml = True
 
-    """Download an addon from the server.
+    def update_addon(addon_obj, addon_name, addon_server, temp_dir):
+        """Update the add-on from addon-server
 
-    server              The url of the addon server eg
-                        add-ons.wesnoth.org:15005.
-    addon               The name of the addon.
-    path                Directory to unpack the campaign in.
-    returns             Nothing.
-    """
+        addon_obj       Github.Addon object for the add-on
+        addon_name      Name of the add-on
+        addon_server    Url to the add-on server
+        temp_dir        The directory where the unpacked campaign can be stored.
+
+        returns         Whether anything was changed.
+        """
+        # Grab timestamp from server
+        server_timestamp = get_timestamp(addon_server, addon_name)
+
+        # Check local timestamp to see if the add-on server version is newer
+        if os.path.exists(os.path.join(addon_obj.get_dir(), ADDONVER_FILE)):
+            with open(os.path.join(addon_obj.get_dir(), ADDONVER_FILE), "r") as stamp_file:
+                str_timestamp = stamp_file.read()
+            try:
+                local_timestamp = int(str_timestamp)
+                if local_timestamp == server_timestamp:
+                    logging.info("Addon '%s' is up-to-date.", addon_name)
+                    return False
+            except:
+                pass
+
+        # Download the addon.
+        extract(addon_server, addon_name, temp_dir)
+
+        # Translation needs to be prevented from the campaign to overwrite
+        # the ones in wescamp.
+        # The other files are present in wescamp and shouldn't be deleted.
+        ignore_list = ["translations", "po", "campaign.def",
+            "config.status", "Makefile", BUILDSYS_FILE, ADDONVER_FILE]
+        if addon_obj.sync_from(temp_dir, ignore_list):
+            # Store add-on timestamp
+            with open(os.path.join(addon_obj.get_dir(), ADDONVER_FILE), "w") as timestamp_file:
+                timestamp_file.write(str(server_timestamp))
+            addon_obj._execute(["git", "add", ADDONVER_FILE])
+
+            addon_obj.commit("wescamp.py: Update from add-on server")
+            logging.info("New version of addon '%s' uploaded.", addon_name)
+            return True
+        else:
+            logging.info("Addon '%s' hasn't been modified, thus not uploaded.",
+                addon_name)
+            return False
+
+    def update_build_system(addon_obj, addon_name, wescamp_dir, build_sys_dir):
+        """Initialize or update the build-system.
+
+        addon_obj           libgithub.Addon objectof the addon.
+        addon_name          Name of the addon.
+        wescamp_dir         The directory containing a checkout of wescamp.
+        build_sys_dir       Possible directory containing a checkout of build-system.
+        returns             Boolean indicating whether the add-on now has a build-system.
+        """
+        logging.info("Checking if build system for add-on {0} needs to be updated".format(addon_name))
+        previously_initialized = os.path.exists(os.path.join(addon_obj.get_dir(), "Makefile"))
+
+        # Grab the build system
+        below_branch = os.path.basename(wescamp_dir.rstrip(os.sep))
+        possible_build_paths = []
+        if build_sys_dir:
+            possible_build_paths.append(build_sys_dir)
+        possible_build_paths.append(os.path.join(below_branch, "build-system"))
+        build_system = libgithub.get_build_system(possible_build_paths)
+        init_script = os.path.join(build_system.get_dir(), "init-build-sys.sh")
+
+        # Grab master build system's version
+        # Ugliness
+        out, err, res = build_system._execute(["git", "show", "--pretty=oneline", "--summary"])
+        build_system_version = out.split()[0]
+        if len(build_system_version) != 40:
+            logging.warn("Incorrect SHA1 for build system checkout: {0}".format(build_system_version))
+
+        # Check if build system version in add-on is up-to-date
+        if os.path.exists(os.path.join(addon_obj.get_dir(), BUILDSYS_FILE)):
+            with open(os.path.join(addon_obj.get_dir(), BUILDSYS_FILE), "r") as stamp_file:
+                addon_build_version = stamp_file.read()
+            if addon_build_version == build_system_version:
+                logging.info("Build system for add-on {0} is up-to-date".format(addon_name))
+                return True
+
+        # Ugliness
+        out, err, res = addon_obj._execute([init_script, "--{0}".format(git_version), addon_name, "."], check_error=False)
+        if len(err):
+            logging.warn("init-build-sys.sh in add-on {0}:\n{1}".format(addon_name, err))
+
+        if not out.strip().endswith("Done.") or res != 0:
+            logging.error("Failed to init the build-system for add-on {0}".format(addon_name))
+            addon_obj._execute(["rm", "-rf", "po", "campaign.def", "Makefile"])
+            addon_obj._execute(["git", "reset", "--hard"])
+            return False
+
+        # Store build system version
+        with open(os.path.join(addon_obj.get_dir(), BUILDSYS_FILE), "w") as version_file:
+            version_file.write(build_system_version)
+
+        addon_obj._execute(["git", "add", "po", "campaign.def", "Makefile", BUILDSYS_FILE], check_error=True)
+        if previously_initialized:
+            logging.info("Updated build system for add-on {0}".format(addon_name))
+            addon_obj.commit("wescamp.py: Update build-system")
+        else:
+            logging.info("Initialized build system for add-on {0}".format(addon_name))
+            addon_obj.commit("wescamp.py: Initialize build-system")
+        return True
+
+    def pot_update(addon_obj, addon_name):
+        """Update the translation catalogs.
+
+        addon_obj           libgithub.Addon objectof the addon.
+        addon_name          Name of the addon.
+        returns             Boolean indicating whether the operation was successful.
+        """
+        if not os.path.exists(os.path.join(addon_obj.get_dir(), "Makefile")):
+            logging.warn("Cannot pot-update: build system does not exist for add-on {0}.".format(addon_name))
+            return False
+        # Ugliness, again
+        out, err, res = addon_obj._execute(["make"])
+        if len(err):
+            logging.warn("pot-update in addon {0}:\n{1}".format(addon_name, err))
+            # TODO: bail?
+
+        if res != 0:
+            logging.error("Failed to pot-update for add-on {0}".format(addon_name))
+            addon_obj._execute(["rm", "-rf", "po", addon_name])
+            addon_obj._execute(["git", "reset", "--hard"])
+            return False
+
+        outlines = addon_obj._status()
+
+        to_rm = []
+        to_add = []
+        longname = "wesnoth-{0}".format(addon_name)
+        for line in outlines:
+            mod, name = line.split()
+            if mod == "D":
+                to_rm.append(name)
+            elif mod == "M" and name.endswith((".po", "LC_MESSAGES/{0}.mo".format(longname), "po/{0}.pot".format(longname))):
+                to_add.append(name)
+            else:
+                logging.info("Ignoring {0}".format(line))
+        if to_rm:
+            addon_obj._execute(["git", "rm"] + to_rm, check_error=True)
+        if to_add:
+            addon_obj._execute(["git", "add"] + to_add, check_error=True)
+        addon_obj.commit("wescamp.py: pot-update")
+        return True
+
     def extract(server, addon, path):
+        """Download an addon from the server.
+
+        server              The url of the addon server eg
+                            add-ons.wesnoth.org:15005.
+        addon               The name of the addon.
+        path                Directory to unpack the campaign in.
+        returns             Nothing.
+        """
 
         logging.debug("extract addon server = '%s' addon = '%s' path = '%s'",
             server, addon, path)
 
-        wml = libwml.CampaignClient(server)
+        wml = libwml.CampaignClient(server, quiet_libwml)
         data = wml.get_campaign(addon)
         wml.unpackdir(data, path)
 
-    """Get a list of addons on the server.
-
-    server              The url of the addon server eg
-                        add-ons.wesnoth.org:15005.
-    translatable_only   If True only returns translatable addons.
-    returns             A dictonary with the addon as key and the translatable
-                        status as value.
-    """
     def list_addons(server, translatable_only):
+        """Get a list of addons on the server.
+
+        server              The url of the addon server eg
+                            add-ons.wesnoth.org:15005.
+        translatable_only   If True only returns translatable addons.
+        returns             A dictionary with the addon as key and the translatable
+                            status as value.
+        """
 
         logging.debug("list addons server = '%s' translatable_only = %s",
             server, translatable_only)
 
-        wml = libwml.CampaignClient(server)
+        wml = libwml.CampaignClient(server, quiet_libwml)
         data = wml.list_campaigns()
 
         # Item [0] hardcoded seems to work
@@ -102,20 +259,20 @@ if __name__ == "__main__":
 
         return result
 
-    """Get the timestamp of a campaign on the server.
-
-    server              The url of the addon server eg
-                        add-ons.wesnoth.org:15005.
-    addon               The name of the addon.
-    returns             The timestamp of the campaign, -1 if not on the server.
-    """
     def get_timestamp(server, addon):
+        """Get the timestamp of a campaign on the server.
+
+        server              The url of the addon server eg
+                            add-ons.wesnoth.org:15005.
+        addon               The name of the addon.
+        returns             The timestamp of the campaign, -1 if not on the server.
+        """
 
         logging.debug("get_timestamp server = '%s' addon = %s",
             server, addon)
 
-        wml = libwml.CampaignClient(server)
-        data = wml.list_campaigns()
+        wml = libwml.CampaignClient(server, quiet_libwml)
+        data = wml.list_campaigns(addon)
 
         # Item [0] hardcoded seems to work
         campaigns = data.data[0]
@@ -128,19 +285,20 @@ if __name__ == "__main__":
 
         return -1
 
-    """Upload a addon from the server to wescamp.
+    def upload(server, addon, temp_dir, wescamp_dir, build_sys_dir=None):
+        """Upload a addon from the server to wescamp.
 
-    server              The url of the addon server eg
-                        add-ons.wesnoth.org:15005.
-    addon               The name of the addon.
-    temp_dir            The directory where the unpacked campaign can be stored.
-    svn_dir             The directory containing a checkout of wescamp.
-    """
-    def upload(server, addon, temp_dir, svn_dir):
+        server              The url of the addon server eg
+                            add-ons.wesnoth.org:15005.
+        addon               The name of the addon.
+        temp_dir            The directory where the unpacked campaign can be stored.
+        wescamp_dir         The directory containing a checkout of wescamp.
+        build_sys_dir       Possible directory containing a checkout of build-system.
+        """
 
         logging.debug("upload addon to wescamp server = '%s' addon = '%s' "
-            + "temp_dir = '%s' svn_dir = '%s'",
-            server, addon, temp_dir, svn_dir)
+            + "temp_dir = '%s' wescamp_dir = '%s'",
+            server, addon, temp_dir, wescamp_dir)
 
         # Is the addon in the list with campaigns to be translated.
         campaigns = list_addons(server, True)
@@ -149,306 +307,216 @@ if __name__ == "__main__":
                 + "upload aborted.", addon)
             return
 
-        # Download the addon.
-        extract(server,  addon, temp_dir)
+        github = libgithub.GitHub(wescamp_dir, git_version, authorization=git_auth)
 
-        # If the directory in svn doesn't exist we need to create and commit it.
-        message = "wescamp.py automatic update"
+        has_updated = False
 
-        if use_git:
-            github = libgithub.GitHub(svn_dir, git_version, userpass=git_userpass)
+        # If the checkout doesn't exist we need to create it.
+        if not os.path.isdir(os.path.join(wescamp_dir, addon)):
 
-        if(os.path.isdir(svn_dir + "/" + addon) == False):
+            logging.info("Checking out '%s'.",
+                os.path.join(wescamp_dir, addon))
 
-            logging.info("Creating directory in svn '%s'.",
-                svn_dir + "/" + addon)
-
-            if use_git:
-                if not github.addon_exists(addon):
-                    github.create_addon(addon)
-            else:
-                svn = libsvn.SVN(svn_dir)
-
-                # Don't update we're in the root and if we update the status of all
-                # other campaigns is lost and no more updates are executed.
-                os.mkdir(svn_dir + "/" + addon)
-                res = svn.add(addon)
-                res = svn.commit("wescamp_client: adding directory for initial "
-                    + "inclusion of addon '" + addon + "'", [addon])
+            if not github.addon_exists(addon):
+                github.create_addon(addon)
 
         # Update the directory
-        if use_git:
-            addon_obj = github.addon(addon)
-            addon_obj.update()
-        else:
-            svn = libsvn.SVN(svn_dir + "/" + addon)
-            svn.update()
-        # Translation needs to be prevented from the campaign to overwrite
-        # the ones in wescamp.
-        # The other files are present in wescamp and shouldn't be deleted.
-        ignore_list = ["translations", "po", "campaign.def",
-            "config.status", "Makefile"]
-        if(addon_obj.sync_from(temp_dir, ignore_list)
-            if use_git
-            else svn.copy_to_svn(temp_dir, ignore_list)):
+        addon_obj = github.addon(addon)
+        addon_obj.update()
 
-            (addon_obj if use_git else svn).commit("wescamp_client: automatic update of addon '"
-                + addon + "'")
-            logging.info("New version of addon '%s' uploaded.", addon)
-        else:
-            logging.info("Addon '%s' hasn't been modified, thus not uploaded.",
-                addon)
+        has_updated = update_addon(addon_obj, addon, server, temp_dir)
 
-    """Update the translations from wescamp to the server.
+        has_build_system = update_build_system(addon_obj, addon, wescamp_dir, build_sys_dir)
 
-    server              The url of the addon server eg
-                        add-ons.wesnoth.org:15005.
-    addon               The name of the addon.
-    temp_dir            The directory where the unpacked campaign can be stored.
-    svn_dir             The directory containing a checkout of wescamp.
-    password            The master upload password.
-    stamp               Only upload if the timestamp is equal to this value
-                        if None it's ignored. This is needed to avoid an upload
-                        of wescamp overwriting a campaign authors fresh upload,
-                        there's still a small possibility of a race condition
-                        but it would be really bad luck if that happens.
-    returns             if stamp is used it returns False if the upload failed
-                        due to a newer version on the server, True otherwise.
-    """
-    def download(server, addon, temp_dir, svn_dir, password, stamp = None):
+        if has_updated and has_build_system:
+            pot_update(addon_obj, addon)
 
-        logging.debug("download addon from wescamp server = '%s' addon = '%s' "
-            + "temp_dir = '%s' svn_dir = '%s' password is not shown",
-            server, addon, temp_dir, svn_dir)
 
-        # update the wescamp checkout for the translation,
-        if use_git:
-            addon_obj = libgithub.GitHub(wescamp, git_version, userpass=git_userpass).addon(addon)
-        else:
-            svn = libsvn.SVN(wescamp + "/" + addon)
+    def checkout(wescamp, auth=None, readonly=False):
+        """Checkout all add-ons of one wesnoth version from wescamp.
 
-        # The result of the update can be ignored, no changes when updating
-        # doesn't mean no changes to the translations.
-        if use_git:
-            addon_obj.update()
-        else:
-            svn.update()
+        wescamp             The directory where all checkouts should be stored.
+        auth                Authentication data. Shouldn't be needed.
+        readonly            Makes a read-only checkout that doesn't require authentication.
+        """
 
-        # test whether the svn has a translations dir, if not we can stop
-        if(os.path.isdir(wescamp + "/"
-            + addon + "/" + addon + "/translations") == False):
+        logging.debug("checking out add-ons from wesnoth version = '%s' to directory '%s'", git_version, wescamp)
 
-            logging.info("Wescamp has no translations directory so we can stop.")
-            if(stamp == None):
-                return
-            else:
-                return True
-
-        # Export the entire addon data dir.
-        if use_git:
-            source = os.path.join(wescamp, addon, addon)
-            dest = os.path.join(temp_dir, addon)
-            shutil.copytree(source, dest)
-        else:
-            svn_addon = libsvn.SVN(wescamp + "/" + addon + "/" + addon)
-            svn_addon.export(temp_dir + "/" + addon)
-
-        # If it is the old format with the addon.cfg copy that as well.
-        svn_cfg = wescamp + "/" + addon + "/" + addon + ".cfg"
-        temp_cfg = temp_dir + "/" + addon + ".cfg"
-        if(os.path.isfile(svn_cfg)):
-            logging.debug("Found old format config file")
-            shutil.copy(svn_cfg, temp_cfg)
-
-        # We don't test for changes, just upload the stuff.
-        # NOTE wml.put_campaign tests whether the addon.cfg exists so
-        # send it unconditionally.
-        wml = libwml.CampaignClient(server)
-        ignore = {}
-        stuff = {}
-        stuff["passphrase"] = password
-        if(stamp == None):
-            wml.put_campaign(addon
-                    , temp_dir + "/" + addon + "/_main.cfg"
-                    , temp_dir + "/" + addon + "/"
-                    , ignore
-                    , stuff)
-
-            logging.info("New version of addon '%s' downloaded.", addon)
-        else:
-            if(stamp == get_timestamp(server, addon)):
-                wml.put_campaign(addon
-                        , temp_dir + "/" + addon + "/_main.cfg"
-                        , temp_dir + "/" + addon + "/"
-                        , ignore
-                        , stuff)
-                logging.info("New version of addon '%s' downloaded.", addon)
-                return True
-            else:
-                return False
-
-    def erase(addon, svn_dir):
-
-        logging.debug("Erase addon from wescamp addon = '%s' svn_dir = '%s'",
-            addon, svn_dir)
-
-        if use_git:
-            addon_obj = libgithub.GitHub(svn_dir, git_version, userpass=git_userpass).addon(addon)
-
-            # Note: this is probably not implemented, as it would destroy a repository, including the history.
-            addon_obj.erase()
-        else:
-            svn = libsvn.SVN(svn_dir)
-
-            svn.update(None, [addon])
-
-            svn.remove(addon)
-
-            svn.commit("Erasing addon " + addon)
-
-    """Checkout all add-ons of one wesnoth version from wescamp.
-
-    wescamp             The directory where all checkouts should be stored.
-    wesnoth_version     The wesnoth version we should checkout add-ons for.
-    userpass            Authentication data. Shouldn't be needed.
-    """
-    def checkout(wescamp, wesnoth_version, userpass=None):
-
-        logging.debug("checking out add-ons from wesnoth version = '%s' to directory '%s'", wesnoth_version, wescamp)
-
-        github = libgithub.GitHub(wescamp, git_version, userpass=git_userpass)
+        github = libgithub.GitHub(wescamp, git_version, authorization=git_auth)
 
         for addon in github.list_addons():
-            addon_obj = github.addon(addon)
+            addon_obj = github.addon(addon, readonly=readonly)
             addon_obj.update()
 
+    def assert_campaignd(configured):
+        if not configured:
+            logging.error("No branch or port specified. Unable to determine which addon server to use.")
+            sys.exit(2)
+    def assert_wescamp(configured):
+        if not configured:
+            logging.error("No branch or wescamp checkout specified. Unable to determine which version branch to use.")
+            sys.exit(2)
 
-    optionparser = optparse.OptionParser("%prog [options]")
 
-    optionparser.add_option("-l", "--list", action = "store_true",
+    argumentparser = argparse.ArgumentParser("%(prog)s [options]")
+
+    argumentparser.add_argument("-l", "--list", action = "store_true",
         help = "List available addons. Usage [SERVER [PORT] [VERBOSE]")
 
-    optionparser.add_option("-L", "--list-translatable", action = "store_true",
+    argumentparser.add_argument("-L", "--list-translatable", action = "store_true",
         help = "List addons available for translation. "
         + "Usage [SERVER [PORT] [VERBOSE]")
 
-    optionparser.add_option("-u", "--upload",
+    argumentparser.add_argument("-u", "--upload",
         help = "Upload a addon to wescamp. Usage: 'addon' WESCAMP-CHECKOUT "
         + "[SERVER [PORT]] [TEMP-DIR] [VERBOSE]")
 
-    optionparser.add_option("-U", "--upload-all", action = "store_true",
+    argumentparser.add_argument("-U", "--upload-all", action = "store_true",
         help = "Upload all addons to wescamp. Usage WESCAMP-CHECKOUT "
         + " [SERVER [PORT]] [VERBOSE]")
 
-    optionparser.add_option("-d", "--download",
-        help = "Download the translations from wescamp and upload to the addon "
-        + "server. Usage 'addon' WESCAMP-CHECKOUT PASSWORD [SERVER [PORT]] "
-        + "[TEMP-DIR] [VERBOSE]")
-
-    optionparser.add_option("-D", "--download-all", action = "store_true",
-        help = "Download all translations from wescamp and upload them to the "
-        + "addon server. Usage WESCAMP-CHECKOUT PASSWORD [SERVER [PORT]] "
-        + " [VERBOSE]")
-
-    optionparser.add_option("-e", "--erase",
-        help = "Erase an addon from wescamp. Usage 'addon' WESCAMP-CHECKOUT "
-                + "[VERBOSE]")
-
-    optionparser.add_option("-s", "--server",
+    argumentparser.add_argument("-s", "--server",
         help = "Server to connect to [localhost]")
 
-    optionparser.add_option("-p", "--port",
-        help = "Port on the server to connect to ['']")
+    argumentparser.add_argument("-p", "--port",
+        help = "Port on the server to connect to. If omitted will try to select a port based on --branch. ['']")
 
-    optionparser.add_option("-t", "--temp-dir", help = "Directory to store the "
+    argumentparser.add_argument("-t", "--temp-dir", help = "Directory to store the "
         + "tempory data, if omitted a tempdir is created and destroyed after "
         + "usage, if specified the data is left in the tempdir. ['']")
 
-    optionparser.add_option("-w", "--wescamp-checkout",
+    argumentparser.add_argument("-w", "--wescamp-checkout",
         help = "The directory containing the wescamp checkout root. ['']")
 
-    optionparser.add_option("-v", "--verbose", action = "store_true",
+    argumentparser.add_argument("-v", "--verbose", action = "store_const", const="verbose", dest="verbosity",
         help = "Show more verbose output. [FALSE]")
 
-    optionparser.add_option("-P", "--password",
+    argumentparser.add_argument("-q", "--quiet", action = "store_const", const="quiet", dest="verbosity",
+        help = "Show less verbose output. [FALSE]")
+
+    argumentparser.add_argument("-P", "--password",
         help = "The master password for the addon server. ['']")
 
-    optionparser.add_option("-g", "--git",
-        action = "store_true",
-        help = "Use git instead of svn to interface with wescamp. "
-        + "This is a temporary option for the conversion from berlios to github.")
+    argumentparser.add_argument("-G", "--github-auth",
+        help = "Username and password for github in the user:pass format, or an OAuth2 token.")
 
-    optionparser.add_option("-G", "--github-login",
-        help = "Username and password for github in the user:pass format")
+    argumentparser.add_argument("-B", "--branch",
+        help = "WesCamp version branch to use. If omitted, we try to determine this from the wescamp directory.")
 
-    optionparser.add_option("-c", "--checkout", action = "store_true",
-        help = "Create a new branch checkout directory")
+    argumentparser.add_argument("-c", "--checkout", action = "store_true",
+        help = "Create a new branch checkout directory. "
+        + "Can also be used to update existing checkout directories.")
 
-    options, args = optionparser.parse_args()
+    argumentparser.add_argument("-C", "--checkout-readonly", action = "store_true",
+        help = "Create a read-only branch checkout directory. "
+        + "Can also be used to update existing checkout directories.")
 
-    if(options.verbose):
+    argumentparser.add_argument("-b", "--build-system",
+        help = "Path to a github.com/wescamp/build-system checkout.")
+
+    argumentparser.add_argument("-e", "--error-log",
+        help = "File to append errors and warnings to.")
+
+    args = argumentparser.parse_args()
+
+    campaignd_configured = False
+    wescamp_configured = False
+
+    if(args.verbosity == "verbose"):
         logging.basicConfig(level=logging.DEBUG,
-            format='[%(levelname)s] %(message)s')
+            format='[%(levelname)s] %(message)s',
+            stream=sys.stdout)
+        quiet_libwml = False
+    elif(args.verbosity == "quiet"):
+        logging.basicConfig(level=logging.WARN,
+            format='[%(levelname)s] %(message)s',
+            stream=sys.stdout)
     else:
         logging.basicConfig(level=logging.INFO,
-            format='[%(levelname)s] %(message)s')
+            format='[%(levelname)s] %(message)s',
+            stream=sys.stdout)
+
+    if args.error_log:
+        import time
+        formatter = logging.Formatter(fmt="[%(levelname)s %(asctime)s]\n%(message)s")
+        formatter.converter = time.gmtime
+        handler = logging.FileHandler(args.error_log)
+        handler.setLevel(logging.WARN)
+        handler.setFormatter(formatter)
+        record = logging.LogRecord(
+            name = None,
+            level = logging.INFO,
+            pathname = '',
+            lineno = 0,
+            msg = "{0}\nwescamp.py run start\n".format("="*80),
+            args = [],
+            exc_info = None,
+            )
+        handler.emit(record)
+        logging.getLogger().addHandler(handler)
 
     server = "localhost"
-    if(options.server != None):
-        server = options.server
+    if(args.server != None):
+        server = args.server
 
-    if(options.port != None):
-        server += ":" + options.port
+    if args.port != None:
+        server += ":" + args.port
+        campaignd_configured = True
+    elif args.branch != None:
+        for port, version in libwml.CampaignClient.portmap:
+            if version.startswith(args.branch):
+                server += ":" + port
+                campaignd_configured = True
+                break
 
     target = None
     tmp = tempdir()
-    if(options.temp_dir != None):
-        if(options.download_all != None):
-            logging.error("TEMP-DIR not allowed for DOWNLOAD-ALL.")
-            sys.exit(2)
-
-        if(options.upload_all != None):
+    if(args.temp_dir != None):
+        if(args.upload_all):
             logging.error("TEMP-DIR not allowed for UPLOAD-ALL.")
             sys.exit(2)
 
-        target = options.temp_dir
+        target = args.temp_dir
     else:
         target = tmp.path
 
     wescamp = None
-    if(options.wescamp_checkout):
-        wescamp = options.wescamp_checkout
+    if(args.wescamp_checkout):
+        wescamp = args.wescamp_checkout
 
-    password = options.password
+    password = args.password
+    build_sys_dir = args.build_system
 
-    if(options.git):
-        use_git = True
-        git_userpass = options.github_login
-        if not wescamp:
-            logging.error("No wescamp checkout specified. Needed for git usage.")
-            sys.exit(2)
+    git_auth = args.github_auth
+
+    if args.branch:
+        git_version = args.branch
+        wescamp_configured = True
+    elif wescamp:
         try:
             git_version = wescamp.split("-")[-1].strip("/").split("/")[-1]
+            wescamp_configured = True
         except:
-            logging.error("Wescamp directory path does not end in a version suffix. Currently needed for git usage.")
+            # FIXME: this never happens
+            logging.error("No branch specified and wescamp directory path does not end in a version suffix. Unable to determine which version branch to use.")
             sys.exit(2)
 
     # List the addons on the server and optional filter on translatable
     # addons.
-    if(options.list or options.list_translatable):
-
+    if(args.list or args.list_translatable):
+        assert_campaignd(campaignd_configured)
         try:
-            addons = list_addons(server, options.list_translatable)
-        except libsvn.error, e:
-            print "[ERROR svn] " + str(e)
+            addons = list_addons(server, args.list_translatable)
+        except libgithub.AddonError as e:
+            print "[ERROR github in {0}] {1}".format(e.addon, str(e.message))
             sys.exit(1)
-        except libgithub.Error, e:
+        except libgithub.Error as e:
             print "[ERROR github] " + str(e)
             sys.exit(1)
-        except socket.error, e:
+        except socket.error as e:
             print "Socket error: " + str(e)
             sys.exit(e[0])
-        except IOError, e:
+        except IOError as e:
             print "Unexpected error occured: " + str(e)
             sys.exit(e[0])
 
@@ -459,30 +527,32 @@ if __name__ == "__main__":
                 print k
 
     # Upload an addon to wescamp.
-    elif(options.upload != None):
-
+    elif(args.upload != None):
+        assert_campaignd(campaignd_configured)
+        assert_wescamp(wescamp_configured)
         if(wescamp == None):
             logging.error("No wescamp checkout specified")
             sys.exit(2)
 
         try:
-            upload(server, options.upload, target, wescamp)
-        except libsvn.error, e:
-            print "[ERROR svn] " + str(e)
+            upload(server, args.upload, target, wescamp, build_sys_dir)
+        except libgithub.AddonError as e:
+            print "[ERROR github in {0}] {1}".format(e.addon, str(e.message))
             sys.exit(1)
-        except libgithub.Error, e:
+        except libgithub.Error as e:
             print "[ERROR github] " + str(e)
             sys.exit(1)
-        except socket.error, e:
+        except socket.error as e:
             print "Socket error: " + str(e)
             sys.exit(e[0])
-        except IOError, e:
+        except IOError as e:
             print "Unexpected error occured: " + str(e)
             sys.exit(e[0])
 
     # Upload all addons from wescamp.
-    elif(options.upload_all != None):
-
+    elif(args.upload_all):
+        assert_campaignd(campaignd_configured)
+        assert_wescamp(wescamp_configured)
         if(wescamp == None):
             logging.error("No wescamp checkout specified.")
             sys.exit(2)
@@ -490,7 +560,7 @@ if __name__ == "__main__":
         error = False
         try:
             addons = list_addons(server, True)
-        except socket.error, e:
+        except socket.error as e:
             print "Socket error: " + str(e)
             sys.exit(e[0])
         for k, v in addons.iteritems():
@@ -498,161 +568,44 @@ if __name__ == "__main__":
                 logging.info("Processing addon '%s'", k)
                 # Create a new temp dir for every upload.
                 tmp = tempdir()
-                upload(server, k, tmp.path, wescamp)
-            except libsvn.error, e:
-                print "[ERROR svn] in addon '" + k + "'" + str(e)
+                upload(server, k, tmp.path, wescamp, build_sys_dir)
+            except libgithub.AddonError as e:
+                print "[ERROR github in {0}] {1}".format(e.addon, str(e.message))
                 error = True
-            except libgithub.Error, e:
-                print "[ERROR github] in addon '" + k + "'" + str(e)
+            except libgithub.Error as e:
+                print "[ERROR github] in addon '{0}' {1}".format(k, str(e))
                 error = True
-            except socket.error, e:
+            except socket.error as e:
                 print "Socket error: " + str(e)
                 error = True
-            except IOError, e:
+            except IOError as e:
                 print "Unexpected error occured: " + str(e)
                 error = True
 
         if(error):
             sys.exit(1)
 
-    # Download an addon from wescamp.
-    elif(options.download != None):
+    elif(args.checkout or args.checkout_readonly):
+        assert_wescamp(wescamp_configured)
 
         if(wescamp == None):
             logging.error("No wescamp checkout specified.")
             sys.exit(2)
 
-        if(password == None):
-            logging.error("No upload password specified.")
-            sys.exit(2)
-
         try:
-            download(server, options.download, target, wescamp, password)
-        except libsvn.error, e:
-            print "[ERROR svn] " + str(e)
+            checkout(wescamp, auth=git_auth, readonly=(args.checkout_readonly))
+        except libgithub.AddonError as e:
+            print "[ERROR github in {0}] {1}".format(e.addon, str(e.message))
             sys.exit(1)
-        except libgithub.Error, e:
+        except libgithub.Error as e:
             print "[ERROR github] " + str(e)
             sys.exit(1)
-        except socket.error, e:
+        except socket.error as e:
             print "Socket error: " + str(e)
             sys.exit(e[0])
-        except IOError, e:
-            print "Unexpected error occured: " + str(e)
-            sys.exit(e[0])
-
-    # Download all addons from wescamp.
-    elif(options.download_all != None):
-
-        if(wescamp == None):
-            logging.error("No wescamp checkout specified.")
-            sys.exit(2)
-
-        if(password == None):
-            logging.error("No upload password specified.")
-            sys.exit(2)
-
-        error = False
-        try:
-            addons = list_addons(server, True)
-        except socket.error, e:
-            print "Socket error: " + str(e)
-            sys.exit(e[0])
-        for k, v in addons.iteritems():
-            try:
-                # since we modify the data on the campaign server and the author
-                # can do the same we need to try to minimize the odds of our
-                # upload to wipe out the new upload
-
-                logging.info("Processing addon '%s'", k)
-                while(True): # download loop
-
-                    timestamp = 0
-                    while(True): # upload loop
-
-                        # get the upload timestamp of the addon
-                        timestamp = get_timestamp(server, k)
-
-                        # upload in wescamp
-                        tmp = tempdir()
-                        upload(server, k , tmp.path, wescamp)
-
-                        # if the timestamp has changed we need to download again
-                        if(get_timestamp(server, k) == timestamp):
-                            break
-                        else:
-                            logging.warning("Addon '%s' has been modified on "
-                                + "the campaign server, force another"
-                                + "wescamp sync", k)
-
-                    # Create a new temp dir for every download.
-                    tmp = tempdir()
-                    if(download(server, k, tmp.path, wescamp, password, timestamp)):
-                        break
-                    else:
-                        logging.warning("Addon '%s' has been modified on "
-                            + "the campaign server and isn't uploaded "
-                            + "force another full sync cycle", k)
-
-            except libsvn.error, e:
-                print "[ERROR svn] in addon '" + k + "'" + str(e)
-                error = True
-            except libgithub.Error, e:
-                print "[ERROR github] in addon '" + k + "'" + str(e)
-                error = True
-            except socket.error, e:
-                print "Socket error: " + str(e)
-                error = True
-            except IOError, e:
-                print "Unexpected error occured: " + str(e)
-                error = True
-
-        if(error):
-            sys.exit(1)
-
-    # Erase an addon from wescamp
-    elif(options.erase != None):
-
-        if(wescamp == None):
-            logging.error("No wescamp checkout specified.")
-            sys.exit(2)
-
-        try:
-            erase(options.erase, wescamp)
-        except libsvn.error, e:
-            print "[ERROR svn] " + str(e)
-            sys.exit(1)
-        except libgithub.Error, e:
-            print "[ERROR github] " + str(e)
-            sys.exit(1)
-        except socket.error, e:
-            print "Socket error: " + str(e)
-            sys.exit(e[0])
-        except IOError, e:
-            print "Unexpected error occured: " + str(e)
-            sys.exit(e[0])
-
-    elif(options.checkout != None):
-
-        if(wescamp == None):
-            logging.error("No wescamp checkout specified.")
-            sys.exit(2)
-
-        if not use_git:
-            logging.error("The checkout option is for git only. If you're still using svn for some reason, you can use svn co.")
-            sys.exit(2)
-
-        try:
-            checkout(wescamp, git_version, userpass=git_userpass)
-        except libgithub.Error, e:
-            print "[ERROR github] " + str(e)
-            sys.exit(1)
-        except socket.error, e:
-            print "Socket error: " + str(e)
-            sys.exit(e[0])
-        except IOError, e:
+        except IOError as e:
             print "Unexpected error occured: " + str(e)
             sys.exit(e[0])
 
     else:
-        optionparser.print_help()
+        argumentparser.print_help()
