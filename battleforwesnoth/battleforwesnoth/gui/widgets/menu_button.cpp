@@ -23,7 +23,6 @@
 #include "gui/core/register_widget.hpp"
 #include "gui/widgets/settings.hpp"
 #include "gui/widgets/window.hpp"
-#include "gui/dialogs/drop_down_menu.hpp"
 #include "config_assign.hpp"
 #include "sound.hpp"
 
@@ -46,6 +45,9 @@ menu_button::menu_button()
 	, retval_(0)
 	, values_()
 	, selected_()
+	, toggle_states_()
+	, keep_open_(false)
+	, droplist_(nullptr)
 {
 	values_.push_back(config_of("label", this->get_label()));
 
@@ -93,8 +95,7 @@ const std::string& menu_button::get_control_type() const
 	return type;
 }
 
-void menu_button::signal_handler_mouse_enter(const event::ui_event event,
-										 bool& handled)
+void menu_button::signal_handler_mouse_enter(const event::ui_event event, bool& handled)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -102,8 +103,7 @@ void menu_button::signal_handler_mouse_enter(const event::ui_event event,
 	handled = true;
 }
 
-void menu_button::signal_handler_mouse_leave(const event::ui_event event,
-										 bool& handled)
+void menu_button::signal_handler_mouse_leave(const event::ui_event event, bool& handled)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -111,8 +111,7 @@ void menu_button::signal_handler_mouse_leave(const event::ui_event event,
 	handled = true;
 }
 
-void menu_button::signal_handler_left_button_down(const event::ui_event event,
-											  bool& handled)
+void menu_button::signal_handler_left_button_down(const event::ui_event event, bool& handled)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -125,8 +124,7 @@ void menu_button::signal_handler_left_button_down(const event::ui_event event,
 	handled = true;
 }
 
-void menu_button::signal_handler_left_button_up(const event::ui_event event,
-											bool& handled)
+void menu_button::signal_handler_left_button_up(const event::ui_event event, bool& handled)
 {
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
 
@@ -134,8 +132,7 @@ void menu_button::signal_handler_left_button_up(const event::ui_event event,
 	handled = true;
 }
 
-void menu_button::signal_handler_left_button_click(const event::ui_event event,
-											   bool& handled)
+void menu_button::signal_handler_left_button_click(const event::ui_event event, bool& handled)
 {
 	assert(get_window());
 	DBG_GUI_E << LOG_HEADER << ' ' << event << ".\n";
@@ -143,9 +140,14 @@ void menu_button::signal_handler_left_button_click(const event::ui_event event,
 	sound::play_UI_sound(settings::sound_button_click);
 
 	// If a button has a retval do the default handling.
-	dialogs::drop_down_menu droplist(this->get_rectangle(), this->values_, this->selected_, this->get_use_markup());
+	dialogs::drop_down_menu droplist(this->get_rectangle(), this->values_, this->selected_, this->get_use_markup(), this->keep_open_,
+		std::bind(&menu_button::toggle_state_changed, this));
+
+	droplist_ = &droplist;
 
 	if(droplist.show(get_window()->video())) {
+		droplist_ = nullptr;
+
 		const int selected = droplist.selected_item();
 
 		// Saftey check. If the user clicks a selection in the dropdown and moves their mouse away too
@@ -172,28 +174,65 @@ void menu_button::signal_handler_left_button_click(const event::ui_event event,
 		}
 	}
 
+	droplist_ = nullptr;
+
+	/* In order to allow toggle button states to be specified by verious dialogs in the values config, we write the state
+	 * bools to the values_ config here, but only if a checkbox= key was already provided. The value of the checkbox= key
+	 * is handled by the drop_down_menu widget.
+	 *
+	 * Passing the dynamic_bitset directly to the drop_down_menu ctor would mean bool values would need to be passed to this
+	 * class independently of the values config by dialogs that use this widget. However, the bool states are also saved
+	 * in a dynamic_bitset class member which can be fetched for other uses if necessary.
+	 */ 
+	for(unsigned i = 0; i < values_.size(); i++) {
+		::config& c = values_[i];
+
+		if(c.has_attribute("checkbox")) {
+			c["checkbox"] = toggle_states_[i];
+		}
+	}
+
 	handled = true;
+}
+
+void menu_button::toggle_state_changed()
+{
+	assert(droplist_ != nullptr);
+
+	toggle_states_ = droplist_->get_toggle_states();
+
+	if(callback_toggle_state_change_ != nullptr) {
+		callback_toggle_state_change_(toggle_states_);
+	}
 }
 
 void menu_button::set_values(const std::vector<::config>& values, int selected)
 {
 	assert(static_cast<size_t>(selected) < values.size());
 	assert(static_cast<size_t>(selected_) < values_.size());
+
 	if(values[selected]["label"] != values_[selected_]["label"]) {
 		set_is_dirty(true);
 	}
+
 	values_ = values;
 	selected_ = selected;
+	toggle_states_.resize(values_.size(), false);
+
 	set_label(values_[selected_]["label"]);
 }
+
 void menu_button::set_selected(int selected)
 {
 	assert(static_cast<size_t>(selected) < values_.size());
 	assert(static_cast<size_t>(selected_) < values_.size());
+
 	if(selected != selected_) {
 		set_is_dirty(true);
 	}
+
 	selected_ = selected;
+
 	set_label(values_[selected_]["label"]);
 }
 
@@ -308,8 +347,9 @@ widget* builder_menu_button::build() const
 	if(!options_.empty()) {
 		widget->set_values(options_);
 	}
+
 	DBG_GUI_G << "Window builder: placed menu_button '" << id
-			  << "' with definition '" << definition << "'.\n";
+	          << "' with definition '" << definition << "'.\n";
 
 	return widget;
 }

@@ -18,7 +18,6 @@
  * excluding conditional action WML.
  */
 
-#include "global.hpp"
 #include "game_events/action_wml.hpp"
 #include "game_events/conditional_wml.hpp"
 #include "game_events/manager.hpp"
@@ -291,6 +290,11 @@ WML_HANDLER_FUNCTION(do_command,, cfg)
 		ERR_NG << "[do_command] called too early, only allowed at START or later" << std::endl;
 		return;
 	}
+	if(!resources::controller->current_team().is_local() && synced_context::get_synced_state() == synced_context::UNSYNCED)
+	{
+		ERR_NG << "[do_command] can only be used from clients that control the currently playing side" << std::endl;
+		return;		
+	}
 	for(vconfig::all_children_iterator i = cfg.ordered_begin(); i != cfg.ordered_end(); ++i)
 	{
 		if(allowed_tags.find( i.get_key()) == allowed_tags.end()) {
@@ -300,6 +304,9 @@ WML_HANDLER_FUNCTION(do_command,, cfg)
 			ERR_NG << "allowed tags: " << o.str() << std::endl;
 			continue;
 		}
+		// TODO: afaik run_in_synced_context_if_not_already thows exceptions when the executed action end the scenario or the turn.
+		//       This could cause problems, specially when its unclear whether that excetion is caught by lua or not...
+
 		//Note that this fires related events and everthing else that also happen normally.
 		//have to watch out with the undo stack, therefore forbid [auto_shroud] and [update_shroud] here...
 		synced_context::run_in_synced_context_if_not_already(
@@ -850,6 +857,7 @@ WML_HANDLER_FUNCTION(terrain_mask,, cfg)
 WML_HANDLER_FUNCTION(tunnel,, cfg)
 {
 	const bool remove = cfg["remove"].to_bool(false);
+	const bool delay = cfg["delayed_variable_substitution"].to_bool(true);
 	if (remove) {
 		const std::vector<std::string> ids = utils::split(cfg["id"]);
 		for (const std::string &id : ids) {
@@ -861,11 +869,11 @@ WML_HANDLER_FUNCTION(tunnel,, cfg)
 		ERR_WML << "[tunnel] is missing a mandatory tag:\n"
 			 << cfg.get_config().debug();
 	} else {
-		pathfind::teleport_group tunnel(cfg, false);
+		pathfind::teleport_group tunnel(delay ? cfg : vconfig(cfg.get_parsed_config()), false);
 		resources::tunnels->add(tunnel);
 
 		if(cfg["bidirectional"].to_bool(true)) {
-			tunnel = pathfind::teleport_group(cfg, true);
+			tunnel = pathfind::teleport_group(delay ? cfg : vconfig(cfg.get_parsed_config()), true);
 			resources::tunnels->add(tunnel);
 		}
 	}

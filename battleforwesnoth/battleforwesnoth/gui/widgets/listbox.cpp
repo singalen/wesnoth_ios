@@ -28,6 +28,7 @@
 #include "gui/widgets/pane.hpp"
 #include "gui/widgets/settings.hpp"
 #include "gui/widgets/selectable_item.hpp"
+#include "gui/widgets/toggle_button.hpp"
 #include "gui/widgets/viewport.hpp"
 #include "gui/widgets/window.hpp"
 
@@ -276,7 +277,13 @@ void listbox::list_item_clicked(widget& caller)
 	for(size_t i = 0; i < generator_->get_item_count(); ++i) {
 
 		if(generator_->item(i).has_widget(caller)) {
-			generator_->toggle_item(i);
+			toggle_button* checkbox = dynamic_cast<toggle_button*>(&caller);
+			if(checkbox != nullptr) {
+				generator_->select_item(i, checkbox->get_value_bool());
+			} else {
+				generator_->toggle_item(i);
+			}
+
 			if(callback_item_changed_) {
 				callback_item_changed_(i);
 			}
@@ -690,10 +697,23 @@ void listbox::layout_children(const bool force)
 	assert(content_grid());
 
 	if(need_layout_ || force) {
+		const int selected_item = generator_->get_selected_item();
+
 		content_grid()->place(content_grid()->get_origin(),
 							  content_grid()->get_size());
 
-		content_grid()->set_visible_rectangle(content_visible_area_);
+		const SDL_Rect& visible = content_visible_area_;
+
+		content_grid()->set_visible_rectangle(visible);
+
+		if(selected_item != -1) {
+			SDL_Rect rect = generator_->item(selected_item).get_rectangle();
+
+			rect.x = visible.x;
+			rect.w = visible.w;
+
+			show_content_rect(rect);
+		}
 
 		need_layout_ = false;
 		set_is_dirty(true);
@@ -979,34 +999,6 @@ widget* builder_listbox::build() const
 	}
 	return widget;
 #else
-	if(new_widgets) {
-
-		pane* p = new pane(list_builder);
-		p->set_id(id);
-
-
-		grid* g = new grid();
-		g->set_rows_cols(1, 1);
-#if 0
-		g->set_child(
-				  p
-				, 0
-				, 0
-				, grid::VERTICAL_GROW_SEND_TO_CLIENT
-					| grid::HORIZONTAL_GROW_SEND_TO_CLIENT
-				, grid::BORDER_ALL);
-#else
-		viewport* view = new viewport(*p);
-		g->set_child(view,
-						0,
-						0,
-						grid::VERTICAL_GROW_SEND_TO_CLIENT
-						| grid::HORIZONTAL_GROW_SEND_TO_CLIENT,
-						grid::BORDER_ALL);
-#endif
-		return g;
-	}
-
 	listbox* widget
 			= new listbox(has_minimum_, has_maximum_, generator_base::vertical_list, true);
 

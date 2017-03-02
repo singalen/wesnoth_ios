@@ -13,7 +13,6 @@
 */
 
 #include "game_launcher.hpp"
-#include "global.hpp"                   // for false_, bool_
 #include "game_errors.hpp"
 
 #include "commandline_options.hpp"      // for commandline_options
@@ -572,7 +571,7 @@ bool game_launcher::play_screenshot_mode()
 	::init_textdomains(game_config_manager::get()->game_config());
 
 	// FIXME: Make a correct common define.
-#ifndef __APPLE__
+#ifndef __IPHONEOS__
 	editor::start(game_config_manager::get()->game_config(), video(),
 	    screenshot_map_, true, screenshot_filename_);
 #endif
@@ -987,7 +986,7 @@ void game_launcher::play_replay()
 editor::EXIT_STATUS game_launcher::start_editor(const std::string& filename)
 {
 	// FIXME: Make a correct common define.
-#ifndef __APPLE__
+#ifndef __IPHONEOS__
 	while(true){
 		game_config_manager::get()->load_game_config_for_editor();
 

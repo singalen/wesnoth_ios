@@ -44,7 +44,7 @@
 #endif
 
 #ifdef CAIRO_HAS_FT_FONT
-    #include <fontconfig/fontconfig.h>
+#include <fontconfig/fontconfig.h>
 #endif
 
 #if !defined(CAIRO_HAS_FT_FONT) && !defined(CAIRO_HAS_WIN32_FONT)

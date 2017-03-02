@@ -1278,10 +1278,10 @@ monte_carlo_combat_matrix::monte_carlo_combat_matrix(unsigned int a_max_hp, unsi
 	a_split_(a_split), b_split_(b_split), rounds_(rounds), a_hit_chance_(a_hit_chance), b_hit_chance_(b_hit_chance),
 	a_initially_slowed_chance_(a_initially_slowed_chance), b_initially_slowed_chance_(b_initially_slowed_chance)
 {
-	scale_probabilities(a_summary[0], a_initial_, 1.0 / (1.0 - a_initially_slowed_chance), a_hp);
-	scale_probabilities(a_summary[1], a_initial_slowed_, 1.0 / a_initially_slowed_chance, a_hp);
-	scale_probabilities(b_summary[0], b_initial_, 1.0 / (1.0 - b_initially_slowed_chance), b_hp);
-	scale_probabilities(b_summary[1], b_initial_slowed_, 1.0 / b_initially_slowed_chance, b_hp);
+	scale_probabilities(a_summary[0], a_initial_, 1.0 - a_initially_slowed_chance, a_hp);
+	scale_probabilities(a_summary[1], a_initial_slowed_, a_initially_slowed_chance, a_hp);
+	scale_probabilities(b_summary[0], b_initial_, 1.0 - b_initially_slowed_chance, b_hp);
+	scale_probabilities(b_summary[1], b_initial_slowed_, b_initially_slowed_chance, b_hp);
 
 	clear();
 }
@@ -1435,9 +1435,9 @@ unsigned int monte_carlo_combat_matrix::calc_blows_b(unsigned int b_hp) const
 	return it->strikes;
 }
 
-void monte_carlo_combat_matrix::scale_probabilities(const std::vector<double>& source, std::vector<double>& target, double multiplier, unsigned int singular_hp)
+void monte_carlo_combat_matrix::scale_probabilities(const std::vector<double>& source, std::vector<double>& target, double divisor, unsigned int singular_hp)
 {
-	if (std::isinf(multiplier))
+	if (divisor == 0.0)
 	{
 		// Happens if the "target" HP distribution vector isn't used,
 		// in which case it's not necessary to scale the probabilities.
@@ -1451,7 +1451,7 @@ void monte_carlo_combat_matrix::scale_probabilities(const std::vector<double>& s
 	}
 	else
 	{
-		std::transform(source.begin(), source.end(), std::back_inserter(target), [=](double prob){ return multiplier * prob; });
+		std::transform(source.begin(), source.end(), std::back_inserter(target), [=](double prob){ return prob / divisor; });
 	}
 
 	assert(std::abs(std::accumulate(target.begin(), target.end(), 0.0) - 1.0) < 0.001);
@@ -1981,9 +1981,12 @@ void combatant::fight(combatant &opp, bool levelup_considered)
 	const std::vector<combat_slice> split = split_summary(u_, summary);
 	const std::vector<combat_slice> opp_split = split_summary(opp.u_, opp.summary);
 
-	if (fight_complexity(split.size(), opp_split.size(), u_, opp.u_) >
+	bool use_monte_carlo_simulation = (
+		fight_complexity(split.size(), opp_split.size(), u_, opp.u_) >
 		MONTE_CARLO_SIMULATION_THRESHOLD &&
-		preferences::damage_prediction_allow_monte_carlo_simulation())
+		preferences::damage_prediction_allow_monte_carlo_simulation());
+
+	if (use_monte_carlo_simulation)
 	{
 		// A very complex fight. Use Monte Carlo simulation instead of exact
 		// probability calculations.
@@ -2094,10 +2097,22 @@ void combatant::fight(combatant &opp, bool levelup_considered)
 	if (u_.poisons)
 		opp.poisoned += (1 - opp.poisoned) * opp_touched;
 
-	if (opp.u_.slows)
-		slowed += (1 - slowed) * touched;
-	if (u_.slows)
-		opp.slowed += (1 - opp.slowed) * opp_touched;
+	if(!use_monte_carlo_simulation)
+	{
+		if(opp.u_.slows)
+			slowed += (1 - slowed) * touched;
+		if(u_.slows)
+			opp.slowed += (1 - opp.slowed) * opp_touched;
+	}
+	else
+	{
+		/* The slowed probability depends on in how many rounds
+		 * the combatant happened to be slowed.
+		 * We need to recalculate it based on the HP distribution.
+		 */
+		slowed = std::accumulate(summary[1].begin(), summary[1].end(), 0.0);
+		opp.slowed = std::accumulate(opp.summary[1].begin(), opp.summary[1].end(), 0.0);
+	}
 
 	untouched *= self_not_hit;
 	opp.untouched *= opp_not_hit;

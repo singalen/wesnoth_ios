@@ -227,7 +227,7 @@ void unit_preview_pane::print_attack_details(T attacks, tree_view_node& parent_n
 				subsection,
 				"item",
 				(formatter() << font::span_color(font::weapon_details_color) << pair.first << "</span>").str(),
-				(formatter() << "<big>" << _("Weapon special") << ": " << pair.first << "</big>" << '\n' << pair.second).str()
+				(formatter() << "<span size='x-large'>" << pair.first << "</span>" << "\n" << pair.second).str()
 			);
 		}
 	}
@@ -342,7 +342,7 @@ void unit_preview_pane::set_displayed_type(const unit_type& type)
 					header_node,
 					"item",
 					boost::get<0>(ab),
-					boost::get<1>(ab)
+					(formatter() << "<span size='x-large'>" << boost::get<0>(ab) << "</span>\n" << boost::get<1>(ab)).str()
 				);
 			}
 		}
@@ -433,7 +433,7 @@ void unit_preview_pane::set_displayed_unit(const unit& u)
 	}
 
 	if(tree_details_) {
-
+		tree_details_->clear();
 		tree_details_->add_node("hp_xp_mp", {
 			{ "hp",{
 				{ "label", (formatter() << "<small>" << font::span_color(u.hp_color()) << "<b>" << _("HP: ") << "</b>" << u.hitpoints() << "/" << u.max_hitpoints() << "</span>" << " | </small>").str() },

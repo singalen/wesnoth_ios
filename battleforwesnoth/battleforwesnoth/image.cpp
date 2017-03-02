@@ -19,8 +19,6 @@
 
 #define GETTEXT_DOMAIN "wesnoth-lib"
 
-#include "global.hpp"
-
 #include "config.hpp"
 #include "filesystem.hpp"
 #include "game_config.hpp"
@@ -523,7 +521,6 @@ static surface load_image_sub_file(const image::locator &loc)
 
 	while(!mods.empty()) {
 		modification* mod = mods.top();
-		mods.pop();
 
 		try {
 			surf = (*mod)(surf);
@@ -533,7 +530,9 @@ static surface load_image_sub_file(const image::locator &loc)
 				<< "Modifications: " << loc.get_modifications() << ".\n"
 				<< "Error: " << e.message;
 		}
-		delete mod;
+
+		// NOTE: do this *after* applying the mod or you'll get crashes!
+		mods.pop();
 	}
 
 	if(loc.get_loc().valid()) {
@@ -595,12 +594,16 @@ static surface apply_light(surface surf, const light_string& ls){
 	if(i != lightmaps_.end()) {
 		lightmap = i->second;
 	} else {
-		//build all the 7 paths for lightmap sources
-		static const std::string p = "terrain/light";
-		static const std::string lm_img[7] = {
-			p+"-n.png", p+"-ne.png", p+"-se.png",
-			p+"-s.png", p+"-sw.png", p+"-nw.png",
-			p+".png"
+		//build all the paths for lightmap sources
+		static const std::string p = "terrain/light/light";
+		static const std::string lm_img[19] = {
+			p+".png",
+			p+"-concave-2-tr.png", p+"-concave-2-r.png", p+"-concave-2-br.png",
+			p+"-concave-2-bl.png", p+"-concave-2-l.png", p+"-concave-2-tl.png",
+			p+"-convex-br-bl.png", p+"-convex-bl-l.png", p+"-convex-l-tl.png",
+			p+"-convex-tl-tr.png", p+"-convex-tr-r.png", p+"-convex-r-br.png",
+			p+"-convex-l-bl.png", p+"-convex-tl-l.png", p+"-convex-tr-tl.png",
+			p+"-convex-r-tr.png", p+"-convex-br-r.png", p+"-convex-bl-br.png"
 		};
 
 		//decompose into atomic lightmap operations (4 chars)

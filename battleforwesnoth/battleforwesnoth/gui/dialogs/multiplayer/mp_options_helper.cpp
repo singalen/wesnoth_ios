@@ -64,7 +64,10 @@ void mp_options_helper::update_game_options()
 {
 	const std::string type = create_engine_.current_level_type() == ng::level::TYPE::CAMPAIGN ? "campaign" : "multiplayer";
 
-	int pos = remove_nodes_for_type(type);
+	// For game options, we check for both types and remove them. This is to prevent options from a game
+	// of one type remaining visible when selecting a game of another type.
+	int pos = remove_nodes_for_type("campaign");
+	    pos = remove_nodes_for_type("multiplayer");
 
 	display_custom_options(type, pos, create_engine_.current_level().data());
 
@@ -216,7 +219,7 @@ void mp_options_helper::display_custom_options(const std::string& type, int node
 		tree_view_node& option_node = options_tree_.add_node("option_node", data, node_position);
 		type_node_vector.push_back(&option_node);
 
-		for(const config::any_child opt : options.all_children_range()) {
+		for(const config::any_child& opt : options.all_children_range()) {
 			data.clear();
 			item.clear();
 

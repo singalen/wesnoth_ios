@@ -35,14 +35,6 @@
 
 #endif
 
-#ifdef __APPLE__
-    #include "TargetConditionals.h"
-    #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-        #define TARGET_IOS
-    #endif
-#endif
-
-
 static lg::log_domain log_desktop("desktop");
 #define ERR_DU LOG_STREAM(err, log_desktop)
 #define LOG_DU LOG_STREAM(info, log_desktop)
@@ -51,7 +43,7 @@ namespace desktop {
 
 bool open_object_is_supported()
 {
-#if defined(_X11) || (defined(__APPLE__) && !defined(TARGET_IOS)) || defined(_WIN32)
+#if defined(_X11) || defined(__APPLE__) || defined(_WIN32)
 	return true;
 #else
 	return false;

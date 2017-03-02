@@ -17,6 +17,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include "addon/client.hpp"
+#include "addon/info.hpp"
 #include "config_assign.hpp"
 #include "config_cache.hpp"
 #include "editor/editor_display.hpp" // for dummy display context
@@ -31,8 +33,10 @@
 #include "generators/map_create.hpp"
 #include "gui/core/layout_exception.hpp"
 #include "gui/dialogs/addon/connect.hpp"
+#include "gui/dialogs/addon/install_dependencies.hpp"
 #include "gui/dialogs/addon/manager.hpp"
 #include "gui/dialogs/advanced_graphics_options.hpp"
+#include "gui/dialogs/attack_predictions.hpp"
 #include "gui/dialogs/campaign_difficulty.hpp"
 #include "gui/dialogs/campaign_selection.hpp"
 #include "gui/dialogs/campaign_settings.hpp"
@@ -388,6 +392,7 @@ BOOST_AUTO_TEST_CASE(test_gui2)
 	test<addon_connect>();
 	//test<addon_manager>();
 	test<advanced_graphics_options>();
+	//test<attack_predictions>();
 	test<campaign_difficulty>();
 	test<campaign_selection>();
 	test<campaign_settings>();
@@ -420,6 +425,7 @@ BOOST_AUTO_TEST_CASE(test_gui2)
 	test<game_stats>();
 	test<gamestate_inspector>();
 	test<generator_settings>();
+	test<install_dependencies>();
 	test<language_selection>();
 	// test<loading_screen>(); TODO: enable
 	test<lobby_main>();
@@ -502,6 +508,7 @@ BOOST_AUTO_TEST_CASE(test_gui2)
 		"mp_staging",
 		"mp_join_game",
 		"terrain_layers",
+		"attack_predictions",
 	};
 	std::sort(list.begin(), list.end());
 	std::sort(omitted.begin(), omitted.end());
@@ -546,14 +553,14 @@ struct dialog_tester<addon_connect>
 template<>
 struct dialog_tester<addon_manager>
 {
-	config cfg;
+	CVideo& video = test_utils::get_fake_display(10, 10).video();
 	dialog_tester()
 	{
-		/** @todo Would nice to add one or more dummy addons in the list. */
 	}
 	addon_manager* create()
 	{
-		return new addon_manager(cfg);
+		addons_client client(video, "localhost:15999");
+		return new addon_manager(client);
 	}
 };
 
@@ -772,6 +779,16 @@ struct dialog_tester<gamestate_inspector>
 		return new gamestate_inspector(vars, events, *dc, "Unit Test");
 	}
 
+};
+
+template<>
+struct dialog_tester<install_dependencies>
+{
+	addons_list addons;
+	install_dependencies* create()
+	{
+		return new install_dependencies(addons);
+	}
 };
 
 struct wesnothd_connection_init
@@ -1152,11 +1169,13 @@ template<>
 struct dialog_tester<sp_options_configure>
 {
 	saved_game state;
-	ng::create_engine engine;
-	dialog_tester() : engine(test_utils::get_fake_display(-1, -1).video(), state) {}
+	ng::create_engine create_eng;
+	ng::configure_engine config_eng;
+	dialog_tester() : create_eng(test_utils::get_fake_display(-1, -1).video(), state)
+		, config_eng(create_eng.get_state()) {}
 	sp_options_configure* create()
 	{
-		return new sp_options_configure(engine);
+		return new sp_options_configure(create_eng, config_eng);
 	}
 };
 

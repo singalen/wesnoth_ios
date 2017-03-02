@@ -98,6 +98,8 @@ resolution_definition::resolution_definition(const config& cfg)
 	, default_height(cfg["default_height"])
 	, max_width(cfg["max_width"])
 	, max_height(cfg["max_height"])
+	, can_shrink(cfg["can_shrink"].to_bool())
+	, linked_groups()
 	, text_extra_width(cfg["text_extra_width"])
 	, text_extra_height(cfg["text_extra_height"])
 	, text_font_size(cfg["text_font_size"])
@@ -107,6 +109,8 @@ resolution_definition::resolution_definition(const config& cfg)
 {
 	DBG_GUI_P << "Parsing resolution " << window_width << ", " << window_height
 			  << '\n';
+
+	linked_groups = parse_linked_group_definitions(cfg);
 }
 
 /*WIKI

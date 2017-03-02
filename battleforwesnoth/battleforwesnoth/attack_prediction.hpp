@@ -17,8 +17,6 @@
 #ifndef ATTACK_PREDICTION_H_INCLUDED
 #define ATTACK_PREDICTION_H_INCLUDED
 
-#include "global.hpp"
-
 #include <vector>
 
 #include <cstring>
@@ -63,7 +61,7 @@ struct combatant
 #endif
 
 private:
-	static const unsigned int MONTE_CARLO_SIMULATION_THRESHOLD = 5000u;
+	static const unsigned int MONTE_CARLO_SIMULATION_THRESHOLD = 50000u;
 
 	const battle_context_unit_stats &u_;
 

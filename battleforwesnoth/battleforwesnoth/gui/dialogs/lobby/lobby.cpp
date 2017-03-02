@@ -785,7 +785,7 @@ void lobby_main::pre_show(window& window)
 		}
 	}, true);
 
-	plugins_context_->set_callback("create", [this, &window](const config&) { window.set_retval(CREATE); }, true);
+	plugins_context_->set_callback("create", [&window](const config&) { window.set_retval(CREATE); }, true);
 	plugins_context_->set_callback("quit", [&window](const config&) { window.set_retval(window::CANCEL); }, false);
 
 	plugins_context_->set_callback("chat", [this](const config& cfg) { chatbox_->send_chat_message(cfg["message"], false); }, true);
@@ -993,9 +993,7 @@ bool lobby_main::do_game_join(int idx, bool observe)
 	}
 
 	wesnothd_connection_.send_data(response);
-	if(observe && game.started) {
-		// playmp_controller::set_replay_last_turn(game.current_turn);
-	}
+	joined_game_id_ = game.id;
 	return true;
 }
 

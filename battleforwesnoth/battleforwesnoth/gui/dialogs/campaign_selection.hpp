@@ -19,6 +19,8 @@
 
 #include "game_initialization/create_engine.hpp"
 
+#include <boost/dynamic_bitset.hpp>
+
 namespace gui2
 {
 namespace dialogs
@@ -27,10 +29,11 @@ namespace dialogs
 class campaign_selection : public modal_dialog
 {
 public:
-	explicit campaign_selection(ng::create_engine& eng) :
-		engine_(eng),
-		choice_(-1),
-		deterministic_(false)
+	explicit campaign_selection(ng::create_engine& eng)
+		: engine_(eng)
+		, choice_(-1)
+		, deterministic_(false)
+		, mod_states_()
 	{
 		set_restore(true);
 	}
@@ -62,8 +65,7 @@ private:
 	/** Inherited from modal_dialog. */
 	void post_show(window& window);
 
-
-	void mod_toggled(int id, widget &);
+	void mod_toggled(window& window);
 
 	ng::create_engine& engine_;
 
@@ -72,6 +74,8 @@ private:
 
 	/** whether the player checked the "Deterministic" checkbox. */
 	bool deterministic_;
+
+	boost::dynamic_bitset<> mod_states_;
 };
 
 } // namespace dialogs

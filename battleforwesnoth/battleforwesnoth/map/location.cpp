@@ -17,8 +17,6 @@
  * Routines related to game-maps, terrain, locations, directions. etc.
  */
 
-#include "global.hpp"
-
 #include <cassert>
 
 #include "map/location.hpp"
@@ -59,7 +57,7 @@ const std::vector<map_location::DIRECTION> & map_location::default_dirs() {
 
 std::size_t hash_value(map_location  const & a){
 	std::hash<size_t> h;
-	return h( (a.x << 16) ^ a.y );
+	return h( (static_cast<uint32_t>(a.x) << 16) ^ static_cast<uint32_t>(a.y) );
 }
 
 

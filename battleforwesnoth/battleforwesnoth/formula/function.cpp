@@ -12,9 +12,6 @@
    See the COPYING file for more details.
 */
 
-#include "global.hpp"
-
-
 #include "formula/callable_objects.hpp"
 #include "formula/debugger.hpp"
 #include "formula/function.hpp"
@@ -24,6 +21,7 @@
 #include "color.hpp"
 
 #include <boost/math/constants/constants.hpp>
+#include <cctype>
 using namespace boost::math::constants;
 
 #ifdef HAVE_VISUAL_LEAK_DETECTOR
@@ -520,6 +518,32 @@ private:
 
 			return variant(result);
 		}
+};
+
+class str_upper_function : public function_expression {
+public:
+	explicit str_upper_function(const args_list& args)
+		: function_expression("str_upper", args, 1, 1)
+	{}
+private:
+	variant execute(const formula_callable& variables, formula_debugger* fdb) const {
+		std::string str = args()[0]->evaluate(variables, fdb).as_string();
+		std::transform(str.begin(), str.end(), str.begin(), static_cast<int(*)(int)>(std::toupper));
+		return variant(str);
+	}
+};
+
+class str_lower_function : public function_expression {
+public:
+	explicit str_lower_function(const args_list& args)
+		: function_expression("str_lower", args, 1, 1)
+	{}
+private:
+	variant execute(const formula_callable& variables, formula_debugger* fdb) const {
+		std::string str = args()[0]->evaluate(variables, fdb).as_string();
+		std::transform(str.begin(), str.end(), str.begin(), static_cast<int(*)(int)>(std::tolower));
+		return variant(str);
+	}
 };
 
 class sin_function : public function_expression {

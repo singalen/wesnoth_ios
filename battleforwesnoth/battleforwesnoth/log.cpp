@@ -19,8 +19,6 @@
  * See also the command line switches --logdomains and --log-@<level@>="domain".
  */
 
-#include "global.hpp"
-
 #include "log.hpp"
 
 #include <boost/date_time.hpp>
@@ -28,6 +26,8 @@
 #include <map>
 #include <sstream>
 #include <ctime>
+
+#include "utils/io.hpp"
 
 namespace {
 
@@ -174,7 +174,7 @@ bool broke_strict() {
 std::string get_timestamp(const time_t& t, const std::string& format) {
 	std::ostringstream ss;
 
-	ss << std::put_time(std::localtime(&t), format.c_str());
+	ss << util::put_time(std::localtime(&t), format.c_str());
 
 	return ss.str();
 }

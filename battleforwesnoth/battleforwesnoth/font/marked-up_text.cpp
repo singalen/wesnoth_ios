@@ -20,8 +20,6 @@
 
 #define GETTEXT_DOMAIN "wesnoth-lib"
 
-#include "global.hpp"
-
 #include "font/sdl_ttf.hpp"
 #include "gettext.hpp"
 #include "font/marked-up_text.hpp"
@@ -144,18 +142,6 @@ std::string del_tags(const std::string& text){
 		*line = std::string(parse_markup(i1,i2,nullptr,nullptr,nullptr),i2);
 	}
 	return utils::join(lines, "\n");
-}
-
-std::string color2markup(const color_t &color)
-{
-	std::stringstream markup;
-	// The RGB of color_t are Uint8, we need to cast them to int.
-	// Without cast, it gives their char equivalent.
-	markup << "<"
-		   << static_cast<int>(color.r) << ","
-		   << static_cast<int>(color.g) << ","
-		   << static_cast<int>(color.b) << ">";
-	return markup.str();
 }
 
 SDL_Rect text_area(const std::string& text, int size, int style)

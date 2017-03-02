@@ -99,18 +99,23 @@ protected:
 
 	void aquire_mouse_lock();
 	void free_mouse_lock();
+
+public:
+	void hide_override(bool value = true);
+
 private:
 	void volatile_draw();
 	void volatile_undraw();
-
-	void hide_override(bool value = true);
 
 	CVideo* video_;
 	std::vector< surface_restorer > restorer_;
 	SDL_Rect rect_;
 	mutable bool needs_restore_; // Have we drawn ourselves, so that if moved, we need to restore the background?
 
+public:
 	enum { UNINIT, HIDDEN, DIRTY, DRAWN } state_;
+
+private:
 	bool hidden_override_;
 	bool enabled_;
 	bool clip_;
@@ -126,7 +131,6 @@ private:
 	bool mouse_lock_local_;
 	static bool mouse_lock_;
 
-	friend class scrollpane;
 	friend class dialog;
 };
 

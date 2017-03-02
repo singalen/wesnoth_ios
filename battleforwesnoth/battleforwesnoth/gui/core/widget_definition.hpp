@@ -19,6 +19,8 @@
 #include "font/font_options.hpp"
 #include "font/text.hpp"
 #include "gui/core/canvas.hpp"
+#include "gui/core/linked_group_definition.hpp"
+#include <vector>
 
 namespace gui2
 {
@@ -54,6 +56,10 @@ struct resolution_definition
 
 	unsigned max_width;
 	unsigned max_height;
+
+	bool can_shrink;
+
+	std::vector<linked_group_definition> linked_groups;
 
 	unsigned text_extra_width;
 	unsigned text_extra_height;

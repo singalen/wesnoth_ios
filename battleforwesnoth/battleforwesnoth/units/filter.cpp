@@ -14,7 +14,6 @@
 
 #include "units/filter.hpp"
 
-#include "global.hpp"
 #include "log.hpp"
 
 #include "config.hpp"
@@ -321,9 +320,9 @@ bool basic_unit_filter_impl::internal_matches_filter(const unit & u, const map_l
 	}
 
 	// Shorthand for all advancements of a given type
-	if (!vcfg["type_tree"].empty()) {
+	if (!vcfg["type_adv_tree"].empty()) {
 		std::set<std::string> types;
-		for(const std::string type : utils::split(vcfg["type_tree"])) {
+		for(const std::string type : utils::split(vcfg["type_adv_tree"])) {
 			if(types.count(type)) {
 				continue;
 			}
@@ -370,6 +369,19 @@ bool basic_unit_filter_impl::internal_matches_filter(const unit & u, const map_l
 
 		for (const std::string& ability_id : utils::split(vcfg["ability"])) {
 			if (u.has_ability_by_id(ability_id)) {
+				match = true;
+				break;
+			}
+		}
+		if (!match) return false;
+	}
+
+	if (!vcfg["ability_type"].empty())
+	{
+		bool match = false;
+
+		for (const std::string& ability : utils::split(vcfg["ability_type"])) {
+			if (u.has_ability_type(ability)) {
 				match = true;
 				break;
 			}
