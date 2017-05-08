@@ -7,6 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C069D0B1EBFB4DD001FF584 /* libasprintf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D001EBFB4DD001FF584 /* libasprintf.a */; };
+		1C069D0C1EBFB4DD001FF584 /* libcharset.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D011EBFB4DD001FF584 /* libcharset.a */; };
+		1C069D0D1EBFB4DD001FF584 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D021EBFB4DD001FF584 /* libffi.a */; };
+		1C069D0E1EBFB4DD001FF584 /* libgettextpo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D031EBFB4DD001FF584 /* libgettextpo.a */; };
+		1C069D0F1EBFB4DD001FF584 /* libgio-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D041EBFB4DD001FF584 /* libgio-2.0.a */; };
+		1C069D101EBFB4DD001FF584 /* libglib-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D051EBFB4DD001FF584 /* libglib-2.0.a */; };
+		1C069D111EBFB4DD001FF584 /* libgmodule-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D061EBFB4DD001FF584 /* libgmodule-2.0.a */; };
+		1C069D121EBFB4DD001FF584 /* libgobject-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D071EBFB4DD001FF584 /* libgobject-2.0.a */; };
+		1C069D131EBFB4DD001FF584 /* libgthread-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D081EBFB4DD001FF584 /* libgthread-2.0.a */; };
+		1C069D141EBFB4DD001FF584 /* libiconv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D091EBFB4DD001FF584 /* libiconv.a */; };
+		1C069D151EBFB4DD001FF584 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D0A1EBFB4DD001FF584 /* libintl.a */; };
+		1C069D271EBFC346001FF584 /* libasprintf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D001EBFB4DD001FF584 /* libasprintf.a */; };
+		1C069D281EBFC34C001FF584 /* libcharset.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D011EBFB4DD001FF584 /* libcharset.a */; };
+		1C069D291EBFC350001FF584 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D021EBFB4DD001FF584 /* libffi.a */; };
+		1C069D2A1EBFC355001FF584 /* libgettextpo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D031EBFB4DD001FF584 /* libgettextpo.a */; };
+		1C069D2B1EBFC359001FF584 /* libgio-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D041EBFB4DD001FF584 /* libgio-2.0.a */; };
+		1C069D2C1EBFC35E001FF584 /* libglib-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D051EBFB4DD001FF584 /* libglib-2.0.a */; };
+		1C069D2D1EBFC361001FF584 /* libgmodule-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D061EBFB4DD001FF584 /* libgmodule-2.0.a */; };
+		1C069D2E1EBFC365001FF584 /* libgobject-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D071EBFB4DD001FF584 /* libgobject-2.0.a */; };
+		1C069D2F1EBFC368001FF584 /* libgthread-2.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D081EBFB4DD001FF584 /* libgthread-2.0.a */; };
+		1C069D301EBFC36B001FF584 /* libiconv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D091EBFB4DD001FF584 /* libiconv.a */; };
+		1C069D311EBFC36F001FF584 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D0A1EBFB4DD001FF584 /* libintl.a */; };
+		1C069D331EBFC3C3001FF584 /* iconv_hack.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D321EBFC3C3001FF584 /* iconv_hack.c */; };
+		1C069D341EBFC3C3001FF584 /* iconv_hack.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D321EBFC3C3001FF584 /* iconv_hack.c */; };
 		1C14268E1E5A84310044633F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C14268D1E5A84310044633F /* CoreMotion.framework */; };
 		1C20DB9D1E11E23B00D7BE84 /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C20DB9C1E11E23B00D7BE84 /* libboost.a */; };
 		1C20DB9E1E11E27800D7BE84 /* libboost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C20DB9C1E11E23B00D7BE84 /* libboost.a */; };
@@ -872,7 +896,6 @@
 		3C5B801E16399A2100898722 /* fcstr.c in Sources */ = {isa = PBXBuildFile; fileRef = 3CCB962C162932CC007549E6 /* fcstr.c */; };
 		3C5B801F16399A2100898722 /* fcxml.c in Sources */ = {isa = PBXBuildFile; fileRef = 3CCB962D162932CC007549E6 /* fcxml.c */; };
 		3C5B802016399A2100898722 /* ftglue.c in Sources */ = {isa = PBXBuildFile; fileRef = 3CCB962E162932CC007549E6 /* ftglue.c */; };
-		3C5B804516399A2100898722 /* libiconv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C1E01631CCB700BFE895 /* libiconv.a */; };
 		3C5B804616399A2100898722 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C11A1631CAC400BFE895 /* libjpeg.a */; };
 		3C5B804716399A2100898722 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C13C1631CB0D00BFE895 /* libpng.a */; };
 		3C5B804816399A2100898722 /* libpixman.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C0331631C36200BFE895 /* libpixman.a */; };
@@ -880,8 +903,6 @@
 		3C5B804A16399A2100898722 /* libmikmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97BF251631BB0800BFE895 /* libmikmod.a */; };
 		3C5B804B16399A2100898722 /* libtremor.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06D201631B67A0014DBBB /* libtremor.a */; };
 		3C5B804C16399A2100898722 /* libxml2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06CA21631B58A0014DBBB /* libxml2.a */; };
-		3C5B804D16399A2100898722 /* libglib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06BD21631A7870014DBBB /* libglib.a */; };
-		3C5B804E16399A2100898722 /* libgettext.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06B2C1631A20E0014DBBB /* libgettext.a */; };
 		3C5B804F16399A2100898722 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06AB5163157910014DBBB /* libfreetype.a */; };
 		3C5B805016399A2100898722 /* libflac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06A44163154270014DBBB /* libflac.a */; };
 		3C5B805216399A2100898722 /* libcairo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD068C016314A5C0014DBBB /* libcairo.a */; };
@@ -1149,7 +1170,6 @@
 		3C97C0661631C49200BFE895 /* libpixman.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C0331631C36200BFE895 /* libpixman.a */; };
 		3C97C15F1631CB9F00BFE895 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C13C1631CB0D00BFE895 /* libpng.a */; };
 		3C97C1BE1631CC8000BFE895 /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C11A1631CAC400BFE895 /* libjpeg.a */; };
-		3C97C1E91631D08B00BFE895 /* libiconv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C97C1E01631CCB700BFE895 /* libiconv.a */; };
 		3CA8C958160EB0A2004CD2C4 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 3CA8C957160EB0A2004CD2C4 /* images */; };
 		3CBF24A016456C89008D46F4 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 		3CC4D9691626F9BF00AFFD82 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D9681626F9BF00AFFD82 /* Default.png */; };
@@ -1180,8 +1200,6 @@
 		3CD0696B16314E6A0014DBBB /* libcairo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD068C016314A5C0014DBBB /* libcairo.a */; };
 		3CD06A71163156710014DBBB /* libflac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06A44163154270014DBBB /* libflac.a */; };
 		3CD06B0A16315DB10014DBBB /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06AB5163157910014DBBB /* libfreetype.a */; };
-		3CD06B6F1631A51A0014DBBB /* libgettext.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06B2C1631A20E0014DBBB /* libgettext.a */; };
-		3CD06D3F1631B91F0014DBBB /* libglib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06BD21631A7870014DBBB /* libglib.a */; };
 		3CD57A8F16417E3000FD9626 /* Icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A8E16417E3000FD9626 /* Icon57.png */; };
 		3CD57A9116417E8B00FD9626 /* Icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9016417E8A00FD9626 /* Icon114.png */; };
 		3CD57A9316417E9700FD9626 /* Icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9216417E9700FD9626 /* Icon72.png */; };
@@ -1316,20 +1334,6 @@
 			remoteGlobalIDString = 3C97C1031631CAC300BFE895;
 			remoteInfo = jpeg;
 		};
-		3C97C1DF1631CCB700BFE895 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3C97C1CA1631CCB600BFE895;
-			remoteInfo = iconv;
-		};
-		3C97C1E71631D08600BFE895 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97C1C91631CCB600BFE895;
-			remoteInfo = iconv;
-		};
 		3CBF22BF1644C079008D46F4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */;
@@ -1386,27 +1390,6 @@
 			remoteGlobalIDString = 3CD06A9E163157900014DBBB;
 			remoteInfo = freetype;
 		};
-		3CD06B2B1631A20E0014DBBB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06B271631A20C0014DBBB /* gettext.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3CD06B161631A20C0014DBBB;
-			remoteInfo = gettext;
-		};
-		3CD06B6D1631A5060014DBBB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06B271631A20C0014DBBB /* gettext.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06B151631A20C0014DBBB;
-			remoteInfo = gettext;
-		};
-		3CD06BD11631A7870014DBBB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06BCD1631A7840014DBBB /* glib.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3CD06BBC1631A7840014DBBB;
-			remoteInfo = glib;
-		};
 		3CD06CA11631B58A0014DBBB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */;
@@ -1421,26 +1404,12 @@
 			remoteGlobalIDString = 3CD06D0A1631B6780014DBBB;
 			remoteInfo = tremor;
 		};
-		3CD06D3D1631B9160014DBBB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06BCD1631A7840014DBBB /* glib.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06BBB1631A7840014DBBB;
-			remoteInfo = glib;
-		};
 		A69DB689196A541400230816 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = 3CBF22A91644C078008D46F4;
 			remoteInfo = ogg;
-		};
-		A69DB68B196A541400230816 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3C97C1C91631CCB600BFE895;
-			remoteInfo = iconv;
 		};
 		A69DB68D196A541400230816 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1491,20 +1460,6 @@
 			remoteGlobalIDString = 3CD06C8B1631B5880014DBBB;
 			remoteInfo = xml2;
 		};
-		A69DB69B196A541400230816 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06BCD1631A7840014DBBB /* glib.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06BBB1631A7840014DBBB;
-			remoteInfo = glib;
-		};
-		A69DB69D196A541400230816 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3CD06B271631A20C0014DBBB /* gettext.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3CD06B151631A20C0014DBBB;
-			remoteInfo = gettext;
-		};
 		A69DB69F196A541400230816 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3CD06AB0163157900014DBBB /* freetype.xcodeproj */;
@@ -1529,6 +1484,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1C069D001EBFB4DD001FF584 /* libasprintf.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libasprintf.a; path = ../lib/lib/libasprintf.a; sourceTree = SOURCE_ROOT; };
+		1C069D011EBFB4DD001FF584 /* libcharset.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libcharset.a; path = ../lib/lib/libcharset.a; sourceTree = SOURCE_ROOT; };
+		1C069D021EBFB4DD001FF584 /* libffi.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libffi.a; path = ../lib/lib/libffi.a; sourceTree = SOURCE_ROOT; };
+		1C069D031EBFB4DD001FF584 /* libgettextpo.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libgettextpo.a; path = ../lib/lib/libgettextpo.a; sourceTree = SOURCE_ROOT; };
+		1C069D041EBFB4DD001FF584 /* libgio-2.0.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = "libgio-2.0.a"; path = "../lib/lib/libgio-2.0.a"; sourceTree = SOURCE_ROOT; };
+		1C069D051EBFB4DD001FF584 /* libglib-2.0.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = "libglib-2.0.a"; path = "../lib/lib/libglib-2.0.a"; sourceTree = SOURCE_ROOT; };
+		1C069D061EBFB4DD001FF584 /* libgmodule-2.0.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = "libgmodule-2.0.a"; path = "../lib/lib/libgmodule-2.0.a"; sourceTree = SOURCE_ROOT; };
+		1C069D071EBFB4DD001FF584 /* libgobject-2.0.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = "libgobject-2.0.a"; path = "../lib/lib/libgobject-2.0.a"; sourceTree = SOURCE_ROOT; };
+		1C069D081EBFB4DD001FF584 /* libgthread-2.0.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = "libgthread-2.0.a"; path = "../lib/lib/libgthread-2.0.a"; sourceTree = SOURCE_ROOT; };
+		1C069D091EBFB4DD001FF584 /* libiconv.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libiconv.a; path = ../lib/lib/libiconv.a; sourceTree = SOURCE_ROOT; };
+		1C069D0A1EBFB4DD001FF584 /* libintl.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libintl.a; path = ../lib/lib/libintl.a; sourceTree = SOURCE_ROOT; };
+		1C069D321EBFC3C3001FF584 /* iconv_hack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = iconv_hack.c; sourceTree = "<group>"; };
 		1C14268D1E5A84310044633F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		1C20DB9C1E11E23B00D7BE84 /* libboost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost.a; path = ../lib/iOS_boost_1_60/libs/boost/ios/libboost.a; sourceTree = "<group>"; };
 		1C20DBA91E11F92600D7BE84 /* Appirater.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Appirater.m; sourceTree = "<group>"; };
@@ -2680,7 +2647,6 @@
 		3C97C02E1631C36000BFE895 /* pixman.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = pixman.xcodeproj; path = lib/pixman/pixman.xcodeproj; sourceTree = "<group>"; };
 		3C97C1151631CAC300BFE895 /* jpeg.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = jpeg.xcodeproj; path = lib/jpeg/jpeg.xcodeproj; sourceTree = "<group>"; };
 		3C97C1371631CB0C00BFE895 /* png.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = png.xcodeproj; path = lib/png/png.xcodeproj; sourceTree = "<group>"; };
-		3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = iconv.xcodeproj; path = lib/iconv/iconv.xcodeproj; sourceTree = "<group>"; };
 		3CA8C957160EB0A2004CD2C4 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
 		3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ogg.xcodeproj; path = lib/ogg/ogg.xcodeproj; sourceTree = "<group>"; };
 		3CC4D9681626F9BF00AFFD82 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
@@ -2712,8 +2678,6 @@
 		3CD068BB16314A5A0014DBBB /* cairo.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = cairo.xcodeproj; path = lib/cairo/cairo.xcodeproj; sourceTree = "<group>"; };
 		3CD06A3F163154260014DBBB /* flac.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = flac.xcodeproj; path = lib/flac/flac.xcodeproj; sourceTree = "<group>"; };
 		3CD06AB0163157900014DBBB /* freetype.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = freetype.xcodeproj; path = lib/freetype/freetype.xcodeproj; sourceTree = "<group>"; };
-		3CD06B271631A20C0014DBBB /* gettext.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = gettext.xcodeproj; path = lib/gettext/gettext.xcodeproj; sourceTree = "<group>"; };
-		3CD06BCD1631A7840014DBBB /* glib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = glib.xcodeproj; path = lib/glib/glib.xcodeproj; sourceTree = "<group>"; };
 		3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = xml2.xcodeproj; path = lib/xml2/xml2.xcodeproj; sourceTree = "<group>"; };
 		3CD06D1B1631B6780014DBBB /* tremor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = tremor.xcodeproj; path = lib/tremor/tremor.xcodeproj; sourceTree = "<group>"; };
 		3CD57A8E16417E3000FD9626 /* Icon57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon57.png; sourceTree = "<group>"; };
@@ -2740,31 +2704,39 @@
 				1C14268E1E5A84310044633F /* CoreMotion.framework in Frameworks */,
 				1C29BBFA1E5A182900A701E9 /* MobileCoreServices.framework in Frameworks */,
 				1C29BBF81E5A17C700A701E9 /* AVFoundation.framework in Frameworks */,
+				1C069D271EBFC346001FF584 /* libasprintf.a in Frameworks */,
 				1C29BBF61E5A175C00A701E9 /* ImageIO.framework in Frameworks */,
 				1C29BBF41E5A147000A701E9 /* SystemConfiguration.framework in Frameworks */,
 				1C20DB9F1E11E57600D7BE84 /* libSDL2_image.a in Frameworks */,
 				1C20DBA01E11E57600D7BE84 /* libSDL2_mixer.a in Frameworks */,
+				1C069D291EBFC350001FF584 /* libffi.a in Frameworks */,
+				1C069D2D1EBFC361001FF584 /* libgmodule-2.0.a in Frameworks */,
 				1C20DBA11E11E57600D7BE84 /* libSDL2_ttf.a in Frameworks */,
 				1C20DBA21E11E57600D7BE84 /* libSDL2.a in Frameworks */,
 				1C20DB9D1E11E23B00D7BE84 /* libboost.a in Frameworks */,
 				A69DB6D4196A676100230816 /* libogg.a in Frameworks */,
-				3C5B804516399A2100898722 /* libiconv.a in Frameworks */,
 				3C5B804616399A2100898722 /* libjpeg.a in Frameworks */,
 				3C5B804716399A2100898722 /* libpng.a in Frameworks */,
 				3C5B804816399A2100898722 /* libpixman.a in Frameworks */,
+				1C069D2E1EBFC365001FF584 /* libgobject-2.0.a in Frameworks */,
 				3C5B804916399A2100898722 /* libpango.a in Frameworks */,
 				3C5B804A16399A2100898722 /* libmikmod.a in Frameworks */,
 				3C5B804B16399A2100898722 /* libtremor.a in Frameworks */,
 				3C5B804C16399A2100898722 /* libxml2.a in Frameworks */,
-				3C5B804D16399A2100898722 /* libglib.a in Frameworks */,
-				3C5B804E16399A2100898722 /* libgettext.a in Frameworks */,
+				1C069D311EBFC36F001FF584 /* libintl.a in Frameworks */,
+				1C069D2C1EBFC35E001FF584 /* libglib-2.0.a in Frameworks */,
 				3C5B804F16399A2100898722 /* libfreetype.a in Frameworks */,
+				1C069D2F1EBFC368001FF584 /* libgthread-2.0.a in Frameworks */,
 				3C5B805016399A2100898722 /* libflac.a in Frameworks */,
 				3C5B805216399A2100898722 /* libcairo.a in Frameworks */,
 				3C5B805316399A2100898722 /* UIKit.framework in Frameworks */,
 				3C5B805416399A2100898722 /* Foundation.framework in Frameworks */,
+				1C069D301EBFC36B001FF584 /* libiconv.a in Frameworks */,
 				3C5B805516399A2100898722 /* CoreGraphics.framework in Frameworks */,
+				1C069D2A1EBFC355001FF584 /* libgettextpo.a in Frameworks */,
 				3C5B805616399A2100898722 /* OpenGLES.framework in Frameworks */,
+				1C069D281EBFC34C001FF584 /* libcharset.a in Frameworks */,
+				1C069D2B1EBFC359001FF584 /* libgio-2.0.a in Frameworks */,
 				3C5B805716399A2100898722 /* CoreAudio.framework in Frameworks */,
 				3C5B805816399A2100898722 /* AudioToolbox.framework in Frameworks */,
 				3C5B805916399A2100898722 /* QuartzCore.framework in Frameworks */,
@@ -2775,29 +2747,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C069D101EBFB4DD001FF584 /* libglib-2.0.a in Frameworks */,
+				1C069D141EBFB4DD001FF584 /* libiconv.a in Frameworks */,
 				1C20DBA41E11E58000D7BE84 /* libSDL2_image.a in Frameworks */,
+				1C069D0D1EBFB4DD001FF584 /* libffi.a in Frameworks */,
 				1C20DBA51E11E58000D7BE84 /* libSDL2_mixer.a in Frameworks */,
+				1C069D0E1EBFB4DD001FF584 /* libgettextpo.a in Frameworks */,
 				1C20DBA61E11E58000D7BE84 /* libSDL2_ttf.a in Frameworks */,
 				1C20DBA71E11E58000D7BE84 /* libSDL2.a in Frameworks */,
 				1C20DB9E1E11E27800D7BE84 /* libboost.a in Frameworks */,
 				3CBF24A016456C89008D46F4 /* libogg.a in Frameworks */,
-				3C97C1E91631D08B00BFE895 /* libiconv.a in Frameworks */,
 				3C97C1BE1631CC8000BFE895 /* libjpeg.a in Frameworks */,
 				3C97C15F1631CB9F00BFE895 /* libpng.a in Frameworks */,
+				1C069D0F1EBFB4DD001FF584 /* libgio-2.0.a in Frameworks */,
 				3C97C0661631C49200BFE895 /* libpixman.a in Frameworks */,
 				3C97C00D1631BF8000BFE895 /* libpango.a in Frameworks */,
 				3C97BF7A1631BBCA00BFE895 /* libmikmod.a in Frameworks */,
 				3C97BF031631BA7500BFE895 /* libtremor.a in Frameworks */,
 				3C97BEFF1631B9F300BFE895 /* libxml2.a in Frameworks */,
-				3CD06D3F1631B91F0014DBBB /* libglib.a in Frameworks */,
-				3CD06B6F1631A51A0014DBBB /* libgettext.a in Frameworks */,
 				3CD06B0A16315DB10014DBBB /* libfreetype.a in Frameworks */,
+				1C069D131EBFB4DD001FF584 /* libgthread-2.0.a in Frameworks */,
 				3CD06A71163156710014DBBB /* libflac.a in Frameworks */,
 				3CD0696B16314E6A0014DBBB /* libcairo.a in Frameworks */,
+				1C069D121EBFB4DD001FF584 /* libgobject-2.0.a in Frameworks */,
 				3C8A3655160766FD0017F0EE /* UIKit.framework in Frameworks */,
+				1C069D151EBFB4DD001FF584 /* libintl.a in Frameworks */,
 				3C8A3657160766FD0017F0EE /* Foundation.framework in Frameworks */,
+				1C069D0B1EBFB4DD001FF584 /* libasprintf.a in Frameworks */,
+				1C069D0C1EBFB4DD001FF584 /* libcharset.a in Frameworks */,
 				3C8A3659160766FD0017F0EE /* CoreGraphics.framework in Frameworks */,
 				3CFE03641608A7E000DC330D /* OpenGLES.framework in Frameworks */,
+				1C069D111EBFB4DD001FF584 /* libgmodule-2.0.a in Frameworks */,
 				3CFE119C1608BE8A00DC330D /* CoreAudio.framework in Frameworks */,
 				3CFE11A41608E29A00DC330D /* AudioToolbox.framework in Frameworks */,
 				3C15F683160B778500895032 /* QuartzCore.framework in Frameworks */,
@@ -2842,6 +2822,7 @@
 			children = (
 				1C810AE52CB68AB268F4ED12 /* SDLMain.h */,
 				1C81016B8875935012D79F8C /* SDLMain.mm */,
+				1C069D321EBFC3C3001FF584 /* iconv_hack.c */,
 			);
 			path = ios;
 			sourceTree = "<group>";
@@ -3046,14 +3027,6 @@
 			path = window_builder;
 			sourceTree = "<group>";
 		};
-		1C81087E40D9BE6B0718EA4E /* Xcode-iOS */ = {
-			isa = PBXGroup;
-			children = (
-				1C810D81C06472D6D11191D3 /* lib-projects */,
-			);
-			path = "Xcode-iOS";
-			sourceTree = "<group>";
-		};
 		1C8108979E0480D559C14BC6 /* hotkey */ = {
 			isa = PBXGroup;
 			children = (
@@ -3222,13 +3195,6 @@
 			path = game_initialization;
 			sourceTree = "<group>";
 		};
-		1C810D81C06472D6D11191D3 /* lib-projects */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "lib-projects";
-			sourceTree = "<group>";
-		};
 		1C810DF4D91A656DA4216119 /* units */ = {
 			isa = PBXGroup;
 			children = (
@@ -3273,14 +3239,6 @@
 				1C8109EF817CE428CA56B707 /* bind */,
 			);
 			path = "boost-patched";
-			sourceTree = "<group>";
-		};
-		1C810FB0497F8E759E7355AF /* projectfiles */ = {
-			isa = PBXGroup;
-			children = (
-				1C81087E40D9BE6B0718EA4E /* Xcode-iOS */,
-			);
-			path = projectfiles;
 			sourceTree = "<group>";
 		};
 		1C810FE6BB9867A208CE9CEC /* editor */ = {
@@ -3367,7 +3325,6 @@
 				3CEB90CB163C32CD00565B8A /* Default-Landscape@2x~ipad.png */,
 				3CEB90C9163C327200565B8A /* Default-Landscape~ipad.png */,
 				3C5B80BB16399A2100898722 /* Resources-iPad */,
-				3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */,
 				3C97C1371631CB0C00BFE895 /* png.xcodeproj */,
 				3C97C1151631CAC300BFE895 /* jpeg.xcodeproj */,
 				3C97C02E1631C36000BFE895 /* pixman.xcodeproj */,
@@ -3375,8 +3332,6 @@
 				3C97BF201631BB0700BFE895 /* mikmod.xcodeproj */,
 				3CD06D1B1631B6780014DBBB /* tremor.xcodeproj */,
 				3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */,
-				3CD06BCD1631A7840014DBBB /* glib.xcodeproj */,
-				3CD06B271631A20C0014DBBB /* gettext.xcodeproj */,
 				3CD06AB0163157900014DBBB /* freetype.xcodeproj */,
 				3CD06A3F163154260014DBBB /* flac.xcodeproj */,
 				3CD068BB16314A5A0014DBBB /* cairo.xcodeproj */,
@@ -3387,7 +3342,6 @@
 				3C8A365A160766FD0017F0EE /* battleforwesnoth */,
 				3C8A3653160766FD0017F0EE /* Frameworks */,
 				3C8A3651160766FD0017F0EE /* Products */,
-				1C810FB0497F8E759E7355AF /* projectfiles */,
 			);
 			sourceTree = "<group>";
 		};
@@ -3403,6 +3357,17 @@
 		3C8A3653160766FD0017F0EE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1C069D001EBFB4DD001FF584 /* libasprintf.a */,
+				1C069D011EBFB4DD001FF584 /* libcharset.a */,
+				1C069D021EBFB4DD001FF584 /* libffi.a */,
+				1C069D031EBFB4DD001FF584 /* libgettextpo.a */,
+				1C069D041EBFB4DD001FF584 /* libgio-2.0.a */,
+				1C069D051EBFB4DD001FF584 /* libglib-2.0.a */,
+				1C069D061EBFB4DD001FF584 /* libgmodule-2.0.a */,
+				1C069D071EBFB4DD001FF584 /* libgobject-2.0.a */,
+				1C069D081EBFB4DD001FF584 /* libgthread-2.0.a */,
+				1C069D091EBFB4DD001FF584 /* libiconv.a */,
+				1C069D0A1EBFB4DD001FF584 /* libintl.a */,
 				1C7B37991E5C132700F58FE8 /* libbz2.tbd */,
 				1C7B37971E5C128B00F58FE8 /* libz.1.2.8.tbd */,
 				1C14268D1E5A84310044633F /* CoreMotion.framework */,
@@ -3418,7 +3383,6 @@
 				3C8A3654160766FD0017F0EE /* UIKit.framework */,
 				3C8A3656160766FD0017F0EE /* Foundation.framework */,
 				3C8A3658160766FD0017F0EE /* CoreGraphics.framework */,
-				CD86B6C6F015659FAEDD4A78,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -4472,14 +4436,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		3C97C1DC1631CCB600BFE895 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				3C97C1E01631CCB700BFE895 /* libiconv.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		3CBF22BC1644C078008D46F4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -4577,22 +4533,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		3CD06B281631A20C0014DBBB /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				3CD06B2C1631A20E0014DBBB /* libgettext.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		3CD06BCE1631A7840014DBBB /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				3CD06BD21631A7870014DBBB /* libglib.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		3CD06C9E1631B5880014DBBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -4624,7 +4564,6 @@
 			);
 			dependencies = (
 				A69DB68A196A541400230816 /* PBXTargetDependency */,
-				A69DB68C196A541400230816 /* PBXTargetDependency */,
 				A69DB68E196A541400230816 /* PBXTargetDependency */,
 				A69DB690196A541400230816 /* PBXTargetDependency */,
 				A69DB692196A541400230816 /* PBXTargetDependency */,
@@ -4632,8 +4571,6 @@
 				A69DB696196A541400230816 /* PBXTargetDependency */,
 				A69DB698196A541400230816 /* PBXTargetDependency */,
 				A69DB69A196A541400230816 /* PBXTargetDependency */,
-				A69DB69C196A541400230816 /* PBXTargetDependency */,
-				A69DB69E196A541400230816 /* PBXTargetDependency */,
 				A69DB6A0196A541400230816 /* PBXTargetDependency */,
 				A69DB6A2196A541400230816 /* PBXTargetDependency */,
 				A69DB6A6196A541400230816 /* PBXTargetDependency */,
@@ -4655,7 +4592,6 @@
 			);
 			dependencies = (
 				3CBF249F16456C7D008D46F4 /* PBXTargetDependency */,
-				3C97C1E81631D08600BFE895 /* PBXTargetDependency */,
 				3C97C1BD1631CC7C00BFE895 /* PBXTargetDependency */,
 				3C97C15E1631CB9B00BFE895 /* PBXTargetDependency */,
 				3C97C0651631C48E00BFE895 /* PBXTargetDependency */,
@@ -4663,8 +4599,6 @@
 				3C97BF791631BBBF00BFE895 /* PBXTargetDependency */,
 				3C97BF021631BA6F00BFE895 /* PBXTargetDependency */,
 				3C97BEFE1631B9EE00BFE895 /* PBXTargetDependency */,
-				3CD06D3E1631B9160014DBBB /* PBXTargetDependency */,
-				3CD06B6E1631A5060014DBBB /* PBXTargetDependency */,
 				3CD06B0916315DAA0014DBBB /* PBXTargetDependency */,
 				3CD06A70163156640014DBBB /* PBXTargetDependency */,
 				3CD0696A16314DF80014DBBB /* PBXTargetDependency */,
@@ -4709,18 +4643,6 @@
 				{
 					ProductGroup = 3CD06AB1163157900014DBBB /* Products */;
 					ProjectRef = 3CD06AB0163157900014DBBB /* freetype.xcodeproj */;
-				},
-				{
-					ProductGroup = 3CD06B281631A20C0014DBBB /* Products */;
-					ProjectRef = 3CD06B271631A20C0014DBBB /* gettext.xcodeproj */;
-				},
-				{
-					ProductGroup = 3CD06BCE1631A7840014DBBB /* Products */;
-					ProjectRef = 3CD06BCD1631A7840014DBBB /* glib.xcodeproj */;
-				},
-				{
-					ProductGroup = 3C97C1DC1631CCB600BFE895 /* Products */;
-					ProjectRef = 3C97C1DB1631CCB600BFE895 /* iconv.xcodeproj */;
 				},
 				{
 					ProductGroup = 3C97C1161631CAC300BFE895 /* Products */;
@@ -4850,13 +4772,6 @@
 			remoteRef = 3C97C13B1631CB0D00BFE895 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		3C97C1E01631CCB700BFE895 /* libiconv.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libiconv.a;
-			remoteRef = 3C97C1DF1631CCB700BFE895 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		3CBF22C01644C079008D46F4 /* libogg.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -4883,20 +4798,6 @@
 			fileType = archive.ar;
 			path = libfreetype.a;
 			remoteRef = 3CD06AB4163157910014DBBB /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3CD06B2C1631A20E0014DBBB /* libgettext.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libgettext.a;
-			remoteRef = 3CD06B2B1631A20E0014DBBB /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3CD06BD21631A7870014DBBB /* libglib.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglib.a;
-			remoteRef = 3CD06BD11631A7870014DBBB /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		3CD06CA21631B58A0014DBBB /* libxml2.a */ = {
@@ -5127,6 +5028,7 @@
 				3C5B7F1E16399A2100898722 /* lmathlib.cpp in Sources */,
 				3C5B7F1F16399A2100898722 /* lmem.cpp in Sources */,
 				3C5B7F2016399A2100898722 /* loadlib.cpp in Sources */,
+				1C069D341EBFC3C3001FF584 /* iconv_hack.c in Sources */,
 				3C5B7F2116399A2100898722 /* lobject.cpp in Sources */,
 				3C5B7F2216399A2100898722 /* lopcodes.cpp in Sources */,
 				3C5B7F2316399A2100898722 /* loslib.cpp in Sources */,
@@ -5742,6 +5644,7 @@
 				3C8A3C3D160767990017F0EE /* variable.cpp in Sources */,
 				3C8A3C3F160767990017F0EE /* version.cpp in Sources */,
 				3C8A3C40160767990017F0EE /* video.cpp in Sources */,
+				1C069D331EBFC3C3001FF584 /* iconv_hack.c in Sources */,
 				3C8A3C41160767990017F0EE /* action.cpp in Sources */,
 				3C8A3C42160767990017F0EE /* attack.cpp in Sources */,
 				3C8A3C44160767990017F0EE /* manager.cpp in Sources */,
@@ -6113,11 +6016,6 @@
 			name = jpeg;
 			targetProxy = 3C97C1BC1631CC7C00BFE895 /* PBXContainerItemProxy */;
 		};
-		3C97C1E81631D08600BFE895 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = iconv;
-			targetProxy = 3C97C1E71631D08600BFE895 /* PBXContainerItemProxy */;
-		};
 		3CBF249F16456C7D008D46F4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = ogg;
@@ -6138,25 +6036,10 @@
 			name = freetype;
 			targetProxy = 3CD06B0816315DAA0014DBBB /* PBXContainerItemProxy */;
 		};
-		3CD06B6E1631A5060014DBBB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = gettext;
-			targetProxy = 3CD06B6D1631A5060014DBBB /* PBXContainerItemProxy */;
-		};
-		3CD06D3E1631B9160014DBBB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = glib;
-			targetProxy = 3CD06D3D1631B9160014DBBB /* PBXContainerItemProxy */;
-		};
 		A69DB68A196A541400230816 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = ogg;
 			targetProxy = A69DB689196A541400230816 /* PBXContainerItemProxy */;
-		};
-		A69DB68C196A541400230816 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = iconv;
-			targetProxy = A69DB68B196A541400230816 /* PBXContainerItemProxy */;
 		};
 		A69DB68E196A541400230816 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -6192,16 +6075,6 @@
 			isa = PBXTargetDependency;
 			name = xml2;
 			targetProxy = A69DB699196A541400230816 /* PBXContainerItemProxy */;
-		};
-		A69DB69C196A541400230816 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = glib;
-			targetProxy = A69DB69B196A541400230816 /* PBXContainerItemProxy */;
-		};
-		A69DB69E196A541400230816 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = gettext;
-			targetProxy = A69DB69D196A541400230816 /* PBXContainerItemProxy */;
 		};
 		A69DB6A0196A541400230816 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -6304,11 +6177,10 @@
 					"\"$(SRCROOT)/../lib/SDL2_image-2.0.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../battleforwesnoth/battleforwesnoth\"",
-					"\"$(SRCROOT)/../lib/glib/android\"",
+					"\"$(SRCROOT)/../lib/include/glib\"",
 					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
-					"\"$(SRCROOT)/../lib/glib\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18/gettext-tools/intl\"",
+					"\"$(SRCROOT)/../lib/include\"",
+					"\"$(SRCROOT)/../lib/include/gettext\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
@@ -6335,9 +6207,7 @@
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
-					"\"$(SRCROOT)/../lib/libiconv\"",
 					"\"$(SRCROOT)/../lib/libogg-1.2.2\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4\"",
 					"\"$(SRCROOT)/../lib/libvorbis-1.3.2\"",
@@ -6351,10 +6221,7 @@
 					"\"$(SRCROOT)/../lib/SDL_ttf\"",
 					"\"$(SRCROOT)/../lib/tremor\"",
 					"\"$(SRCROOT)/../lib/xml2\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
 					"\"$(SRCROOT)/../lib/mikmod\"",
-					"\"$(SRCROOT)/../lib/glib/gmodule\"",
-					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
@@ -6409,11 +6276,10 @@
 					"\"$(SRCROOT)/../lib/SDL2_image-2.0.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../battleforwesnoth/battleforwesnoth\"",
-					"\"$(SRCROOT)/../lib/glib/android\"",
 					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
-					"\"$(SRCROOT)/../lib/glib\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18/gettext-tools/intl\"",
+					"\"$(SRCROOT)/../lib/include\"",
+					"\"$(SRCROOT)/../lib/include/glib\"",
+					"\"$(SRCROOT)/../lib/include/gettext\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
@@ -6440,9 +6306,7 @@
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
-					"\"$(SRCROOT)/../lib/libiconv\"",
 					"\"$(SRCROOT)/../lib/libogg-1.2.2\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4\"",
 					"\"$(SRCROOT)/../lib/libvorbis-1.3.2\"",
@@ -6456,10 +6320,7 @@
 					"\"$(SRCROOT)/../lib/SDL_ttf\"",
 					"\"$(SRCROOT)/../lib/tremor\"",
 					"\"$(SRCROOT)/../lib/xml2\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
 					"\"$(SRCROOT)/../lib/mikmod\"",
-					"\"$(SRCROOT)/../lib/glib/gmodule\"",
-					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
@@ -6569,11 +6430,14 @@
 					"\"$(SRCROOT)/../lib/SDL2_image-2.0.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../battleforwesnoth/battleforwesnoth\"",
-					"\"$(SRCROOT)/../lib/glib/android\"",
 					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
-					"\"$(SRCROOT)/../lib/glib\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18/gettext-tools/intl\"",
+					"\"$(SRCROOT)/../lib/include\"",
+					"\"$(SRCROOT)/../lib/include/iconv\"",
+					"\"$(SRCROOT)/../lib/include/glib\"",
+					"\"$(SRCROOT)/../lib/include/gobject\"",
+					"\"$(SRCROOT)/../lib/include/gio\"",
+					"\"$(SRCROOT)/../lib/include/gmodule\"",
+					"\"$(SRCROOT)/../lib/include/gettext\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
@@ -6600,9 +6464,7 @@
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
-					"\"$(SRCROOT)/../lib/libiconv\"",
 					"\"$(SRCROOT)/../lib/libogg-1.2.2\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4\"",
 					"\"$(SRCROOT)/../lib/libvorbis-1.3.2\"",
@@ -6616,10 +6478,7 @@
 					"\"$(SRCROOT)/../lib/SDL_ttf\"",
 					"\"$(SRCROOT)/../lib/tremor\"",
 					"\"$(SRCROOT)/../lib/xml2\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
 					"\"$(SRCROOT)/../lib/mikmod\"",
-					"\"$(SRCROOT)/../lib/glib/gmodule\"",
-					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
@@ -6627,8 +6486,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "";
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s arm64";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -6677,11 +6535,14 @@
 					"\"$(SRCROOT)/../lib/SDL2_image-2.0.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../battleforwesnoth/battleforwesnoth\"",
-					"\"$(SRCROOT)/../lib/glib/android\"",
 					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
-					"\"$(SRCROOT)/../lib/glib\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18/gettext-tools/intl\"",
+					"\"$(SRCROOT)/../lib/include\"",
+					"\"$(SRCROOT)/../lib/include/glib\"",
+					"\"$(SRCROOT)/../lib/include/gio\"",
+					"\"$(SRCROOT)/../lib/include/iconv\"",
+					"\"$(SRCROOT)/../lib/include/gobject\"",
+					"\"$(SRCROOT)/../lib/include/gmodule\"",
+					"\"$(SRCROOT)/../lib/include/gettext\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3\"",
 					"\"$(SRCROOT)/../lib/pango-1.28.3/include\"",
 					"\"$(SRCROOT)/../lib/SDL2-2.0.5/include\"",
@@ -6708,9 +6569,7 @@
 					"\"$(SRCROOT)/../lib/flac-1.2.1\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../lib/freetype-2.4.12\"",
-					"\"$(SRCROOT)/../lib/gettext-0.18\"",
 					"\"$(SRCROOT)/../lib/jpeg-8b\"",
-					"\"$(SRCROOT)/../lib/libiconv\"",
 					"\"$(SRCROOT)/../lib/libogg-1.2.2\"",
 					"\"$(SRCROOT)/../lib/libpng-1.4.4\"",
 					"\"$(SRCROOT)/../lib/libvorbis-1.3.2\"",
@@ -6724,10 +6583,7 @@
 					"\"$(SRCROOT)/../lib/SDL_ttf\"",
 					"\"$(SRCROOT)/../lib/tremor\"",
 					"\"$(SRCROOT)/../lib/xml2\"",
-					"\"$(SRCROOT)/../lib/glib/glib\"",
 					"\"$(SRCROOT)/../lib/mikmod\"",
-					"\"$(SRCROOT)/../lib/glib/gmodule\"",
-					"\"$(SRCROOT)/../lib/glib/gobject\"",
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
@@ -6736,8 +6592,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				USER_HEADER_SEARCH_PATHS = "";
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s arm64";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

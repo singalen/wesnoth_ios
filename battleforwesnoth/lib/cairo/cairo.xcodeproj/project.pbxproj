@@ -529,11 +529,11 @@
 					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0/fontconfig\"",
 					"\"$(SRCROOT)/../../../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../../../lib/cairo-1.10.0\"",
+					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/fontconfig-2.8.0\" \"$(SRCROOT)/../../../lib/libpng-1.4.4\"";
 				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Debug;
@@ -556,11 +556,11 @@
 					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0/fontconfig\"",
 					"\"$(SRCROOT)/../../../lib/libpng-1.4.4/include\"",
 					"\"$(SRCROOT)/../../../lib/cairo-1.10.0\"",
+					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../../lib/fontconfig-2.8.0\" \"$(SRCROOT)/../../../lib/libpng-1.4.4\"";
 				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Release;

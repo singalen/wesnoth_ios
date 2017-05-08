@@ -432,14 +432,13 @@
 					"\"$(SRCROOT)/../../../lib/pango-1.28.3/pango/mini-fribidi\"",
 					"\"$(SRCROOT)/../../../lib/pango-1.28.3/pango/opentype\"",
 					"\"$(SRCROOT)/../../../lib/pango-1.28.3\"",
-					"\"$(SRCROOT)/../../../lib/glib/glib\"",
-					"\"$(SRCROOT)/../../../lib/glib\"",
-					"\"$(SRCROOT)/../../../lib/glib/android\"",
-					"\"$(SRCROOT)/../../../lib/glib/gmodule\"",
-					"\"$(SRCROOT)/../../../lib/glib/gobject\"",
+					"\"$(SRCROOT)/../../../lib/include/glib\"",
+					"\"$(SRCROOT)/../../../lib/include/gmodule\"",
+					"\"$(SRCROOT)/../../../lib/include/gobject\"",
 					"\"$(SRCROOT)/../../../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../../../lib/cairo-1.10.0/src\"",
+					"\"$(SRCROOT)/../../../lib/include\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -473,14 +472,13 @@
 					"\"$(SRCROOT)/../../../lib/pango-1.28.3/pango/mini-fribidi\"",
 					"\"$(SRCROOT)/../../../lib/pango-1.28.3/pango/opentype\"",
 					"\"$(SRCROOT)/../../../lib/pango-1.28.3\"",
-					"\"$(SRCROOT)/../../../lib/glib/glib\"",
-					"\"$(SRCROOT)/../../../lib/glib\"",
-					"\"$(SRCROOT)/../../../lib/glib/android\"",
-					"\"$(SRCROOT)/../../../lib/glib/gmodule\"",
-					"\"$(SRCROOT)/../../../lib/glib/gobject\"",
+					"\"$(SRCROOT)/../../../lib/include/glib\"",
+					"\"$(SRCROOT)/../../../lib/include/gmodule\"",
+					"\"$(SRCROOT)/../../../lib/include/gobject\"",
 					"\"$(SRCROOT)/../../../lib/freetype-2.4.12/include\"",
 					"\"$(SRCROOT)/../../../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../../../lib/cairo-1.10.0/src\"",
+					"\"$(SRCROOT)/../../../lib/include\"",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
