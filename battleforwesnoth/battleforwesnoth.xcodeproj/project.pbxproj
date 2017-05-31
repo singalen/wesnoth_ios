@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C05D26F1EDE618900516D33 /* wesnoth-logo-40.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9821EDE406600BFE800 /* wesnoth-logo-40.png */; };
+		1C05D2701EDE618900516D33 /* wesnoth-logo-58.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9831EDE406600BFE800 /* wesnoth-logo-58.png */; };
+		1C05D2711EDE618900516D33 /* wesnoth-logo-60.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9841EDE406600BFE800 /* wesnoth-logo-60.png */; };
+		1C05D2721EDE618900516D33 /* wesnoth-logo-80.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9851EDE406700BFE800 /* wesnoth-logo-80.png */; };
+		1C05D2731EDE618900516D33 /* wesnoth-logo-87.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9861EDE406700BFE800 /* wesnoth-logo-87.png */; };
+		1C05D2741EDE618900516D33 /* wesnoth-logo-120.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9871EDE406700BFE800 /* wesnoth-logo-120.png */; };
+		1C05D2751EDE618900516D33 /* wesnoth-logo-152.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9881EDE406800BFE800 /* wesnoth-logo-152.png */; };
+		1C05D2761EDE618900516D33 /* wesnoth-logo-167.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9891EDE406800BFE800 /* wesnoth-logo-167.png */; };
+		1C05D2771EDE618900516D33 /* wesnoth-logo-180.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E98A1EDE406800BFE800 /* wesnoth-logo-180.png */; };
+		1C05D2801EDE618C00516D33 /* wesnoth-logo-76.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C05D27E1EDE618B00516D33 /* wesnoth-logo-76.png */; };
+		1C05D2811EDE618C00516D33 /* wesnoth-logo-1024.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C05D27F1EDE618B00516D33 /* wesnoth-logo-1024.png */; };
+		1C05D2821EDE619000516D33 /* wesnoth-logo-1024.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C05D27F1EDE618B00516D33 /* wesnoth-logo-1024.png */; };
+		1C05D2831EDE619700516D33 /* wesnoth-logo-76.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C05D27E1EDE618B00516D33 /* wesnoth-logo-76.png */; };
 		1C069D0B1EBFB4DD001FF584 /* libasprintf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D001EBFB4DD001FF584 /* libasprintf.a */; };
 		1C069D0C1EBFB4DD001FF584 /* libcharset.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D011EBFB4DD001FF584 /* libcharset.a */; };
 		1C069D0D1EBFB4DD001FF584 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D021EBFB4DD001FF584 /* libffi.a */; };
@@ -162,6 +175,15 @@
 		1C8109E110FEDB0EAE909F42 /* game.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C8106C58A499D49C69C808C /* game.mm */; };
 		1C810AA44B76E2AA2A1CD0A0 /* SDLMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C81016B8875935012D79F8C /* SDLMain.mm */; };
 		1C810ED12DF94E7822B9F61B /* display_chat_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810323541F41137F70A77B /* display_chat_manager.cpp */; };
+		1C86E98B1EDE406900BFE800 /* wesnoth-logo-40.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9821EDE406600BFE800 /* wesnoth-logo-40.png */; };
+		1C86E98C1EDE406900BFE800 /* wesnoth-logo-58.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9831EDE406600BFE800 /* wesnoth-logo-58.png */; };
+		1C86E98D1EDE406900BFE800 /* wesnoth-logo-60.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9841EDE406600BFE800 /* wesnoth-logo-60.png */; };
+		1C86E98E1EDE406900BFE800 /* wesnoth-logo-80.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9851EDE406700BFE800 /* wesnoth-logo-80.png */; };
+		1C86E98F1EDE406900BFE800 /* wesnoth-logo-87.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9861EDE406700BFE800 /* wesnoth-logo-87.png */; };
+		1C86E9901EDE406900BFE800 /* wesnoth-logo-120.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9871EDE406700BFE800 /* wesnoth-logo-120.png */; };
+		1C86E9911EDE406900BFE800 /* wesnoth-logo-152.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9881EDE406800BFE800 /* wesnoth-logo-152.png */; };
+		1C86E9921EDE406900BFE800 /* wesnoth-logo-167.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9891EDE406800BFE800 /* wesnoth-logo-167.png */; };
+		1C86E9931EDE406900BFE800 /* wesnoth-logo-180.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E98A1EDE406800BFE800 /* wesnoth-logo-180.png */; };
 		1CEF0F351EC00B3200C02850 /* arrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4D1EC00820001FF584 /* arrow.cpp */; };
 		1CEF0F361EC00B3200C02850 /* attack_prediction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4F1EC00820001FF584 /* attack_prediction.cpp */; };
 		1CEF0F371EC00B3200C02850 /* boilerplate-header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D511EC00820001FF584 /* boilerplate-header.cpp */; };
@@ -1135,16 +1157,6 @@
 		1CEF17A41EC0233900C02850 /* widget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17511EC0233900C02850 /* widget.cpp */; };
 		1CEF17A51EC0233900C02850 /* xbrz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17551EC0233900C02850 /* xbrz.cpp */; };
 		1CEF17A61EC0233900C02850 /* xbrz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17551EC0233900C02850 /* xbrz.cpp */; };
-		1CF1235D1EC59327007415D0 /* Icon76.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CF1235A1EC59327007415D0 /* Icon76.png */; };
-		1CF1235E1EC59327007415D0 /* Icon120.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CF1235B1EC59327007415D0 /* Icon120.png */; };
-		1CF1235F1EC59327007415D0 /* Icon152.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CF1235C1EC59327007415D0 /* Icon152.png */; };
-		1CF123661EC5936A007415D0 /* Icon144.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9416417E9A00FD9626 /* Icon144.png */; };
-		1CF123671EC5936D007415D0 /* Icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9216417E9700FD9626 /* Icon72.png */; };
-		1CF123681EC59370007415D0 /* Icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9016417E8A00FD9626 /* Icon114.png */; };
-		1CF123691EC59372007415D0 /* Icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A8E16417E3000FD9626 /* Icon57.png */; };
-		1CF1236A1EC59375007415D0 /* Icon76.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CF1235A1EC59327007415D0 /* Icon76.png */; };
-		1CF1236B1EC59377007415D0 /* Icon120.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CF1235B1EC59327007415D0 /* Icon120.png */; };
-		1CF1236C1EC5937A007415D0 /* Icon152.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CF1235C1EC59327007415D0 /* Icon152.png */; };
 		3C15F683160B778500895032 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C15F682160B778500895032 /* QuartzCore.framework */; };
 		3C230022160D89CD0086C5CD /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = 3C230021160D89CD0086C5CD /* fonts */; };
 		3C230031160D9E300086C5CD /* data in Resources */ = {isa = PBXBuildFile; fileRef = 3C230030160D9E300086C5CD /* data */; };
@@ -1245,14 +1257,6 @@
 		3CD0696B16314E6A0014DBBB /* libcairo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD068C016314A5C0014DBBB /* libcairo.a */; };
 		3CD06A71163156710014DBBB /* libflac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06A44163154270014DBBB /* libflac.a */; };
 		3CD06B0A16315DB10014DBBB /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD06AB5163157910014DBBB /* libfreetype.a */; };
-		3CD57A8F16417E3000FD9626 /* Icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A8E16417E3000FD9626 /* Icon57.png */; };
-		3CD57A9116417E8B00FD9626 /* Icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9016417E8A00FD9626 /* Icon114.png */; };
-		3CD57A9316417E9700FD9626 /* Icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9216417E9700FD9626 /* Icon72.png */; };
-		3CD57A9516417E9A00FD9626 /* Icon144.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CD57A9416417E9A00FD9626 /* Icon144.png */; };
-		3CEB90CA163C327300565B8A /* Default-Landscape~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CEB90C9163C327200565B8A /* Default-Landscape~ipad.png */; };
-		3CEB90CC163C32CD00565B8A /* Default-Landscape@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CEB90CB163C32CD00565B8A /* Default-Landscape@2x~ipad.png */; };
-		3CEB90CE163C331400565B8A /* Default-Portrait@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CEB90CD163C331400565B8A /* Default-Portrait@2x~ipad.png */; };
-		3CEB90D0163C334500565B8A /* Default-Portrait~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CEB90CF163C334500565B8A /* Default-Portrait~ipad.png */; };
 		3CFE03641608A7E000DC330D /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE03631608A7E000DC330D /* OpenGLES.framework */; };
 		3CFE119C1608BE8A00DC330D /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE119B1608BE8A00DC330D /* CoreAudio.framework */; };
 		3CFE11A41608E29A00DC330D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CFE11A31608E29A00DC330D /* AudioToolbox.framework */; };
@@ -1529,6 +1533,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1C05D27E1EDE618B00516D33 /* wesnoth-logo-76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-76.png"; sourceTree = "<group>"; };
+		1C05D27F1EDE618B00516D33 /* wesnoth-logo-1024.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-1024.png"; sourceTree = "<group>"; };
 		1C069D001EBFB4DD001FF584 /* libasprintf.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libasprintf.a; path = ../lib/lib/libasprintf.a; sourceTree = SOURCE_ROOT; };
 		1C069D011EBFB4DD001FF584 /* libcharset.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libcharset.a; path = ../lib/lib/libcharset.a; sourceTree = SOURCE_ROOT; };
 		1C069D021EBFB4DD001FF584 /* libffi.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libffi.a; path = ../lib/lib/libffi.a; sourceTree = SOURCE_ROOT; };
@@ -1667,6 +1673,15 @@
 		1C810323541F41137F70A77B /* display_chat_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = display_chat_manager.cpp; path = ../../../../src/display_chat_manager.cpp; sourceTree = "<group>"; };
 		1C8106C58A499D49C69C808C /* game.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = game.mm; sourceTree = "<group>"; };
 		1C810AE52CB68AB268F4ED12 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
+		1C86E9821EDE406600BFE800 /* wesnoth-logo-40.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-40.png"; sourceTree = "<group>"; };
+		1C86E9831EDE406600BFE800 /* wesnoth-logo-58.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-58.png"; sourceTree = "<group>"; };
+		1C86E9841EDE406600BFE800 /* wesnoth-logo-60.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-60.png"; sourceTree = "<group>"; };
+		1C86E9851EDE406700BFE800 /* wesnoth-logo-80.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-80.png"; sourceTree = "<group>"; };
+		1C86E9861EDE406700BFE800 /* wesnoth-logo-87.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-87.png"; sourceTree = "<group>"; };
+		1C86E9871EDE406700BFE800 /* wesnoth-logo-120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-120.png"; sourceTree = "<group>"; };
+		1C86E9881EDE406800BFE800 /* wesnoth-logo-152.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-152.png"; sourceTree = "<group>"; };
+		1C86E9891EDE406800BFE800 /* wesnoth-logo-167.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-167.png"; sourceTree = "<group>"; };
+		1C86E98A1EDE406800BFE800 /* wesnoth-logo-180.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-180.png"; sourceTree = "<group>"; };
 		1CDFD9B61E10529800E48A19 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../lib/SDL2-2.0.5/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../lib/SDL2_image-2.0.1/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_mixer.xcodeproj; path = "../lib/SDL2_mixer-2.0.1/Xcode-iOS/SDL_mixer.xcodeproj"; sourceTree = "<group>"; };
@@ -2721,9 +2736,6 @@
 		1CEF17541EC0233900C02850 /* config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config.hpp; sourceTree = "<group>"; };
 		1CEF17551EC0233900C02850 /* xbrz.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xbrz.cpp; sourceTree = "<group>"; };
 		1CEF17561EC0233900C02850 /* xbrz.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = xbrz.hpp; sourceTree = "<group>"; };
-		1CF1235A1EC59327007415D0 /* Icon76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon76.png; sourceTree = "<group>"; };
-		1CF1235B1EC59327007415D0 /* Icon120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon120.png; sourceTree = "<group>"; };
-		1CF1235C1EC59327007415D0 /* Icon152.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon152.png; sourceTree = "<group>"; };
 		3C15F682160B778500895032 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3C230021160D89CD0086C5CD /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../fonts; sourceTree = "<group>"; };
 		3C230030160D9E300086C5CD /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data; path = ../../../data; sourceTree = "<group>"; };
@@ -2780,14 +2792,6 @@
 		3CD06AB0163157900014DBBB /* freetype.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = freetype.xcodeproj; path = lib/freetype/freetype.xcodeproj; sourceTree = "<group>"; };
 		3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = xml2.xcodeproj; path = lib/xml2/xml2.xcodeproj; sourceTree = "<group>"; };
 		3CD06D1B1631B6780014DBBB /* tremor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = tremor.xcodeproj; path = lib/tremor/tremor.xcodeproj; sourceTree = "<group>"; };
-		3CD57A8E16417E3000FD9626 /* Icon57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon57.png; sourceTree = "<group>"; };
-		3CD57A9016417E8A00FD9626 /* Icon114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon114.png; sourceTree = "<group>"; };
-		3CD57A9216417E9700FD9626 /* Icon72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon72.png; sourceTree = "<group>"; };
-		3CD57A9416417E9A00FD9626 /* Icon144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon144.png; sourceTree = "<group>"; };
-		3CEB90C9163C327200565B8A /* Default-Landscape~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape~ipad.png"; sourceTree = "<group>"; };
-		3CEB90CB163C32CD00565B8A /* Default-Landscape@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape@2x~ipad.png"; sourceTree = "<group>"; };
-		3CEB90CD163C331400565B8A /* Default-Portrait@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait@2x~ipad.png"; sourceTree = "<group>"; };
-		3CEB90CF163C334500565B8A /* Default-Portrait~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait~ipad.png"; sourceTree = "<group>"; };
 		3CFE03631608A7E000DC330D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		3CFE119B1608BE8A00DC330D /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		3CFE11A31608E29A00DC330D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -4278,22 +4282,22 @@
 		3C8A3645160766FD0017F0EE = {
 			isa = PBXGroup;
 			children = (
+				1C05D27E1EDE618B00516D33 /* wesnoth-logo-76.png */,
+				1C05D27F1EDE618B00516D33 /* wesnoth-logo-1024.png */,
+				1C86E9821EDE406600BFE800 /* wesnoth-logo-40.png */,
+				1C86E9831EDE406600BFE800 /* wesnoth-logo-58.png */,
+				1C86E9841EDE406600BFE800 /* wesnoth-logo-60.png */,
+				1C86E9851EDE406700BFE800 /* wesnoth-logo-80.png */,
+				1C86E9861EDE406700BFE800 /* wesnoth-logo-87.png */,
+				1C86E9871EDE406700BFE800 /* wesnoth-logo-120.png */,
+				1C86E9881EDE406800BFE800 /* wesnoth-logo-152.png */,
+				1C86E9891EDE406800BFE800 /* wesnoth-logo-167.png */,
+				1C86E98A1EDE406800BFE800 /* wesnoth-logo-180.png */,
 				1CDFD9CC1E1052E500E48A19 /* SDL_ttf.xcodeproj */,
 				1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */,
 				1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */,
 				1CDFD9B61E10529800E48A19 /* SDL.xcodeproj */,
 				3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */,
-				3CD57A9416417E9A00FD9626 /* Icon144.png */,
-				3CD57A9216417E9700FD9626 /* Icon72.png */,
-				3CD57A9016417E8A00FD9626 /* Icon114.png */,
-				3CD57A8E16417E3000FD9626 /* Icon57.png */,
-				1CF1235A1EC59327007415D0 /* Icon76.png */,
-				1CF1235B1EC59327007415D0 /* Icon120.png */,
-				1CF1235C1EC59327007415D0 /* Icon152.png */,
-				3CEB90CF163C334500565B8A /* Default-Portrait~ipad.png */,
-				3CEB90CD163C331400565B8A /* Default-Portrait@2x~ipad.png */,
-				3CEB90CB163C32CD00565B8A /* Default-Landscape@2x~ipad.png */,
-				3CEB90C9163C327200565B8A /* Default-Landscape~ipad.png */,
 				3C5B80BB16399A2100898722 /* Resources-iPad */,
 				3C97C1371631CB0C00BFE895 /* png.xcodeproj */,
 				3C97C1151631CAC300BFE895 /* jpeg.xcodeproj */,
@@ -5083,29 +5087,29 @@
 			buildActionMask = 2147483647;
 			files = (
 				1CEF12141EC0213F00C02850 /* SConstruct in Resources */,
+				1C05D2821EDE619000516D33 /* wesnoth-logo-1024.png in Resources */,
 				3C5B805E16399A2100898722 /* InfoPlist.strings in Resources */,
 				3C5B806816399A2100898722 /* fonts in Resources */,
+				1C05D2761EDE618900516D33 /* wesnoth-logo-167.png in Resources */,
+				1C05D26F1EDE618900516D33 /* wesnoth-logo-40.png in Resources */,
+				1C05D2831EDE619700516D33 /* wesnoth-logo-76.png in Resources */,
 				3C5B806916399A2100898722 /* data in Resources */,
-				1CF1236C1EC5937A007415D0 /* Icon152.png in Resources */,
-				1CF1236B1EC59377007415D0 /* Icon120.png in Resources */,
 				3C5B806A16399A2100898722 /* images in Resources */,
-				1CF123691EC59372007415D0 /* Icon57.png in Resources */,
-				1CF123681EC59370007415D0 /* Icon114.png in Resources */,
+				1C05D2701EDE618900516D33 /* wesnoth-logo-58.png in Resources */,
 				3C5B806B16399A2100898722 /* sounds in Resources */,
 				3C5B806C16399A2100898722 /* Default.png in Resources */,
 				1CEF16E11EC0231800C02850 /* wesnoth_fix_vc12_build.patch in Resources */,
 				3C5B806D16399A2100898722 /* Default@2x.png in Resources */,
 				1CEF15D91EC022DD00C02850 /* COPYRIGHT in Resources */,
+				1C05D2741EDE618900516D33 /* wesnoth-logo-120.png in Resources */,
+				1C05D2731EDE618900516D33 /* wesnoth-logo-87.png in Resources */,
+				1C05D2751EDE618900516D33 /* wesnoth-logo-152.png in Resources */,
 				3C5B806E16399A2100898722 /* Default-568h@2x.png in Resources */,
+				1C05D2721EDE618900516D33 /* wesnoth-logo-80.png in Resources */,
 				3C5B80C116399A2600898722 /* wesnothViewController_iPhone.xib in Resources */,
 				3C5B80C216399A2600898722 /* wesnothViewController_iPad.xib in Resources */,
-				3CEB90CA163C327300565B8A /* Default-Landscape~ipad.png in Resources */,
-				3CEB90CC163C32CD00565B8A /* Default-Landscape@2x~ipad.png in Resources */,
-				3CEB90CE163C331400565B8A /* Default-Portrait@2x~ipad.png in Resources */,
-				1CF1236A1EC59375007415D0 /* Icon76.png in Resources */,
-				3CEB90D0163C334500565B8A /* Default-Portrait~ipad.png in Resources */,
-				3CD57A9316417E9700FD9626 /* Icon72.png in Resources */,
-				3CD57A9516417E9A00FD9626 /* Icon144.png in Resources */,
+				1C05D2711EDE618900516D33 /* wesnoth-logo-60.png in Resources */,
+				1C05D2771EDE618900516D33 /* wesnoth-logo-180.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5113,27 +5117,31 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1CF123671EC5936D007415D0 /* Icon72.png in Resources */,
 				3C8A365F160766FD0017F0EE /* InfoPlist.strings in Resources */,
+				1C05D2811EDE618C00516D33 /* wesnoth-logo-1024.png in Resources */,
 				1C069D531EC00820001FF584 /* animated.tpp in Resources */,
 				1CEF16E01EC0231800C02850 /* wesnoth_fix_vc12_build.patch in Resources */,
 				3C8A366B160766FD0017F0EE /* wesnothViewController_iPhone.xib in Resources */,
-				1CF123661EC5936A007415D0 /* Icon144.png in Resources */,
 				3C8A366E160766FD0017F0EE /* wesnothViewController_iPad.xib in Resources */,
+				1C86E98C1EDE406900BFE800 /* wesnoth-logo-58.png in Resources */,
+				1C05D2801EDE618C00516D33 /* wesnoth-logo-76.png in Resources */,
+				1C86E98E1EDE406900BFE800 /* wesnoth-logo-80.png in Resources */,
+				1C86E9931EDE406900BFE800 /* wesnoth-logo-180.png in Resources */,
 				3C230022160D89CD0086C5CD /* fonts in Resources */,
 				3C230031160D9E300086C5CD /* data in Resources */,
 				3CA8C958160EB0A2004CD2C4 /* images in Resources */,
 				3CC9B8961614AD4800D1110E /* sounds in Resources */,
-				1CF1235D1EC59327007415D0 /* Icon76.png in Resources */,
+				1C86E98F1EDE406900BFE800 /* wesnoth-logo-87.png in Resources */,
 				1CEF12131EC0213F00C02850 /* SConstruct in Resources */,
-				1CF1235F1EC59327007415D0 /* Icon152.png in Resources */,
+				1C86E98B1EDE406900BFE800 /* wesnoth-logo-40.png in Resources */,
+				1C86E98D1EDE406900BFE800 /* wesnoth-logo-60.png in Resources */,
+				1C86E9921EDE406900BFE800 /* wesnoth-logo-167.png in Resources */,
 				3CC4D9691626F9BF00AFFD82 /* Default.png in Resources */,
 				3CC4D96B1626FA8500AFFD82 /* Default@2x.png in Resources */,
-				1CF1235E1EC59327007415D0 /* Icon120.png in Resources */,
+				1C86E9901EDE406900BFE800 /* wesnoth-logo-120.png in Resources */,
 				3C3E67E61631DDCE0073DC62 /* Default-568h@2x.png in Resources */,
 				1CEF15D81EC022DD00C02850 /* COPYRIGHT in Resources */,
-				3CD57A8F16417E3000FD9626 /* Icon57.png in Resources */,
-				3CD57A9116417E8B00FD9626 /* Icon114.png in Resources */,
+				1C86E9911EDE406900BFE800 /* wesnoth-logo-152.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6448,7 +6456,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N8FKFH286X;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -6531,7 +6539,6 @@
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
-				PREFIXPATH = /dailin/Wesnoth/lib;
 				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v13.beta13;
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
@@ -6548,13 +6555,13 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N8FKFH286X;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INPUT_FILETYPE = automatic;
-				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -6633,7 +6640,6 @@
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
-				PREFIXPATH = /dailin/Wesnoth/lib;
 				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v13.beta13;
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";

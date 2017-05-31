@@ -10,13 +10,17 @@
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFiles</key>
 	<array>
-		<string>Icon57.png</string>
-		<string>Icon72.png</string>
-		<string>Icon114.png</string>
-		<string>Icon144.png</string>
-		<string>Icon76.png</string>
-		<string>Icon120.png</string>
-		<string>Icon152.png</string>
+		<string>wesnoth-logo-1024.png</string>
+		<string>wesnoth-logo-120.png</string>
+		<string>wesnoth-logo-152.png</string>
+		<string>wesnoth-logo-167.png</string>
+		<string>wesnoth-logo-180.png</string>
+		<string>wesnoth-logo-40.png</string>
+		<string>wesnoth-logo-58.png</string>
+		<string>wesnoth-logo-60.png</string>
+		<string>wesnoth-logo-80.png</string>
+		<string>wesnoth-logo-87.png</string>
+		<string>wesnoth-logo-76.png</string>
 	</array>
 	<key>CFBundleIcons</key>
 	<dict>
@@ -24,13 +28,17 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>Icon57.png</string>
-				<string>Icon72.png</string>
-				<string>Icon114.png</string>
-				<string>Icon144.png</string>
-				<string>Icon76.png</string>
-				<string>Icon120.png</string>
-				<string>Icon152.png</string>
+				<string>wesnoth-logo-1024.png</string>
+				<string>wesnoth-logo-120.png</string>
+				<string>wesnoth-logo-152.png</string>
+				<string>wesnoth-logo-167.png</string>
+				<string>wesnoth-logo-180.png</string>
+				<string>wesnoth-logo-40.png</string>
+				<string>wesnoth-logo-58.png</string>
+				<string>wesnoth-logo-60.png</string>
+				<string>wesnoth-logo-80.png</string>
+				<string>wesnoth-logo-87.png</string>
+				<string>wesnoth-logo-76.png</string>
 			</array>
 		</dict>
 	</dict>
@@ -47,7 +55,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>4</string>
+	<string>5</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
