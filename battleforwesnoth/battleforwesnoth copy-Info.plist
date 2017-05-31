@@ -5,13 +5,18 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>iWesnoth</string>
+	<string>Wesnoth</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFiles</key>
 	<array>
+		<string>Icon57.png</string>
 		<string>Icon72.png</string>
+		<string>Icon114.png</string>
 		<string>Icon144.png</string>
+		<string>Icon76.png</string>
+		<string>Icon120.png</string>
+		<string>Icon152.png</string>
 	</array>
 	<key>CFBundleIcons</key>
 	<dict>
@@ -19,8 +24,13 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
+				<string>Icon57.png</string>
 				<string>Icon72.png</string>
+				<string>Icon114.png</string>
 				<string>Icon144.png</string>
+				<string>Icon76.png</string>
+				<string>Icon120.png</string>
+				<string>Icon152.png</string>
 			</array>
 		</dict>
 	</dict>
@@ -37,7 +47,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.1.13</string>
+	<string>4</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
