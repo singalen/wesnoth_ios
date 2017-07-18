@@ -167,6 +167,8 @@
 		1C66969B1EDDD39800F23301 /* mouse_action_select.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6696391EDDD2B400F23301 /* mouse_action_select.cpp */; };
 		1C66969C1EDDD39800F23301 /* mouse_action_unit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C66963B1EDDD2B400F23301 /* mouse_action_unit.cpp */; };
 		1C66969D1EDDD39800F23301 /* mouse_action_village.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C66963D1EDDD2B400F23301 /* mouse_action_village.cpp */; };
+		1C7A364A1F1D1F3100D87697 /* function_gamestate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C7A36481F1D1F3100D87697 /* function_gamestate.cpp */; };
+		1C7A36511F1D1F5A00D87697 /* function_gamestate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C7A36481F1D1F3100D87697 /* function_gamestate.cpp */; };
 		1C7B37981E5C128B00F58FE8 /* libz.1.2.8.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C7B37971E5C128B00F58FE8 /* libz.1.2.8.tbd */; };
 		1C7B379A1E5C132700F58FE8 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C7B37991E5C132700F58FE8 /* libbz2.tbd */; };
 		1C8100E1DF7117E606CA6600 /* game.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C8106C58A499D49C69C808C /* game.mm */; };
@@ -184,6 +186,14 @@
 		1C86E9911EDE406900BFE800 /* wesnoth-logo-152.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9881EDE406800BFE800 /* wesnoth-logo-152.png */; };
 		1C86E9921EDE406900BFE800 /* wesnoth-logo-167.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E9891EDE406800BFE800 /* wesnoth-logo-167.png */; };
 		1C86E9931EDE406900BFE800 /* wesnoth-logo-180.png in Resources */ = {isa = PBXBuildFile; fileRef = 1C86E98A1EDE406800BFE800 /* wesnoth-logo-180.png */; };
+		1CB0E1811EE14C8700CD979C /* Default-Landscape@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */; };
+		1CB0E1821EE14C8700CD979C /* Default-Landscape~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17E1EE14C8600CD979C /* Default-Landscape~ipad.png */; };
+		1CB0E1831EE14C8700CD979C /* Default-Portrait@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17F1EE14C8600CD979C /* Default-Portrait@2x~ipad.png */; };
+		1CB0E1841EE14C8700CD979C /* Default-Portrait~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E1801EE14C8700CD979C /* Default-Portrait~ipad.png */; };
+		1CB0E1851EE14C8B00CD979C /* Default-Landscape@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */; };
+		1CB0E1861EE14C8B00CD979C /* Default-Landscape~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17E1EE14C8600CD979C /* Default-Landscape~ipad.png */; };
+		1CB0E1871EE14C8B00CD979C /* Default-Portrait@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17F1EE14C8600CD979C /* Default-Portrait@2x~ipad.png */; };
+		1CB0E1881EE14C8B00CD979C /* Default-Portrait~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E1801EE14C8700CD979C /* Default-Portrait~ipad.png */; };
 		1CEF0F351EC00B3200C02850 /* arrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4D1EC00820001FF584 /* arrow.cpp */; };
 		1CEF0F361EC00B3200C02850 /* attack_prediction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4F1EC00820001FF584 /* attack_prediction.cpp */; };
 		1CEF0F371EC00B3200C02850 /* boilerplate-header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D511EC00820001FF584 /* boilerplate-header.cpp */; };
@@ -1667,6 +1677,8 @@
 		1C6696631EDDD2B400F23301 /* brush.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = brush.hpp; sourceTree = "<group>"; };
 		1C6696641EDDD2B400F23301 /* editor_toolkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = editor_toolkit.cpp; sourceTree = "<group>"; };
 		1C6696651EDDD2B400F23301 /* editor_toolkit.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = editor_toolkit.hpp; sourceTree = "<group>"; };
+		1C7A36481F1D1F3100D87697 /* function_gamestate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = function_gamestate.cpp; sourceTree = "<group>"; };
+		1C7A36491F1D1F3100D87697 /* function_gamestate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = function_gamestate.hpp; sourceTree = "<group>"; };
 		1C7B37971E5C128B00F58FE8 /* libz.1.2.8.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.8.tbd; path = usr/lib/libz.1.2.8.tbd; sourceTree = SDKROOT; };
 		1C7B37991E5C132700F58FE8 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		1C81016B8875935012D79F8C /* SDLMain.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SDLMain.mm; sourceTree = "<group>"; };
@@ -1682,6 +1694,10 @@
 		1C86E9881EDE406800BFE800 /* wesnoth-logo-152.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-152.png"; sourceTree = "<group>"; };
 		1C86E9891EDE406800BFE800 /* wesnoth-logo-167.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-167.png"; sourceTree = "<group>"; };
 		1C86E98A1EDE406800BFE800 /* wesnoth-logo-180.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wesnoth-logo-180.png"; sourceTree = "<group>"; };
+		1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape@2x~ipad.png"; sourceTree = "<group>"; };
+		1CB0E17E1EE14C8600CD979C /* Default-Landscape~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape~ipad.png"; sourceTree = "<group>"; };
+		1CB0E17F1EE14C8600CD979C /* Default-Portrait@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait@2x~ipad.png"; sourceTree = "<group>"; };
+		1CB0E1801EE14C8700CD979C /* Default-Portrait~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait~ipad.png"; sourceTree = "<group>"; };
 		1CDFD9B61E10529800E48A19 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../lib/SDL2-2.0.5/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../lib/SDL2_image-2.0.1/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_mixer.xcodeproj; path = "../lib/SDL2_mixer-2.0.1/Xcode-iOS/SDL_mixer.xcodeproj"; sourceTree = "<group>"; };
@@ -3297,6 +3313,8 @@
 		1CEF12461EC0222000C02850 /* formula */ = {
 			isa = PBXGroup;
 			children = (
+				1C7A36481F1D1F3100D87697 /* function_gamestate.cpp */,
+				1C7A36491F1D1F3100D87697 /* function_gamestate.hpp */,
 				1CEF12471EC0222000C02850 /* callable.hpp */,
 				1CEF12481EC0222000C02850 /* callable_fwd.hpp */,
 				1CEF12491EC0222000C02850 /* callable_objects.cpp */,
@@ -4282,6 +4300,10 @@
 		3C8A3645160766FD0017F0EE = {
 			isa = PBXGroup;
 			children = (
+				1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */,
+				1CB0E17E1EE14C8600CD979C /* Default-Landscape~ipad.png */,
+				1CB0E17F1EE14C8600CD979C /* Default-Portrait@2x~ipad.png */,
+				1CB0E1801EE14C8700CD979C /* Default-Portrait~ipad.png */,
 				1C05D27E1EDE618B00516D33 /* wesnoth-logo-76.png */,
 				1C05D27F1EDE618B00516D33 /* wesnoth-logo-1024.png */,
 				1C86E9821EDE406600BFE800 /* wesnoth-logo-40.png */,
@@ -4878,7 +4900,7 @@
 				LastUpgradeCheck = 0420;
 				TargetAttributes = {
 					3C5B7E0216399A2100898722 = {
-						DevelopmentTeam = N8FKFH286X;
+						DevelopmentTeam = N5CYW96P9T;
 						ProvisioningStyle = Automatic;
 					};
 					3C8A364F160766FD0017F0EE = {
@@ -5089,6 +5111,7 @@
 				1CEF12141EC0213F00C02850 /* SConstruct in Resources */,
 				1C05D2821EDE619000516D33 /* wesnoth-logo-1024.png in Resources */,
 				3C5B805E16399A2100898722 /* InfoPlist.strings in Resources */,
+				1CB0E1881EE14C8B00CD979C /* Default-Portrait~ipad.png in Resources */,
 				3C5B806816399A2100898722 /* fonts in Resources */,
 				1C05D2761EDE618900516D33 /* wesnoth-logo-167.png in Resources */,
 				1C05D26F1EDE618900516D33 /* wesnoth-logo-40.png in Resources */,
@@ -5104,8 +5127,11 @@
 				1C05D2741EDE618900516D33 /* wesnoth-logo-120.png in Resources */,
 				1C05D2731EDE618900516D33 /* wesnoth-logo-87.png in Resources */,
 				1C05D2751EDE618900516D33 /* wesnoth-logo-152.png in Resources */,
+				1CB0E1861EE14C8B00CD979C /* Default-Landscape~ipad.png in Resources */,
 				3C5B806E16399A2100898722 /* Default-568h@2x.png in Resources */,
 				1C05D2721EDE618900516D33 /* wesnoth-logo-80.png in Resources */,
+				1CB0E1871EE14C8B00CD979C /* Default-Portrait@2x~ipad.png in Resources */,
+				1CB0E1851EE14C8B00CD979C /* Default-Landscape@2x~ipad.png in Resources */,
 				3C5B80C116399A2600898722 /* wesnothViewController_iPhone.xib in Resources */,
 				3C5B80C216399A2600898722 /* wesnothViewController_iPad.xib in Resources */,
 				1C05D2711EDE618900516D33 /* wesnoth-logo-60.png in Resources */,
@@ -5126,6 +5152,7 @@
 				1C86E98C1EDE406900BFE800 /* wesnoth-logo-58.png in Resources */,
 				1C05D2801EDE618C00516D33 /* wesnoth-logo-76.png in Resources */,
 				1C86E98E1EDE406900BFE800 /* wesnoth-logo-80.png in Resources */,
+				1CB0E1821EE14C8700CD979C /* Default-Landscape~ipad.png in Resources */,
 				1C86E9931EDE406900BFE800 /* wesnoth-logo-180.png in Resources */,
 				3C230022160D89CD0086C5CD /* fonts in Resources */,
 				3C230031160D9E300086C5CD /* data in Resources */,
@@ -5137,9 +5164,12 @@
 				1C86E98D1EDE406900BFE800 /* wesnoth-logo-60.png in Resources */,
 				1C86E9921EDE406900BFE800 /* wesnoth-logo-167.png in Resources */,
 				3CC4D9691626F9BF00AFFD82 /* Default.png in Resources */,
+				1CB0E1841EE14C8700CD979C /* Default-Portrait~ipad.png in Resources */,
 				3CC4D96B1626FA8500AFFD82 /* Default@2x.png in Resources */,
 				1C86E9901EDE406900BFE800 /* wesnoth-logo-120.png in Resources */,
 				3C3E67E61631DDCE0073DC62 /* Default-568h@2x.png in Resources */,
+				1CB0E1831EE14C8700CD979C /* Default-Portrait@2x~ipad.png in Resources */,
+				1CB0E1811EE14C8700CD979C /* Default-Landscape@2x~ipad.png in Resources */,
 				1CEF15D81EC022DD00C02850 /* COPYRIGHT in Resources */,
 				1C86E9911EDE406900BFE800 /* wesnoth-logo-152.png in Resources */,
 			);
@@ -5307,6 +5337,7 @@
 				1CEF14781EC022B200C02850 /* manager.cpp in Sources */,
 				1CEF11AE1EC0213F00C02850 /* move.cpp in Sources */,
 				1C6696071EDD0C1600F23301 /* credentials.cpp in Sources */,
+				1C7A36511F1D1F5A00D87697 /* function_gamestate.cpp in Sources */,
 				1CEF169C1EC022F900C02850 /* mapgen_lua_kernel.cpp in Sources */,
 				1CEF10691EC00F9D00C02850 /* video.cpp in Sources */,
 				1CEF14A21EC022B200C02850 /* new_map.cpp in Sources */,
@@ -5879,6 +5910,7 @@
 				1CEF14A11EC022B200C02850 /* new_map.cpp in Sources */,
 				1CEF169D1EC022F900C02850 /* context.cpp in Sources */,
 				1CEF10311EC00F4500C02850 /* sound_music_track.cpp in Sources */,
+				1C7A364A1F1D1F3100D87697 /* function_gamestate.cpp in Sources */,
 				1CEF15331EC022B200C02850 /* list.cpp in Sources */,
 				1CEF0FCE1EC00EA700C02850 /* mouse_handler_base.cpp in Sources */,
 				1CEF0FD21EC00EA700C02850 /* mp_game_settings.cpp in Sources */,
@@ -6458,7 +6490,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = N8FKFH286X;
+				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INPUT_FILETYPE = automatic;
@@ -6557,7 +6589,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = N8FKFH286X;
+				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INPUT_FILETYPE = automatic;
