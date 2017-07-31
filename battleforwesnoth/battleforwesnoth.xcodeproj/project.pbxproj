@@ -4904,7 +4904,7 @@
 						ProvisioningStyle = Automatic;
 					};
 					3C8A364F160766FD0017F0EE = {
-						DevelopmentTeam = DBYEXU4WHM;
+						DevelopmentTeam = N5CYW96P9T;
 					};
 				};
 			};
@@ -6571,12 +6571,16 @@
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v13.beta13;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-include",
+					"\"$(SRCROOT)/../../../src/boost-patched/bind/arg.hpp\"",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v14;
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -6672,12 +6676,16 @@
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v13.beta13;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-include",
+					"\"$(SRCROOT)/../../../src/boost-patched/bind/arg.hpp\"",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v14;
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -6744,7 +6752,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = DBYEXU4WHM;
+				DEVELOPMENT_TEAM = N5CYW96P9T;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -6847,7 +6855,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = DBYEXU4WHM;
+				DEVELOPMENT_TEAM = N5CYW96P9T;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
