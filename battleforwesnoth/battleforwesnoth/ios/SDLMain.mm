@@ -7,6 +7,7 @@
 #import "SDL.h"
 #import "SDLMain.h"
 #include <vector>
+#include "preferences/general.hpp"
 
 extern "C" int wesnoth_main(int argc, char **argv);
 static std::vector<char*> gArgs;
@@ -30,6 +31,7 @@ int HandleAppEvents(void *userdata, SDL_Event *event)
 			/* Prepare your app to go into the background.  Stop loops, etc.
                This gets called when the user hits the home button, or gets a call.
             */
+            preferences::write_preferences();
 			return 0;
 		case SDL_APP_DIDENTERBACKGROUND:
 			/* This will get called if the user accepted whatever sent your app to the background.
