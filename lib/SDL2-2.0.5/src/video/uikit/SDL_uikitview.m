@@ -115,11 +115,16 @@
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize
 {
     CGPoint point = [touch locationInView:self];
+    
+    /*  *[[UIScreen mainScreen] scale] */
 
     if (normalize) {
         CGRect bounds = self.bounds;
         point.x /= bounds.size.width;
         point.y /= bounds.size.height;
+    } else {
+		point.x *= [[UIScreen mainScreen] scale];
+		point.y *= [[UIScreen mainScreen] scale];
     }
 
     return point;
