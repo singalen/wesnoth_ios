@@ -21,6 +21,7 @@ local.properties
 
 # XCode
 xcuserdata/
+xcshareddata/
 
 # External tool builders
 .externalToolBuilders/

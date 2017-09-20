@@ -10,17 +10,31 @@
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFiles</key>
 	<array>
-		<string>wesnoth-logo-1024.png</string>
-		<string>wesnoth-logo-120.png</string>
-		<string>wesnoth-logo-152.png</string>
-		<string>wesnoth-logo-167.png</string>
-		<string>wesnoth-logo-180.png</string>
-		<string>wesnoth-logo-40.png</string>
-		<string>wesnoth-logo-58.png</string>
-		<string>wesnoth-logo-60.png</string>
-		<string>wesnoth-logo-80.png</string>
-		<string>wesnoth-logo-87.png</string>
-		<string>wesnoth-logo-76.png</string>
+		<string>appicon/Icon-App-20x20@1x.png</string>
+		<string>appicon/Icon-App-20x20@2x.png</string>
+		<string>appicon/Icon-App-20x20@3x.png</string>
+		<string>appicon/Icon-App-29x29@1x.png</string>
+		<string>appicon/Icon-App-29x29@2x.png</string>
+		<string>appicon/Icon-App-29x29@3x.png</string>
+		<string>appicon/Icon-App-40x40@1x.png</string>
+		<string>appicon/Icon-App-40x40@2x.png</string>
+		<string>appicon/Icon-App-40x40@3x.png</string>
+		<string>appicon/Icon-App-57x57@1x.png</string>
+		<string>appicon/Icon-App-57x57@2x.png</string>
+		<string>appicon/Icon-App-60x60@1x.png</string>
+		<string>appicon/Icon-App-60x60@2x.png</string>
+		<string>appicon/Icon-App-60x60@3x.png</string>
+		<string>appicon/Icon-App-72x72@1x.png</string>
+		<string>appicon/Icon-App-72x72@2x.png</string>
+		<string>appicon/Icon-App-76x76@1x.png</string>
+		<string>appicon/Icon-App-76x76@2x.png</string>
+		<string>appicon/Icon-App-76x76@3x.png</string>
+		<string>appicon/Icon-App-83.5x83.5@2x.png</string>
+		<string>appicon/Icon-Small-50x50@1x.png</string>
+		<string>appicon/Icon-Small-50x50@2x.png</string>
+		<!--<string>appicon/iTunesArtwork@1x.png</string>-->
+		<!--<string>appicon/iTunesArtwork@2x.png</string>-->
+		<!--<string>appicon/iTunesArtwork@3x.png</string>-->
 	</array>
 	<key>CFBundleIcons</key>
 	<dict>
@@ -28,17 +42,31 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>wesnoth-logo-1024.png</string>
-				<string>wesnoth-logo-120.png</string>
-				<string>wesnoth-logo-152.png</string>
-				<string>wesnoth-logo-167.png</string>
-				<string>wesnoth-logo-180.png</string>
-				<string>wesnoth-logo-40.png</string>
-				<string>wesnoth-logo-58.png</string>
-				<string>wesnoth-logo-60.png</string>
-				<string>wesnoth-logo-80.png</string>
-				<string>wesnoth-logo-87.png</string>
-				<string>wesnoth-logo-76.png</string>
+				<string>appicon/Icon-App-20x20@1x.png</string>
+				<string>appicon/Icon-App-20x20@2x.png</string>
+				<string>appicon/Icon-App-20x20@3x.png</string>
+				<string>appicon/Icon-App-29x29@1x.png</string>
+				<string>appicon/Icon-App-29x29@2x.png</string>
+				<string>appicon/Icon-App-29x29@3x.png</string>
+				<string>appicon/Icon-App-40x40@1x.png</string>
+				<string>appicon/Icon-App-40x40@2x.png</string>
+				<string>appicon/Icon-App-40x40@3x.png</string>
+				<string>appicon/Icon-App-57x57@1x.png</string>
+				<string>appicon/Icon-App-57x57@2x.png</string>
+				<string>appicon/Icon-App-60x60@1x.png</string>
+				<string>appicon/Icon-App-60x60@2x.png</string>
+				<string>appicon/Icon-App-60x60@3x.png</string>
+				<string>appicon/Icon-App-72x72@1x.png</string>
+				<string>appicon/Icon-App-72x72@2x.png</string>
+				<string>appicon/Icon-App-76x76@1x.png</string>
+				<string>appicon/Icon-App-76x76@2x.png</string>
+				<string>appicon/Icon-App-76x76@3x.png</string>
+				<string>appicon/Icon-App-83.5x83.5@2x.png</string>
+				<string>appicon/Icon-Small-50x50@1x.png</string>
+				<string>appicon/Icon-Small-50x50@2x.png</string>
+				<!--<string>appicon/iTunesArtwork@1x.png</string>-->
+				<!--<string>appicon/iTunesArtwork@2x.png</string>-->
+				<!--<string>appicon/iTunesArtwork@3x.png</string>-->
 			</array>
 		</dict>
 	</dict>
@@ -51,11 +79,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.13.8</string>
+	<string>1.13.9</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>15</string>
+	<string>16</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
