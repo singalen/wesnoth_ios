@@ -123,8 +123,8 @@
         point.x /= bounds.size.width;
         point.y /= bounds.size.height;
     } else {
-		point.x *= [[UIScreen mainScreen] scale];
-		point.y *= [[UIScreen mainScreen] scale];
+//		point.x *= [[UIScreen mainScreen] scale];
+//		point.y *= [[UIScreen mainScreen] scale];
     }
 
     return point;
