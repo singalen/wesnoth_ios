@@ -65,6 +65,8 @@
 		1C29BBF61E5A175C00A701E9 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF51E5A175C00A701E9 /* ImageIO.framework */; };
 		1C29BBF81E5A17C700A701E9 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF71E5A17C700A701E9 /* AVFoundation.framework */; };
 		1C29BBFA1E5A182900A701E9 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF91E5A182800A701E9 /* MobileCoreServices.framework */; };
+		1C42C48D1F805AB500DC3F5C /* translations in Resources */ = {isa = PBXBuildFile; fileRef = 1C42C48C1F805AB400DC3F5C /* translations */; };
+		1C42C48E1F805ABC00DC3F5C /* translations in Resources */ = {isa = PBXBuildFile; fileRef = 1C42C48C1F805AB400DC3F5C /* translations */; };
 		1C6695E71EDCF36000F23301 /* animated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6695DD1EDCF36000F23301 /* animated.cpp */; };
 		1C6695E81EDCF36000F23301 /* config_attribute_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6695DE1EDCF36000F23301 /* config_attribute_value.cpp */; };
 		1C6695E91EDCF36000F23301 /* random_deterministic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6695E01EDCF36000F23301 /* random_deterministic.cpp */; };
@@ -1563,6 +1565,7 @@
 		1C29BBF51E5A175C00A701E9 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		1C29BBF71E5A17C700A701E9 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1C29BBF91E5A182800A701E9 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		1C42C48C1F805AB400DC3F5C /* translations */ = {isa = PBXFileReference; lastKnownFileType = folder; name = translations; path = ../../../translations; sourceTree = "<group>"; };
 		1C6695DD1EDCF36000F23301 /* animated.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animated.cpp; path = ../../../../src/animated.cpp; sourceTree = "<group>"; };
 		1C6695DE1EDCF36000F23301 /* config_attribute_value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = config_attribute_value.cpp; path = ../../../../src/config_attribute_value.cpp; sourceTree = "<group>"; };
 		1C6695DF1EDCF36000F23301 /* config_attribute_value.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = config_attribute_value.hpp; path = ../../../../src/config_attribute_value.hpp; sourceTree = "<group>"; };
@@ -1705,7 +1708,7 @@
 		1CEF0F931EC00EA500C02850 /* image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = image.cpp; path = ../../../../src/image.cpp; sourceTree = "<group>"; };
 		1CEF0F951EC00EA500C02850 /* joystick.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = joystick.cpp; path = ../../../../src/joystick.cpp; sourceTree = "<group>"; };
 		1CEF0F961EC00EA500C02850 /* key.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = key.cpp; path = ../../../../src/key.cpp; sourceTree = "<group>"; };
-		1CEF0F971EC00EA500C02850 /* language.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = language.cpp; path = ../../../../src/language.cpp; sourceTree = "<group>"; };
+		1CEF0F971EC00EA500C02850 /* language.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = language.cpp; path = ../../../../src/language.cpp; sourceTree = "<group>"; };
 		1CEF0F9A1EC00EA600C02850 /* log.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = log.cpp; path = ../../../../src/log.cpp; sourceTree = "<group>"; };
 		1CEF0F9B1EC00EA600C02850 /* lua_jailbreak_exception.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = lua_jailbreak_exception.cpp; path = ../../../../src/lua_jailbreak_exception.cpp; sourceTree = "<group>"; };
 		1CEF0F9D1EC00EA600C02850 /* menu_events.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu_events.cpp; path = ../../../../src/menu_events.cpp; sourceTree = "<group>"; };
@@ -4748,6 +4751,7 @@
 		3CCED8A6160C92E50014BA5D /* Resouce */ = {
 			isa = PBXGroup;
 			children = (
+				1C42C48C1F805AB400DC3F5C /* translations */,
 				1C0F95B41F60A28600EAF635 /* appicon */,
 				3CC9B8951614AD4800D1110E /* sounds */,
 				3CA8C957160EB0A2004CD2C4 /* images */,
@@ -5083,6 +5087,7 @@
 				3C5B806A16399A2100898722 /* images in Resources */,
 				3C5B806B16399A2100898722 /* sounds in Resources */,
 				3C5B806C16399A2100898722 /* Default.png in Resources */,
+				1C42C48E1F805ABC00DC3F5C /* translations in Resources */,
 				1CEF16E11EC0231800C02850 /* wesnoth_fix_vc12_build.patch in Resources */,
 				3C5B806D16399A2100898722 /* Default@2x.png in Resources */,
 				1CEF15D91EC022DD00C02850 /* COPYRIGHT in Resources */,
@@ -5117,6 +5122,7 @@
 				1CB0E1831EE14C8700CD979C /* Default-Portrait@2x~ipad.png in Resources */,
 				1C0F95B51F60A28600EAF635 /* appicon in Resources */,
 				1CB0E1811EE14C8700CD979C /* Default-Landscape@2x~ipad.png in Resources */,
+				1C42C48D1F805AB500DC3F5C /* translations in Resources */,
 				1CEF15D81EC022DD00C02850 /* COPYRIGHT in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6524,7 +6530,7 @@
 					"-include",
 					"\"$(SRCROOT)/../../../src/boost-patched/bind/arg.hpp\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v14;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -6629,7 +6635,7 @@
 					"-include",
 					"\"$(SRCROOT)/../../../src/boost-patched/bind/arg.hpp\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.wesnoth.app.v14;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

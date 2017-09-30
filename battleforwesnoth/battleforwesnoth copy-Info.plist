@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -34,9 +32,6 @@
 		<string>appicon/Icon-App-83.5x83.5@2x.png</string>
 		<string>appicon/Icon-Small-50x50@1x.png</string>
 		<string>appicon/Icon-Small-50x50@2x.png</string>
-		<!--<string>appicon/iTunesArtwork@1x.png</string>-->
-		<!--<string>appicon/iTunesArtwork@2x.png</string>-->
-		<!--<string>appicon/iTunesArtwork@3x.png</string>-->
 	</array>
 	<key>CFBundleIcons</key>
 	<dict>
@@ -66,9 +61,6 @@
 				<string>appicon/Icon-App-83.5x83.5@2x.png</string>
 				<string>appicon/Icon-Small-50x50@1x.png</string>
 				<string>appicon/Icon-Small-50x50@2x.png</string>
-				<!--<string>appicon/iTunesArtwork@1x.png</string>-->
-				<!--<string>appicon/iTunesArtwork@2x.png</string>-->
-				<!--<string>appicon/iTunesArtwork@3x.png</string>-->
 			</array>
 		</dict>
 	</dict>
@@ -85,7 +77,9 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>16</string>
+	<string>17</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
