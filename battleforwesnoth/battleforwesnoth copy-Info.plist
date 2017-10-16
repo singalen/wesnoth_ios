@@ -8,62 +8,8 @@
 	<string>Wesnoth</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
-	<key>CFBundleIconFiles</key>
-	<array>
-		<string>appicon/Icon-App-20x20@1x.png</string>
-		<string>appicon/Icon-App-20x20@2x.png</string>
-		<string>appicon/Icon-App-20x20@3x.png</string>
-		<string>appicon/Icon-App-29x29@1x.png</string>
-		<string>appicon/Icon-App-29x29@2x.png</string>
-		<string>appicon/Icon-App-29x29@3x.png</string>
-		<string>appicon/Icon-App-40x40@1x.png</string>
-		<string>appicon/Icon-App-40x40@2x.png</string>
-		<string>appicon/Icon-App-40x40@3x.png</string>
-		<string>appicon/Icon-App-57x57@1x.png</string>
-		<string>appicon/Icon-App-57x57@2x.png</string>
-		<string>appicon/Icon-App-60x60@1x.png</string>
-		<string>appicon/Icon-App-60x60@2x.png</string>
-		<string>appicon/Icon-App-60x60@3x.png</string>
-		<string>appicon/Icon-App-72x72@1x.png</string>
-		<string>appicon/Icon-App-72x72@2x.png</string>
-		<string>appicon/Icon-App-76x76@1x.png</string>
-		<string>appicon/Icon-App-76x76@2x.png</string>
-		<string>appicon/Icon-App-76x76@3x.png</string>
-		<string>appicon/Icon-App-83.5x83.5@2x.png</string>
-		<string>appicon/Icon-Small-50x50@1x.png</string>
-		<string>appicon/Icon-Small-50x50@2x.png</string>
-	</array>
-	<key>CFBundleIcons</key>
-	<dict>
-		<key>CFBundlePrimaryIcon</key>
-		<dict>
-			<key>CFBundleIconFiles</key>
-			<array>
-				<string>appicon/Icon-App-20x20@1x.png</string>
-				<string>appicon/Icon-App-20x20@2x.png</string>
-				<string>appicon/Icon-App-20x20@3x.png</string>
-				<string>appicon/Icon-App-29x29@1x.png</string>
-				<string>appicon/Icon-App-29x29@2x.png</string>
-				<string>appicon/Icon-App-29x29@3x.png</string>
-				<string>appicon/Icon-App-40x40@1x.png</string>
-				<string>appicon/Icon-App-40x40@2x.png</string>
-				<string>appicon/Icon-App-40x40@3x.png</string>
-				<string>appicon/Icon-App-57x57@1x.png</string>
-				<string>appicon/Icon-App-57x57@2x.png</string>
-				<string>appicon/Icon-App-60x60@1x.png</string>
-				<string>appicon/Icon-App-60x60@2x.png</string>
-				<string>appicon/Icon-App-60x60@3x.png</string>
-				<string>appicon/Icon-App-72x72@1x.png</string>
-				<string>appicon/Icon-App-72x72@2x.png</string>
-				<string>appicon/Icon-App-76x76@1x.png</string>
-				<string>appicon/Icon-App-76x76@2x.png</string>
-				<string>appicon/Icon-App-76x76@3x.png</string>
-				<string>appicon/Icon-App-83.5x83.5@2x.png</string>
-				<string>appicon/Icon-Small-50x50@1x.png</string>
-				<string>appicon/Icon-Small-50x50@2x.png</string>
-			</array>
-		</dict>
-	</dict>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -77,7 +23,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>17</string>
+	<string>26</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>

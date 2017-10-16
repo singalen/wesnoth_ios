@@ -117,6 +117,11 @@
 #include "gui/widgets/debug.hpp"
 #endif
 
+#ifdef __APPLE__
+#include <sys/utsname.h>
+#include <Foundation/Foundation.h>
+#endif
+
 #ifdef HAVE_VISUAL_LEAK_DETECTOR
 #include "vld.h"
 #endif
@@ -1053,6 +1058,25 @@ int main(int argc, char** argv)
 		const time_t t = time(nullptr);
 		std::cerr << "Started on " << ctime(&t) << "\n";
 
+		float ddpi = 0;
+		float hdpi = 0;
+		float vdpi = 0;
+
+		if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) == 0)
+		{
+			std::cerr << "DPI: " << ddpi << " " << hdpi << "x" << vdpi << "\n";
+		} else {
+			std::cerr << "Cannot read DPI\n";
+		}
+
+		struct utsname systemInfo;
+		uname(&systemInfo);
+
+		std::cerr << "System info: " << systemInfo.machine << "\n";
+
+		const char *locale = NSBundle.mainBundle.preferredLocalizations[0].UTF8String;
+		std::cerr << "System locale: " << locale << "\n";
+
 		const std::string& exe_dir = filesystem::get_exe_dir();
 		if(!exe_dir.empty()) {
 			// Try to autodetect the location of the game data dir. Note that
@@ -1124,9 +1148,9 @@ int main(int argc, char** argv)
 		std::cerr << "Ran out of memory. Aborted.\n";
 		error_exit(ENOMEM);
 #if !defined(NO_CATCH_AT_GAME_END)
-	} catch(std::exception & e) {
+	} catch(const std::exception & e) {
 		// Try to catch unexpected exceptions.
-		std::cerr << "Caught general exception:\n" << e.what() << std::endl;
+		std::cerr << "Caught general '" << typeid(e).name() << "' exception:\n" << e.what() << std::endl;
 		error_exit(1);
 	} catch(std::string & e) {
 		std::cerr << "Caught a string thrown as an exception:\n" << e << std::endl;
