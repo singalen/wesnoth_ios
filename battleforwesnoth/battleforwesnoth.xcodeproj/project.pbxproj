@@ -83,7 +83,6 @@
 		1C7A36511F1D1F5A00D87697 /* function_gamestate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C7A36481F1D1F3100D87697 /* function_gamestate.cpp */; };
 		1C7B37981E5C128B00F58FE8 /* libz.1.2.8.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C7B37971E5C128B00F58FE8 /* libz.1.2.8.tbd */; };
 		1C7B379A1E5C132700F58FE8 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C7B37991E5C132700F58FE8 /* libbz2.tbd */; };
-		1C810AA44B76E2AA2A1CD0A0 /* SDLMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C81016B8875935012D79F8C /* SDLMain.mm */; };
 		1C810ED12DF94E7822B9F61B /* display_chat_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810323541F41137F70A77B /* display_chat_manager.cpp */; };
 		1CA58CE11F608DDF0032C0B2 /* irdya_datetime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */; };
 		1CA79D0B1F8C7C5E0013728A /* LaunchImages.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */; };
@@ -976,9 +975,7 @@
 		1C7A36491F1D1F3100D87697 /* function_gamestate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = function_gamestate.hpp; sourceTree = "<group>"; };
 		1C7B37971E5C128B00F58FE8 /* libz.1.2.8.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.8.tbd; path = usr/lib/libz.1.2.8.tbd; sourceTree = SDKROOT; };
 		1C7B37991E5C132700F58FE8 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
-		1C81016B8875935012D79F8C /* SDLMain.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SDLMain.mm; sourceTree = "<group>"; };
 		1C810323541F41137F70A77B /* display_chat_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = display_chat_manager.cpp; path = ../../../../src/display_chat_manager.cpp; sourceTree = "<group>"; };
-		1C810AE52CB68AB268F4ED12 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = irdya_datetime.cpp; sourceTree = "<group>"; };
 		1CA58CD91F608DD90032C0B2 /* irdya_datetime.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = irdya_datetime.hpp; sourceTree = "<group>"; };
 		1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = LaunchImages.xcassets; path = "battleforwesnoth-iPad/LaunchImages.xcassets"; sourceTree = "<group>"; };
@@ -2310,8 +2307,6 @@
 		1C810157E87B6FD6D2E9FA6D /* ios */ = {
 			isa = PBXGroup;
 			children = (
-				1C810AE52CB68AB268F4ED12 /* SDLMain.h */,
-				1C81016B8875935012D79F8C /* SDLMain.mm */,
 				1C069D321EBFC3C3001FF584 /* iconv_hack.c */,
 			);
 			path = ios;
@@ -3623,7 +3618,6 @@
 				1CEF11501EC0213F00C02850 /* ai */,
 				1C6695DD1EDCF36000F23301 /* animated.cpp */,
 				1C069D4B1EC00820001FF584 /* animated.hpp */,
-				1C069D4C1EC00820001FF584 /* animated.tpp */,
 				1CA9ABB21FC81B9F00D25658 /* Appirater.h */,
 				1C20DBA91E11F92600D7BE84 /* Appirater.m */,
 				1C069D4D1EC00820001FF584 /* arrow.cpp */,
@@ -3678,7 +3672,6 @@
 				1CEF0F4E1EC00C7700C02850 /* filesystem_boost.cpp */,
 				1CEF0F4F1EC00C7700C02850 /* filesystem_common.cpp */,
 				1CEF0F501EC00C7700C02850 /* filesystem_sdl.cpp */,
-				1CEF108F1EC01E8300C02850 /* filesystem.hpp */,
 				1CEF10901EC01E8300C02850 /* filter_context.hpp */,
 				1CEF0F5E1EC00CEA00C02850 /* floating_label.cpp */,
 				1CEF10911EC01E8300C02850 /* floating_label.hpp */,
@@ -4892,7 +4885,6 @@
 				1CEF14721EC022B200C02850 /* window_builder.cpp in Sources */,
 				1CEF177C1EC0233900C02850 /* name_generator_factory.cpp in Sources */,
 				1CEF157A1EC022B200C02850 /* help_impl.cpp in Sources */,
-				1C810AA44B76E2AA2A1CD0A0 /* SDLMain.mm in Sources */,
 				1CEF16981EC022F900C02850 /* lua_unit_attacks.cpp in Sources */,
 				1CEF10341EC00F4500C02850 /* sound.cpp in Sources */,
 				1CEF15F31EC022DD00C02850 /* lgc.cpp in Sources */,
