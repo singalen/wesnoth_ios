@@ -3592,7 +3592,7 @@
 				3CC4D96C1626FACE00AFFD82 /* Default-568h@2x.png */,
 				3CC4D96A1626FA8500AFFD82 /* Default@2x.png */,
 				3CC4D9681626F9BF00AFFD82 /* Default.png */,
-				3CCED8A6160C92E50014BA5D /* Resouce */,
+				3CCED8A6160C92E50014BA5D /* Resources */,
 				3C8A365A160766FD0017F0EE /* battleforwesnoth */,
 				3C8A3653160766FD0017F0EE /* Frameworks */,
 				3C8A3651160766FD0017F0EE /* Products */,
@@ -4034,7 +4034,7 @@
 			name = font;
 			sourceTree = "<group>";
 		};
-		3CCED8A6160C92E50014BA5D /* Resouce */ = {
+		3CCED8A6160C92E50014BA5D /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 				1C42C48C1F805AB400DC3F5C /* translations */,
@@ -4043,7 +4043,7 @@
 				3C230030160D9E300086C5CD /* data */,
 				3C230021160D89CD0086C5CD /* fonts */,
 			);
-			name = Resouce;
+			name = Resources;
 			path = "../res-ipad";
 			sourceTree = "<group>";
 		};
