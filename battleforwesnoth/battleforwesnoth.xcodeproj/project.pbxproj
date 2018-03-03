@@ -35,6 +35,12 @@
 		1C29BBF81E5A17C700A701E9 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF71E5A17C700A701E9 /* AVFoundation.framework */; };
 		1C29BBFA1E5A182900A701E9 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C29BBF91E5A182800A701E9 /* MobileCoreServices.framework */; };
 		1C42C48E1F805ABC00DC3F5C /* translations in Resources */ = {isa = PBXBuildFile; fileRef = 1C42C48C1F805AB400DC3F5C /* translations */; };
+		1C6088162027FEF700F117B6 /* surrender_quit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C60880E2027FEF700F117B6 /* surrender_quit.cpp */; };
+		1C60881C2027FF5600F117B6 /* static_registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6088172027FF5500F117B6 /* static_registry.cpp */; };
+		1C60881D2027FF5600F117B6 /* gui_definition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C60881A2027FF5600F117B6 /* gui_definition.cpp */; };
+		1C6088202027FF8A00F117B6 /* player_list_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C60881F2027FF8A00F117B6 /* player_list_helper.cpp */; };
+		1C6088232027FFAD00F117B6 /* gui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6088212027FFAC00F117B6 /* gui.cpp */; };
+		1C6088262028066600F117B6 /* SDLMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C6088242028066600F117B6 /* SDLMain.mm */; };
 		1C6696061EDD0C1400F23301 /* editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6695F81EDD0BE200F23301 /* editor.cpp */; };
 		1C6696071EDD0C1600F23301 /* credentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6695F41EDD0BE200F23301 /* credentials.cpp */; };
 		1C6696081EDD0C2300F23301 /* display.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C6695F61EDD0BE200F23301 /* display.cpp */; };
@@ -876,6 +882,19 @@
 		1C29BBF71E5A17C700A701E9 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1C29BBF91E5A182800A701E9 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		1C42C48C1F805AB400DC3F5C /* translations */ = {isa = PBXFileReference; lastKnownFileType = folder; name = translations; path = ../../../translations; sourceTree = "<group>"; };
+		1C60880E2027FEF700F117B6 /* surrender_quit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = surrender_quit.cpp; sourceTree = "<group>"; };
+		1C6088152027FEF700F117B6 /* surrender_quit.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = surrender_quit.hpp; sourceTree = "<group>"; };
+		1C6088172027FF5500F117B6 /* static_registry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = static_registry.cpp; sourceTree = "<group>"; };
+		1C6088182027FF5500F117B6 /* static_registry.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = static_registry.hpp; sourceTree = "<group>"; };
+		1C6088192027FF5600F117B6 /* canvas_private.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = canvas_private.hpp; sourceTree = "<group>"; };
+		1C60881A2027FF5600F117B6 /* gui_definition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_definition.cpp; sourceTree = "<group>"; };
+		1C60881B2027FF5600F117B6 /* gui_definition.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gui_definition.hpp; sourceTree = "<group>"; };
+		1C60881E2027FF8900F117B6 /* player_list_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = player_list_helper.hpp; sourceTree = "<group>"; };
+		1C60881F2027FF8A00F117B6 /* player_list_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = player_list_helper.cpp; sourceTree = "<group>"; };
+		1C6088212027FFAC00F117B6 /* gui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui.cpp; sourceTree = "<group>"; };
+		1C6088222027FFAC00F117B6 /* gui.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gui.hpp; sourceTree = "<group>"; };
+		1C6088242028066600F117B6 /* SDLMain.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SDLMain.mm; sourceTree = "<group>"; };
+		1C6088252028066600F117B6 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		1C6695DD1EDCF36000F23301 /* animated.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animated.cpp; path = ../../../../src/animated.cpp; sourceTree = "<group>"; };
 		1C6695DE1EDCF36000F23301 /* config_attribute_value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = config_attribute_value.cpp; path = ../../../../src/config_attribute_value.cpp; sourceTree = "<group>"; };
 		1C6695DF1EDCF36000F23301 /* config_attribute_value.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = config_attribute_value.hpp; path = ../../../../src/config_attribute_value.hpp; sourceTree = "<group>"; };
@@ -2307,6 +2326,8 @@
 		1C810157E87B6FD6D2E9FA6D /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				1C6088252028066600F117B6 /* SDLMain.h */,
+				1C6088242028066600F117B6 /* SDLMain.mm */,
 				1C069D321EBFC3C3001FF584 /* iconv_hack.c */,
 			);
 			path = ios;
@@ -2657,6 +2678,8 @@
 		1CEF12D91EC022B100C02850 /* gui */ = {
 			isa = PBXGroup;
 			children = (
+				1C6088212027FFAC00F117B6 /* gui.cpp */,
+				1C6088222027FFAC00F117B6 /* gui.hpp */,
 				1CEF12DA1EC022B100C02850 /* auxiliary */,
 				1CEF12F11EC022B100C02850 /* core */,
 				1CEF13191EC022B100C02850 /* dialogs */,
@@ -2705,6 +2728,11 @@
 		1CEF12F11EC022B100C02850 /* core */ = {
 			isa = PBXGroup;
 			children = (
+				1C6088192027FF5600F117B6 /* canvas_private.hpp */,
+				1C60881A2027FF5600F117B6 /* gui_definition.cpp */,
+				1C60881B2027FF5600F117B6 /* gui_definition.hpp */,
+				1C6088172027FF5500F117B6 /* static_registry.cpp */,
+				1C6088182027FF5500F117B6 /* static_registry.hpp */,
 				1CEF12F21EC022B100C02850 /* canvas.cpp */,
 				1CEF12F31EC022B100C02850 /* canvas.hpp */,
 				1CEF12F41EC022B100C02850 /* event */,
@@ -2770,6 +2798,8 @@
 		1CEF13191EC022B100C02850 /* dialogs */ = {
 			isa = PBXGroup;
 			children = (
+				1C60880E2027FEF700F117B6 /* surrender_quit.cpp */,
+				1C6088152027FEF700F117B6 /* surrender_quit.hpp */,
 				1C66960D1EDDCF9300F23301 /* outro.cpp */,
 				1C66960E1EDDCF9300F23301 /* outro.hpp */,
 				1CEF131A1EC022B100C02850 /* addon */,
@@ -2931,6 +2961,8 @@
 		1CEF13801EC022B100C02850 /* multiplayer */ = {
 			isa = PBXGroup;
 			children = (
+				1C60881F2027FF8A00F117B6 /* player_list_helper.cpp */,
+				1C60881E2027FF8900F117B6 /* player_list_helper.hpp */,
 				1C178AAD1FA6B42D00707D15 /* lobby.cpp */,
 				1C178AAA1FA6B42A00707D15 /* lobby.hpp */,
 				1C178AAB1FA6B42C00707D15 /* player_info.cpp */,
@@ -4367,6 +4399,7 @@
 				1CEF16BC1EC022F900C02850 /* tokenizer.cpp in Sources */,
 				1CEF161D1EC022DE00C02850 /* location.cpp in Sources */,
 				1CEF0FE51EC00EA700C02850 /* playmp_controller.cpp in Sources */,
+				1C6088232027FFAD00F117B6 /* gui.cpp in Sources */,
 				1CEF15F11EC022DD00C02850 /* lfunc.cpp in Sources */,
 				1C6696971EDDD2E600F23301 /* editor_toolkit.cpp in Sources */,
 				1CEF12411EC021D300C02850 /* text_formatting.cpp in Sources */,
@@ -4448,6 +4481,7 @@
 				1CEF11C81EC0213F00C02850 /* manager.cpp in Sources */,
 				1C6696931EDDD2E000F23301 /* terrain_palettes.cpp in Sources */,
 				1CEF0F391EC00B3200C02850 /* carryover.cpp in Sources */,
+				1C6088202027FF8A00F117B6 /* player_list_helper.cpp in Sources */,
 				1CEF0FD51EC00EA700C02850 /* mp_ui_alerts.cpp in Sources */,
 				1CEF179A1EC0233900C02850 /* menu.cpp in Sources */,
 				1CEF12A21EC0222000C02850 /* variant.cpp in Sources */,
@@ -4465,6 +4499,7 @@
 				1CEF14A01EC022B200C02850 /* generator_settings.cpp in Sources */,
 				1CEF16111EC022DD00C02850 /* ltm.cpp in Sources */,
 				1CEF145A1EC022B100C02850 /* distributor.cpp in Sources */,
+				1C6088162027FEF700F117B6 /* surrender_quit.cpp in Sources */,
 				1CEF0F401EC00B3200C02850 /* config.cpp in Sources */,
 				1C6696851EDDD2C800F23301 /* action_item.cpp in Sources */,
 				1CEF14FC1EC022B200C02850 /* sp_options_configure.cpp in Sources */,
@@ -4583,6 +4618,7 @@
 				1CEF175E1EC0233900C02850 /* attack_type.cpp in Sources */,
 				1CEF14521EC022B100C02850 /* old_markup.cpp in Sources */,
 				1C6696121EDDD03A00F23301 /* random_deterministic.cpp in Sources */,
+				1C60881C2027FF5600F117B6 /* static_registry.cpp in Sources */,
 				3C5B801816399A2100898722 /* fclist.c in Sources */,
 				1CEF146A1EC022B200C02850 /* timer.cpp in Sources */,
 				3C5B801916399A2100898722 /* fcmatch.c in Sources */,
@@ -4685,6 +4721,7 @@
 				1C66969C1EDDD39800F23301 /* mouse_action_unit.cpp in Sources */,
 				1CEF12041EC0213F00C02850 /* game_info.cpp in Sources */,
 				1CEF12AC1EC0222000C02850 /* handlers.cpp in Sources */,
+				1C6088262028066600F117B6 /* SDLMain.mm in Sources */,
 				1CEF16151EC022DD00C02850 /* lutf8lib.cpp in Sources */,
 				1CA9ABB11FC8118600D25658 /* wesnoth.cpp in Sources */,
 				1CEF111D1EC0211000C02850 /* notifications.cpp in Sources */,
@@ -4738,6 +4775,7 @@
 				1CEF12061EC0213F00C02850 /* gamestate_observer.cpp in Sources */,
 				1CEF101A1EC00F4500C02850 /* replay_recorder_base.cpp in Sources */,
 				1CEF155C1EC022B200C02850 /* styled_widget.cpp in Sources */,
+				1C60881D2027FF5600F117B6 /* gui_definition.cpp in Sources */,
 				1CEF15561EC022B200C02850 /* slider.cpp in Sources */,
 				1CEF14DA1EC022B200C02850 /* mp_change_control.cpp in Sources */,
 				1CEF15061EC022B200C02850 /* title_screen.cpp in Sources */,
