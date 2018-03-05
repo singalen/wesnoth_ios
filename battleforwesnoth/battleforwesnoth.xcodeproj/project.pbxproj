@@ -590,6 +590,11 @@
 		1CEF17A21EC0233900C02850 /* textbox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF174F1EC0233900C02850 /* textbox.cpp */; };
 		1CEF17A41EC0233900C02850 /* widget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17511EC0233900C02850 /* widget.cpp */; };
 		1CEF17A61EC0233900C02850 /* xbrz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17551EC0233900C02850 /* xbrz.cpp */; };
+		1CFF6738204C73FA00773676 /* deprecation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6736204C73FA00773676 /* deprecation.cpp */; };
+		1CFF673E204C745200773676 /* bcrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF673D204C745200773676 /* bcrypt.c */; };
+		1CFF6747204C749900773676 /* crypt_gensalt.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6740204C749700773676 /* crypt_gensalt.c */; };
+		1CFF6748204C749900773676 /* crypt_blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6742204C749800773676 /* crypt_blowfish.c */; };
+		1CFF6749204C749900773676 /* wrapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6744204C749800773676 /* wrapper.c */; };
 		3C5B7E2016399A2100898722 /* wesnothAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3664160766FD0017F0EE /* wesnothAppDelegate.m */; };
 		3C5B7E2116399A2100898722 /* wesnothViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3667160766FD0017F0EE /* wesnothViewController.m */; };
 		3C5B800B16399A2100898722 /* fcatomic.c in Sources */ = {isa = PBXBuildFile; fileRef = 3CCB9619162932CC007549E6 /* fcatomic.c */; };
@@ -2052,6 +2057,17 @@
 		1CEF17541EC0233900C02850 /* config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config.hpp; sourceTree = "<group>"; };
 		1CEF17551EC0233900C02850 /* xbrz.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xbrz.cpp; sourceTree = "<group>"; };
 		1CEF17561EC0233900C02850 /* xbrz.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = xbrz.hpp; sourceTree = "<group>"; };
+		1CFF6734204C73F900773676 /* deprecation.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = deprecation.hpp; path = ../../../../src/deprecation.hpp; sourceTree = "<group>"; };
+		1CFF6736204C73FA00773676 /* deprecation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = deprecation.cpp; path = ../../../../src/deprecation.cpp; sourceTree = "<group>"; };
+		1CFF673C204C745200773676 /* bcrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bcrypt.h; path = ../../../../../src/bcrypt/bcrypt.h; sourceTree = "<group>"; };
+		1CFF673D204C745200773676 /* bcrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bcrypt.c; path = ../../../../../src/bcrypt/bcrypt.c; sourceTree = "<group>"; };
+		1CFF6740204C749700773676 /* crypt_gensalt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crypt_gensalt.c; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_gensalt.c; sourceTree = "<group>"; };
+		1CFF6741204C749700773676 /* ow-crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ow-crypt.h"; path = "../../../../../../src/bcrypt/crypt_blowfish/ow-crypt.h"; sourceTree = "<group>"; };
+		1CFF6742204C749800773676 /* crypt_blowfish.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crypt_blowfish.c; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_blowfish.c; sourceTree = "<group>"; };
+		1CFF6743204C749800773676 /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt.h; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt.h; sourceTree = "<group>"; };
+		1CFF6744204C749800773676 /* wrapper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wrapper.c; path = ../../../../../../src/bcrypt/crypt_blowfish/wrapper.c; sourceTree = "<group>"; };
+		1CFF6745204C749900773676 /* crypt_gensalt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt_gensalt.h; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_gensalt.h; sourceTree = "<group>"; };
+		1CFF6746204C749900773676 /* crypt_blowfish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt_blowfish.h; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_blowfish.h; sourceTree = "<group>"; };
 		3C15F682160B778500895032 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3C230021160D89CD0086C5CD /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../fonts; sourceTree = "<group>"; };
 		3C230030160D9E300086C5CD /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data; path = ../../../data; sourceTree = "<group>"; };
@@ -3554,6 +3570,30 @@
 			path = ../../../../src/xBRZ;
 			sourceTree = "<group>";
 		};
+		1CFF673B204C743500773676 /* bcrypt */ = {
+			isa = PBXGroup;
+			children = (
+				1CFF673F204C747E00773676 /* crypt_blowfish */,
+				1CFF673D204C745200773676 /* bcrypt.c */,
+				1CFF673C204C745200773676 /* bcrypt.h */,
+			);
+			path = bcrypt;
+			sourceTree = "<group>";
+		};
+		1CFF673F204C747E00773676 /* crypt_blowfish */ = {
+			isa = PBXGroup;
+			children = (
+				1CFF6742204C749800773676 /* crypt_blowfish.c */,
+				1CFF6746204C749900773676 /* crypt_blowfish.h */,
+				1CFF6740204C749700773676 /* crypt_gensalt.c */,
+				1CFF6745204C749900773676 /* crypt_gensalt.h */,
+				1CFF6743204C749800773676 /* crypt.h */,
+				1CFF6741204C749700773676 /* ow-crypt.h */,
+				1CFF6744204C749800773676 /* wrapper.c */,
+			);
+			path = crypt_blowfish;
+			sourceTree = "<group>";
+		};
 		3C5B80BB16399A2100898722 /* Resources-iPad */ = {
 			isa = PBXGroup;
 			children = (
@@ -3643,6 +3683,9 @@
 		3C8A365A160766FD0017F0EE /* battleforwesnoth */ = {
 			isa = PBXGroup;
 			children = (
+				1CFF673B204C743500773676 /* bcrypt */,
+				1CFF6736204C73FA00773676 /* deprecation.cpp */,
+				1CFF6734204C73F900773676 /* deprecation.hpp */,
 				1CEF10721EC0102C00C02850 /* about.cpp */,
 				1CEF10751EC0106A00C02850 /* about.hpp */,
 				1CEF11241EC0213E00C02850 /* actions */,
@@ -4398,6 +4441,7 @@
 				1CEF17801EC0233900C02850 /* action.cpp in Sources */,
 				1CEF16BC1EC022F900C02850 /* tokenizer.cpp in Sources */,
 				1CEF161D1EC022DE00C02850 /* location.cpp in Sources */,
+				1CFF6738204C73FA00773676 /* deprecation.cpp in Sources */,
 				1CEF0FE51EC00EA700C02850 /* playmp_controller.cpp in Sources */,
 				1C6088232027FFAD00F117B6 /* gui.cpp in Sources */,
 				1CEF15F11EC022DD00C02850 /* lfunc.cpp in Sources */,
@@ -4440,6 +4484,7 @@
 				1CEF11B81EC0213F00C02850 /* undo_move_action.cpp in Sources */,
 				1CEF16921EC022F900C02850 /* lua_rng.cpp in Sources */,
 				1CEF150C1EC022B200C02850 /* unit_advance.cpp in Sources */,
+				1CFF6749204C749900773676 /* wrapper.c in Sources */,
 				1CEF103C1EC00F4500C02850 /* synced_commands.cpp in Sources */,
 				1C6696151EDDD04400F23301 /* random.cpp in Sources */,
 				1CEF0F851EC00D2600C02850 /* game_state.cpp in Sources */,
@@ -4470,6 +4515,7 @@
 				1CEF15201EC022B200C02850 /* chatbox.cpp in Sources */,
 				1CEF147A1EC022B200C02850 /* uninstall_list.cpp in Sources */,
 				1CEF15161EC022B200C02850 /* unit_recruit.cpp in Sources */,
+				1CFF673E204C745200773676 /* bcrypt.c in Sources */,
 				1CEF15E91EC022DD00C02850 /* ldblib.cpp in Sources */,
 				1CEF15801EC022B200C02850 /* help_topic_generators.cpp in Sources */,
 				1CEF156A1EC022B200C02850 /* unit_preview_pane.cpp in Sources */,
@@ -4479,6 +4525,7 @@
 				1CEF152C1EC022B200C02850 /* helper.cpp in Sources */,
 				1CEF0F8F1EC00E0400C02850 /* halo.cpp in Sources */,
 				1CEF11C81EC0213F00C02850 /* manager.cpp in Sources */,
+				1CFF6748204C749900773676 /* crypt_blowfish.c in Sources */,
 				1C6696931EDDD2E000F23301 /* terrain_palettes.cpp in Sources */,
 				1CEF0F391EC00B3200C02850 /* carryover.cpp in Sources */,
 				1C6088202027FF8A00F117B6 /* player_list_helper.cpp in Sources */,
@@ -4920,6 +4967,7 @@
 				1CEF14E81EC022B200C02850 /* mp_login.cpp in Sources */,
 				1CEF15881EC022B200C02850 /* hotkey_handler_mp.cpp in Sources */,
 				1CEF15521EC022B200C02850 /* settings.cpp in Sources */,
+				1CFF6747204C749900773676 /* crypt_gensalt.c in Sources */,
 				1CEF14721EC022B200C02850 /* window_builder.cpp in Sources */,
 				1CEF177C1EC0233900C02850 /* name_generator_factory.cpp in Sources */,
 				1CEF157A1EC022B200C02850 /* help_impl.cpp in Sources */,
