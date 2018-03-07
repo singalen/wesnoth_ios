@@ -89,7 +89,6 @@ FcInitLoadConfig (void)
 	    return FcInitFallbackConfig ();
 	}
     }
-    printf("4\n");
 
     return config;
 }

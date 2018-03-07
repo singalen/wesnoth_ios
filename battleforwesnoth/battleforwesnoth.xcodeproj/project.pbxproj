@@ -5151,11 +5151,7 @@
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-include",
-					"\"$(SRCROOT)/../../../src/boost-patched/bind/arg.hpp\"",
-				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
@@ -5259,11 +5255,7 @@
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-include",
-					"\"$(SRCROOT)/../../../src/boost-patched/bind/arg.hpp\"",
-				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
