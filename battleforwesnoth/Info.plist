@@ -32,6 +32,10 @@
 	<true/>
 	<key>UIInterfaceOrientation</key>
 	<string>UIInterfaceOrientationLandscapeRight</string>
+	<key>UIMainStoryboardFile</key>
+	<string>WesnothViewController</string>
+	<key>UIMainStoryboardFile~ipad</key>
+	<string>WesnothViewController</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

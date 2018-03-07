@@ -92,7 +92,7 @@
 		1C810ED12DF94E7822B9F61B /* display_chat_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810323541F41137F70A77B /* display_chat_manager.cpp */; };
 		1CA58CE11F608DDF0032C0B2 /* irdya_datetime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */; };
 		1CA79D0B1F8C7C5E0013728A /* LaunchImages.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */; };
-		1CA79D281F8C7E530013728A /* battleforwesnoth copy-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1CA79D211F8C7E520013728A /* battleforwesnoth copy-Info.plist */; };
+		1CA79D281F8C7E530013728A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1CA79D211F8C7E520013728A /* Info.plist */; };
 		1CA9ABAD1FC807B900D25658 /* point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAA1FC807B900D25658 /* point.cpp */; };
 		1CA9ABB01FC8094200D25658 /* make.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAE1FC8094100D25658 /* make.cpp */; };
 		1CA9ABB11FC8118600D25658 /* wesnoth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF104F1EC00F9D00C02850 /* wesnoth.cpp */; };
@@ -644,8 +644,7 @@
 		3C5B806C16399A2100898722 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D9681626F9BF00AFFD82 /* Default.png */; };
 		3C5B806D16399A2100898722 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D96A1626FA8500AFFD82 /* Default@2x.png */; };
 		3C5B806E16399A2100898722 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D96C1626FACE00AFFD82 /* Default-568h@2x.png */; };
-		3C5B80C116399A2600898722 /* wesnothViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3C5B80BD16399A2600898722 /* wesnothViewController_iPhone.xib */; };
-		3C5B80C216399A2600898722 /* wesnothViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3C5B80BF16399A2600898722 /* wesnothViewController_iPad.xib */; };
+		46BED4E22050848B00842FA5 /* WesnothViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */; };
 		A69DB6D4196A676100230816 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 /* End PBXBuildFile section */
 
@@ -1003,7 +1002,7 @@
 		1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = irdya_datetime.cpp; sourceTree = "<group>"; };
 		1CA58CD91F608DD90032C0B2 /* irdya_datetime.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = irdya_datetime.hpp; sourceTree = "<group>"; };
 		1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = LaunchImages.xcassets; path = "battleforwesnoth-iPad/LaunchImages.xcassets"; sourceTree = "<group>"; };
-		1CA79D211F8C7E520013728A /* battleforwesnoth copy-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "battleforwesnoth copy-Info.plist"; sourceTree = "<group>"; };
+		1CA79D211F8C7E520013728A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1CA9ABAA1FC807B900D25658 /* point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = point.cpp; sourceTree = "<group>"; };
 		1CA9ABAB1FC807B900D25658 /* point.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = point.hpp; sourceTree = "<group>"; };
 		1CA9ABAC1FC807B900D25658 /* userevent.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = userevent.hpp; sourceTree = "<group>"; };
@@ -2072,12 +2071,9 @@
 		3C230021160D89CD0086C5CD /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../fonts; sourceTree = "<group>"; };
 		3C230030160D9E300086C5CD /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data; path = ../../../data; sourceTree = "<group>"; };
 		3C5B807416399A2100898722 /* battleforwesnoth-iPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "battleforwesnoth-iPad.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		3C5B80BE16399A2600898722 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = "Resources-iPad/battleforwesnoth/en.lproj/wesnothViewController_iPhone.xib"; sourceTree = "<group>"; };
-		3C5B80C016399A2600898722 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = "Resources-iPad/battleforwesnoth/en.lproj/wesnothViewController_iPad.xib"; sourceTree = "<group>"; };
 		3C8A3654160766FD0017F0EE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3C8A3656160766FD0017F0EE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		3C8A3658160766FD0017F0EE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		3C8A365C160766FD0017F0EE /* battleforwesnoth-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "battleforwesnoth-Info.plist"; sourceTree = "<group>"; };
 		3C8A365E160766FD0017F0EE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		3C8A3663160766FD0017F0EE /* wesnothAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wesnothAppDelegate.h; sourceTree = "<group>"; };
 		3C8A3664160766FD0017F0EE /* wesnothAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = wesnothAppDelegate.m; sourceTree = "<group>"; };
@@ -2126,6 +2122,7 @@
 		3CFE03631608A7E000DC330D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		3CFE119B1608BE8A00DC330D /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		3CFE11A31608E29A00DC330D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = WesnothViewController.storyboard; sourceTree = "<group>"; };
 		A65CD528180E84900035576A /* xmlparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlparse.c; path = "../../lib/fontconfig-2.8.0/src/xmlparse.c"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -3594,19 +3591,9 @@
 			path = crypt_blowfish;
 			sourceTree = "<group>";
 		};
-		3C5B80BB16399A2100898722 /* Resources-iPad */ = {
-			isa = PBXGroup;
-			children = (
-				3C5B80BD16399A2600898722 /* wesnothViewController_iPhone.xib */,
-				3C5B80BF16399A2600898722 /* wesnothViewController_iPad.xib */,
-			);
-			name = "Resources-iPad";
-			sourceTree = "<group>";
-		};
 		3C8A3645160766FD0017F0EE = {
 			isa = PBXGroup;
 			children = (
-				1CA79D211F8C7E520013728A /* battleforwesnoth copy-Info.plist */,
 				1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */,
 				1C063A241F8C79C20096493B /* IconImages.xcassets */,
 				1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */,
@@ -3618,7 +3605,6 @@
 				1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */,
 				1CDFD9B61E10529800E48A19 /* SDL.xcodeproj */,
 				3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */,
-				3C5B80BB16399A2100898722 /* Resources-iPad */,
 				3C97C1371631CB0C00BFE895 /* png.xcodeproj */,
 				3C97C1151631CAC300BFE895 /* jpeg.xcodeproj */,
 				3C97C02E1631C36000BFE895 /* pixman.xcodeproj */,
@@ -3632,6 +3618,8 @@
 				3CC4D96C1626FACE00AFFD82 /* Default-568h@2x.png */,
 				3CC4D96A1626FA8500AFFD82 /* Default@2x.png */,
 				3CC4D9681626F9BF00AFFD82 /* Default.png */,
+				1CA79D211F8C7E520013728A /* Info.plist */,
+				46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */,
 				3CCED8A6160C92E50014BA5D /* Resources */,
 				3C8A365A160766FD0017F0EE /* battleforwesnoth */,
 				3C8A3653160766FD0017F0EE /* Frameworks */,
@@ -3970,7 +3958,6 @@
 		3C8A365B160766FD0017F0EE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				3C8A365C160766FD0017F0EE /* battleforwesnoth-Info.plist */,
 				3C8A365D160766FD0017F0EE /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
@@ -4391,10 +4378,9 @@
 				3C5B806E16399A2100898722 /* Default-568h@2x.png in Resources */,
 				1CB0E1871EE14C8B00CD979C /* Default-Portrait@2x~ipad.png in Resources */,
 				1CB0E1851EE14C8B00CD979C /* Default-Landscape@2x~ipad.png in Resources */,
-				3C5B80C116399A2600898722 /* wesnothViewController_iPhone.xib in Resources */,
+				46BED4E22050848B00842FA5 /* WesnothViewController.storyboard in Resources */,
 				1CA79D0B1F8C7C5E0013728A /* LaunchImages.xcassets in Resources */,
-				3C5B80C216399A2600898722 /* wesnothViewController_iPad.xib in Resources */,
-				1CA79D281F8C7E530013728A /* battleforwesnoth copy-Info.plist in Resources */,
+				1CA79D281F8C7E530013728A /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5047,22 +5033,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		3C5B80BD16399A2600898722 /* wesnothViewController_iPhone.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				3C5B80BE16399A2600898722 /* en */,
-			);
-			name = wesnothViewController_iPhone.xib;
-			sourceTree = "<group>";
-		};
-		3C5B80BF16399A2600898722 /* wesnothViewController_iPad.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				3C5B80C016399A2600898722 /* en */,
-			);
-			name = wesnothViewController_iPad.xib;
-			sourceTree = "<group>";
-		};
 		3C8A365D160766FD0017F0EE /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -5152,7 +5122,7 @@
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
 					"\"$(SRCROOT)/battleforwesnoth\"",
 				);
-				INFOPLIST_FILE = "battleforwesnoth copy-Info.plist";
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -5190,7 +5160,7 @@
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -5259,7 +5229,7 @@
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
 					"\"$(SRCROOT)/battleforwesnoth\"",
 				);
-				INFOPLIST_FILE = "battleforwesnoth copy-Info.plist";
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -5298,7 +5268,7 @@
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
 			};

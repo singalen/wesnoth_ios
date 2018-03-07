@@ -3,7 +3,7 @@
 //  battleforwesnoth
 //
 //  Created by lin dai on 12-9-17.
-//  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2012 lin day, 2018 Martin Hrubý (hrubymar10). All rights reserved.
 //
 
 #import "wesnothViewController.h"
