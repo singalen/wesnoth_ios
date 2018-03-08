@@ -969,13 +969,20 @@ int main(int argc, char** argv)
 #ifdef HAVE_VISUAL_LEAK_DETECTOR
     VLDEnable();
 #endif
-    
+
 #ifdef __IPHONEOS__
     char *sdl_pref_path = SDL_GetPrefPath("wesnoth.org", "iWesnoth");
     if (sdl_pref_path) {
 //        setenv("HOME", sdl_pref_path, 1);
         SDL_free(sdl_pref_path);
     }
+
+    string sdl_app_path = SDL_GetBasePath();
+    setenv("FONTCONFIG_FILE", sdl_app_path + "/fonts/fonts.conf", 1);
+	setenv("FONTCONFIG_PATH", sdl_app_path + "/fonts", 1);
+
+	// TODO: There's a chance the warning will go away with Pango 1.38.
+//	setenv("PANGO_RC_FILE", sdl_app_path + "/???", 1);
 #endif
     
 
