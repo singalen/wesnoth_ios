@@ -982,7 +982,9 @@ int main(int argc, char** argv)
 	setenv("FONTCONFIG_PATH", sdl_app_path + "/fonts", 1);
 
 	// TODO: There's a chance the warning will go away with Pango 1.38.
-//	setenv("PANGO_RC_FILE", sdl_app_path + "/???", 1);
+//    setenv ("PANGO_RC_FILE", "./pangorc", 1);
+//    setenv ("PANGO_SYSCONFDIR", ".", 1);
+//    setenv ("PANGO_LIBDIR", ".", 1);
 #endif
     
 
