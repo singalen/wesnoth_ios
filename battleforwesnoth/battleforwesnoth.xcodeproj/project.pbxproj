@@ -577,7 +577,6 @@
 		1CEF17921EC0233900C02850 /* suppose_dead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF173D1EC0233900C02850 /* suppose_dead.cpp */; };
 		1CEF17941EC0233900C02850 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17401EC0233900C02850 /* utility.cpp */; };
 		1CEF17961EC0233900C02850 /* button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17441EC0233900C02850 /* button.cpp */; };
-		1CEF17981EC0233900C02850 /* label.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17461EC0233900C02850 /* label.cpp */; };
 		1CEF179A1EC0233900C02850 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17481EC0233900C02850 /* menu.cpp */; };
 		1CEF179C1EC0233900C02850 /* menu_style.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF174A1EC0233900C02850 /* menu_style.cpp */; };
 		1CEF179E1EC0233900C02850 /* scrollarea.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF174B1EC0233900C02850 /* scrollarea.cpp */; };
@@ -2001,7 +2000,6 @@
 		1CEF17241EC0233900C02850 /* name_generator_factory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = name_generator_factory.cpp; sourceTree = "<group>"; };
 		1CEF17251EC0233900C02850 /* name_generator_factory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = name_generator_factory.hpp; sourceTree = "<group>"; };
 		1CEF17261EC0233900C02850 /* reference_counter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = reference_counter.hpp; sourceTree = "<group>"; };
-		1CEF17291EC0233900C02850 /* smart_list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = smart_list.hpp; sourceTree = "<group>"; };
 		1CEF172B1EC0233900C02850 /* action.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = action.cpp; sourceTree = "<group>"; };
 		1CEF172C1EC0233900C02850 /* action.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = action.hpp; sourceTree = "<group>"; };
 		1CEF172D1EC0233900C02850 /* attack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attack.cpp; sourceTree = "<group>"; };
@@ -2028,8 +2026,6 @@
 		1CEF17421EC0233900C02850 /* visitor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = visitor.hpp; sourceTree = "<group>"; };
 		1CEF17441EC0233900C02850 /* button.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = button.cpp; sourceTree = "<group>"; };
 		1CEF17451EC0233900C02850 /* button.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = button.hpp; sourceTree = "<group>"; };
-		1CEF17461EC0233900C02850 /* label.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = label.cpp; sourceTree = "<group>"; };
-		1CEF17471EC0233900C02850 /* label.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = label.hpp; sourceTree = "<group>"; };
 		1CEF17481EC0233900C02850 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menu.cpp; sourceTree = "<group>"; };
 		1CEF17491EC0233900C02850 /* menu.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = menu.hpp; sourceTree = "<group>"; };
 		1CEF174A1EC0233900C02850 /* menu_style.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menu_style.cpp; sourceTree = "<group>"; };
@@ -3477,7 +3473,6 @@
 				1CEF17241EC0233900C02850 /* name_generator_factory.cpp */,
 				1CEF17251EC0233900C02850 /* name_generator_factory.hpp */,
 				1CEF17261EC0233900C02850 /* reference_counter.hpp */,
-				1CEF17291EC0233900C02850 /* smart_list.hpp */,
 			);
 			name = utils;
 			path = ../../../../src/utils;
@@ -3524,8 +3519,6 @@
 				1C6696191EDDD12800F23301 /* widget_helpers.hpp */,
 				1CEF17441EC0233900C02850 /* button.cpp */,
 				1CEF17451EC0233900C02850 /* button.hpp */,
-				1CEF17461EC0233900C02850 /* label.cpp */,
-				1CEF17471EC0233900C02850 /* label.hpp */,
 				1CEF17481EC0233900C02850 /* menu.cpp */,
 				1CEF17491EC0233900C02850 /* menu.hpp */,
 				1CEF174A1EC0233900C02850 /* menu_style.cpp */,
@@ -4803,7 +4796,6 @@
 				1CEF11C41EC0213F00C02850 /* client.cpp in Sources */,
 				1CEF11E41EC0213F00C02850 /* contexts.cpp in Sources */,
 				1CEF11A61EC0213F00C02850 /* advancement.cpp in Sources */,
-				1CEF17981EC0233900C02850 /* label.cpp in Sources */,
 				1CEF0F651EC00CEA00C02850 /* floating_textbox.cpp in Sources */,
 				1CEF152E1EC022B200C02850 /* horizontal_scrollbar.cpp in Sources */,
 				1CEF14621EC022B100C02850 /* horizontal_list.cpp in Sources */,
