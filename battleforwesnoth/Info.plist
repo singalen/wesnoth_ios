@@ -27,19 +27,17 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
-	<string></string>
+	<string>public.app-category.strategy-games</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIInterfaceOrientation</key>
 	<string>UIInterfaceOrientationLandscapeRight</string>
+	<key>UILaunchStoryboardName</key>
+	<string>WesnothLauchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>WesnothViewController</string>
 	<key>UIMainStoryboardFile~ipad</key>
 	<string>WesnothViewController</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-	</array>
 	<key>UIRequiresFullScreen</key>
 	<true/>
 	<key>UIStatusBarHidden</key>

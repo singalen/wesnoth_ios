@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1C063A251F8C79C30096493B /* IconImages.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C063A241F8C79C20096493B /* IconImages.xcassets */; };
+		1C063A251F8C79C30096493B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C063A241F8C79C20096493B /* Images.xcassets */; };
 		1C069D271EBFC346001FF584 /* libasprintf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D001EBFB4DD001FF584 /* libasprintf.a */; };
 		1C069D281EBFC34C001FF584 /* libcharset.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D011EBFB4DD001FF584 /* libcharset.a */; };
 		1C069D291EBFC350001FF584 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D021EBFB4DD001FF584 /* libffi.a */; };
@@ -91,15 +91,10 @@
 		1C7B379A1E5C132700F58FE8 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C7B37991E5C132700F58FE8 /* libbz2.tbd */; };
 		1C810ED12DF94E7822B9F61B /* display_chat_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C810323541F41137F70A77B /* display_chat_manager.cpp */; };
 		1CA58CE11F608DDF0032C0B2 /* irdya_datetime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */; };
-		1CA79D0B1F8C7C5E0013728A /* LaunchImages.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */; };
 		1CA79D281F8C7E530013728A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1CA79D211F8C7E520013728A /* Info.plist */; };
 		1CA9ABAD1FC807B900D25658 /* point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAA1FC807B900D25658 /* point.cpp */; };
 		1CA9ABB01FC8094200D25658 /* make.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAE1FC8094100D25658 /* make.cpp */; };
 		1CA9ABB11FC8118600D25658 /* wesnoth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF104F1EC00F9D00C02850 /* wesnoth.cpp */; };
-		1CB0E1851EE14C8B00CD979C /* Default-Landscape@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */; };
-		1CB0E1861EE14C8B00CD979C /* Default-Landscape~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17E1EE14C8600CD979C /* Default-Landscape~ipad.png */; };
-		1CB0E1871EE14C8B00CD979C /* Default-Portrait@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E17F1EE14C8600CD979C /* Default-Portrait@2x~ipad.png */; };
-		1CB0E1881EE14C8B00CD979C /* Default-Portrait~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB0E1801EE14C8700CD979C /* Default-Portrait~ipad.png */; };
 		1CEF0F351EC00B3200C02850 /* arrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4D1EC00820001FF584 /* arrow.cpp */; };
 		1CEF0F361EC00B3200C02850 /* attack_prediction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4F1EC00820001FF584 /* attack_prediction.cpp */; };
 		1CEF0F371EC00B3200C02850 /* boilerplate-header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D511EC00820001FF584 /* boilerplate-header.cpp */; };
@@ -591,10 +586,6 @@
 		1CEF17A41EC0233900C02850 /* widget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17511EC0233900C02850 /* widget.cpp */; };
 		1CEF17A61EC0233900C02850 /* xbrz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF17551EC0233900C02850 /* xbrz.cpp */; };
 		1CFF6738204C73FA00773676 /* deprecation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6736204C73FA00773676 /* deprecation.cpp */; };
-		1CFF673E204C745200773676 /* bcrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF673D204C745200773676 /* bcrypt.c */; };
-		1CFF6747204C749900773676 /* crypt_gensalt.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6740204C749700773676 /* crypt_gensalt.c */; };
-		1CFF6748204C749900773676 /* crypt_blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6742204C749800773676 /* crypt_blowfish.c */; };
-		1CFF6749204C749900773676 /* wrapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CFF6744204C749800773676 /* wrapper.c */; };
 		3C5B7E2016399A2100898722 /* wesnothAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3664160766FD0017F0EE /* wesnothAppDelegate.m */; };
 		3C5B7E2116399A2100898722 /* wesnothViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3667160766FD0017F0EE /* wesnothViewController.m */; };
 		3C5B800B16399A2100898722 /* fcatomic.c in Sources */ = {isa = PBXBuildFile; fileRef = 3CCB9619162932CC007549E6 /* fcatomic.c */; };
@@ -641,10 +632,12 @@
 		3C5B806916399A2100898722 /* data in Resources */ = {isa = PBXBuildFile; fileRef = 3C230030160D9E300086C5CD /* data */; };
 		3C5B806A16399A2100898722 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 3CA8C957160EB0A2004CD2C4 /* images */; };
 		3C5B806B16399A2100898722 /* sounds in Resources */ = {isa = PBXBuildFile; fileRef = 3CC9B8951614AD4800D1110E /* sounds */; };
-		3C5B806C16399A2100898722 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D9681626F9BF00AFFD82 /* Default.png */; };
-		3C5B806D16399A2100898722 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D96A1626FA8500AFFD82 /* Default@2x.png */; };
-		3C5B806E16399A2100898722 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC4D96C1626FACE00AFFD82 /* Default-568h@2x.png */; };
 		46BED4E22050848B00842FA5 /* WesnothViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */; };
+		46CB5F6020546031008A0DB6 /* crypt_gensalt.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5120546030008A0DB6 /* crypt_gensalt.c */; };
+		46CB5F6220546031008A0DB6 /* wrapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5420546030008A0DB6 /* wrapper.c */; };
+		46CB5F6420546031008A0DB6 /* crypt_blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5820546030008A0DB6 /* crypt_blowfish.c */; };
+		46CB5F6620546031008A0DB6 /* bcrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5B20546030008A0DB6 /* bcrypt.c */; };
+		46CB5F8B205485C2008A0DB6 /* WesnothLauchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46CB5F8A205485C1008A0DB6 /* WesnothLauchScreen.storyboard */; };
 		A69DB6D4196A676100230816 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 /* End PBXBuildFile section */
 
@@ -841,7 +834,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1C063A241F8C79C20096493B /* IconImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = IconImages.xcassets; path = "battleforwesnoth-iPad/IconImages.xcassets"; sourceTree = "<group>"; };
+		1C063A241F8C79C20096493B /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1C069D001EBFB4DD001FF584 /* libasprintf.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libasprintf.a; path = ../lib/lib/libasprintf.a; sourceTree = SOURCE_ROOT; };
 		1C069D011EBFB4DD001FF584 /* libcharset.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libcharset.a; path = ../lib/lib/libcharset.a; sourceTree = SOURCE_ROOT; };
 		1C069D021EBFB4DD001FF584 /* libffi.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; name = libffi.a; path = ../lib/lib/libffi.a; sourceTree = SOURCE_ROOT; };
@@ -1001,7 +994,6 @@
 		1C810323541F41137F70A77B /* display_chat_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = display_chat_manager.cpp; path = ../../../../src/display_chat_manager.cpp; sourceTree = "<group>"; };
 		1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = irdya_datetime.cpp; sourceTree = "<group>"; };
 		1CA58CD91F608DD90032C0B2 /* irdya_datetime.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = irdya_datetime.hpp; sourceTree = "<group>"; };
-		1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = LaunchImages.xcassets; path = "battleforwesnoth-iPad/LaunchImages.xcassets"; sourceTree = "<group>"; };
 		1CA79D211F8C7E520013728A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1CA9ABAA1FC807B900D25658 /* point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = point.cpp; sourceTree = "<group>"; };
 		1CA9ABAB1FC807B900D25658 /* point.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = point.hpp; sourceTree = "<group>"; };
@@ -1009,10 +1001,6 @@
 		1CA9ABAE1FC8094100D25658 /* make.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = make.cpp; sourceTree = "<group>"; };
 		1CA9ABAF1FC8094100D25658 /* make.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = make.hpp; sourceTree = "<group>"; };
 		1CA9ABB21FC81B9F00D25658 /* Appirater.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Appirater.h; sourceTree = "<group>"; };
-		1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape@2x~ipad.png"; sourceTree = "<group>"; };
-		1CB0E17E1EE14C8600CD979C /* Default-Landscape~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Landscape~ipad.png"; sourceTree = "<group>"; };
-		1CB0E17F1EE14C8600CD979C /* Default-Portrait@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait@2x~ipad.png"; sourceTree = "<group>"; };
-		1CB0E1801EE14C8700CD979C /* Default-Portrait~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait~ipad.png"; sourceTree = "<group>"; };
 		1CDFD9B61E10529800E48A19 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../lib/SDL2-2.0.5/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../lib/SDL2_image-2.0.1/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_mixer.xcodeproj; path = "../lib/SDL2_mixer-2.0.1/Xcode-iOS/SDL_mixer.xcodeproj"; sourceTree = "<group>"; };
@@ -2058,15 +2046,6 @@
 		1CEF17561EC0233900C02850 /* xbrz.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = xbrz.hpp; sourceTree = "<group>"; };
 		1CFF6734204C73F900773676 /* deprecation.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = deprecation.hpp; path = ../../../../src/deprecation.hpp; sourceTree = "<group>"; };
 		1CFF6736204C73FA00773676 /* deprecation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = deprecation.cpp; path = ../../../../src/deprecation.cpp; sourceTree = "<group>"; };
-		1CFF673C204C745200773676 /* bcrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bcrypt.h; path = ../../../../../src/bcrypt/bcrypt.h; sourceTree = "<group>"; };
-		1CFF673D204C745200773676 /* bcrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bcrypt.c; path = ../../../../../src/bcrypt/bcrypt.c; sourceTree = "<group>"; };
-		1CFF6740204C749700773676 /* crypt_gensalt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crypt_gensalt.c; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_gensalt.c; sourceTree = "<group>"; };
-		1CFF6741204C749700773676 /* ow-crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ow-crypt.h"; path = "../../../../../../src/bcrypt/crypt_blowfish/ow-crypt.h"; sourceTree = "<group>"; };
-		1CFF6742204C749800773676 /* crypt_blowfish.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crypt_blowfish.c; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_blowfish.c; sourceTree = "<group>"; };
-		1CFF6743204C749800773676 /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt.h; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt.h; sourceTree = "<group>"; };
-		1CFF6744204C749800773676 /* wrapper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wrapper.c; path = ../../../../../../src/bcrypt/crypt_blowfish/wrapper.c; sourceTree = "<group>"; };
-		1CFF6745204C749900773676 /* crypt_gensalt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt_gensalt.h; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_gensalt.h; sourceTree = "<group>"; };
-		1CFF6746204C749900773676 /* crypt_blowfish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt_blowfish.h; path = ../../../../../../src/bcrypt/crypt_blowfish/crypt_blowfish.h; sourceTree = "<group>"; };
 		3C15F682160B778500895032 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3C230021160D89CD0086C5CD /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../fonts; sourceTree = "<group>"; };
 		3C230030160D9E300086C5CD /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data; path = ../../../data; sourceTree = "<group>"; };
@@ -2088,9 +2067,6 @@
 		3C97C1371631CB0C00BFE895 /* png.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = png.xcodeproj; path = lib/png/png.xcodeproj; sourceTree = "<group>"; };
 		3CA8C957160EB0A2004CD2C4 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; name = images; path = ../../../images; sourceTree = "<group>"; };
 		3CBF22BB1644C078008D46F4 /* ogg.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ogg.xcodeproj; path = lib/ogg/ogg.xcodeproj; sourceTree = "<group>"; };
-		3CC4D9681626F9BF00AFFD82 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
-		3CC4D96A1626FA8500AFFD82 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
-		3CC4D96C1626FACE00AFFD82 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		3CC9B8951614AD4800D1110E /* sounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sounds; path = ../../../sounds; sourceTree = "<group>"; };
 		3CCB9619162932CC007549E6 /* fcatomic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fcatomic.c; path = "../../lib/fontconfig-2.8.0/src/fcatomic.c"; sourceTree = "<group>"; };
 		3CCB961A162932CC007549E6 /* fcblanks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fcblanks.c; path = "../../lib/fontconfig-2.8.0/src/fcblanks.c"; sourceTree = "<group>"; };
@@ -2123,6 +2099,16 @@
 		3CFE119B1608BE8A00DC330D /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		3CFE11A31608E29A00DC330D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = WesnothViewController.storyboard; sourceTree = "<group>"; };
+		46CB5F5120546030008A0DB6 /* crypt_gensalt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypt_gensalt.c; sourceTree = "<group>"; };
+		46CB5F5220546030008A0DB6 /* crypt_blowfish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt_blowfish.h; sourceTree = "<group>"; };
+		46CB5F5420546030008A0DB6 /* wrapper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = wrapper.c; sourceTree = "<group>"; };
+		46CB5F5520546030008A0DB6 /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
+		46CB5F5620546030008A0DB6 /* crypt_gensalt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt_gensalt.h; sourceTree = "<group>"; };
+		46CB5F5820546030008A0DB6 /* crypt_blowfish.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypt_blowfish.c; sourceTree = "<group>"; };
+		46CB5F5A20546030008A0DB6 /* ow-crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ow-crypt.h"; sourceTree = "<group>"; };
+		46CB5F5B20546030008A0DB6 /* bcrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bcrypt.c; sourceTree = "<group>"; };
+		46CB5F5E20546030008A0DB6 /* bcrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bcrypt.h; sourceTree = "<group>"; };
+		46CB5F8A205485C1008A0DB6 /* WesnothLauchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = WesnothLauchScreen.storyboard; sourceTree = "<group>"; };
 		A65CD528180E84900035576A /* xmlparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlparse.c; path = "../../lib/fontconfig-2.8.0/src/xmlparse.c"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -3567,39 +3553,9 @@
 			path = ../../../../src/xBRZ;
 			sourceTree = "<group>";
 		};
-		1CFF673B204C743500773676 /* bcrypt */ = {
-			isa = PBXGroup;
-			children = (
-				1CFF673F204C747E00773676 /* crypt_blowfish */,
-				1CFF673D204C745200773676 /* bcrypt.c */,
-				1CFF673C204C745200773676 /* bcrypt.h */,
-			);
-			path = bcrypt;
-			sourceTree = "<group>";
-		};
-		1CFF673F204C747E00773676 /* crypt_blowfish */ = {
-			isa = PBXGroup;
-			children = (
-				1CFF6742204C749800773676 /* crypt_blowfish.c */,
-				1CFF6746204C749900773676 /* crypt_blowfish.h */,
-				1CFF6740204C749700773676 /* crypt_gensalt.c */,
-				1CFF6745204C749900773676 /* crypt_gensalt.h */,
-				1CFF6743204C749800773676 /* crypt.h */,
-				1CFF6741204C749700773676 /* ow-crypt.h */,
-				1CFF6744204C749800773676 /* wrapper.c */,
-			);
-			path = crypt_blowfish;
-			sourceTree = "<group>";
-		};
 		3C8A3645160766FD0017F0EE = {
 			isa = PBXGroup;
 			children = (
-				1CA79D0A1F8C7C5D0013728A /* LaunchImages.xcassets */,
-				1C063A241F8C79C20096493B /* IconImages.xcassets */,
-				1CB0E17D1EE14C8500CD979C /* Default-Landscape@2x~ipad.png */,
-				1CB0E17E1EE14C8600CD979C /* Default-Landscape~ipad.png */,
-				1CB0E17F1EE14C8600CD979C /* Default-Portrait@2x~ipad.png */,
-				1CB0E1801EE14C8700CD979C /* Default-Portrait~ipad.png */,
 				1CDFD9CC1E1052E500E48A19 /* SDL_ttf.xcodeproj */,
 				1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */,
 				1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */,
@@ -3615,11 +3571,10 @@
 				3CD06AB0163157900014DBBB /* freetype.xcodeproj */,
 				3CD06A3F163154260014DBBB /* flac.xcodeproj */,
 				3CD068BB16314A5A0014DBBB /* cairo.xcodeproj */,
-				3CC4D96C1626FACE00AFFD82 /* Default-568h@2x.png */,
-				3CC4D96A1626FA8500AFFD82 /* Default@2x.png */,
-				3CC4D9681626F9BF00AFFD82 /* Default.png */,
+				1C063A241F8C79C20096493B /* Images.xcassets */,
 				1CA79D211F8C7E520013728A /* Info.plist */,
 				46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */,
+				46CB5F8A205485C1008A0DB6 /* WesnothLauchScreen.storyboard */,
 				3CCED8A6160C92E50014BA5D /* Resources */,
 				3C8A365A160766FD0017F0EE /* battleforwesnoth */,
 				3C8A3653160766FD0017F0EE /* Frameworks */,
@@ -3671,7 +3626,6 @@
 		3C8A365A160766FD0017F0EE /* battleforwesnoth */ = {
 			isa = PBXGroup;
 			children = (
-				1CFF673B204C743500773676 /* bcrypt */,
 				1CFF6736204C73FA00773676 /* deprecation.cpp */,
 				1CFF6734204C73F900773676 /* deprecation.hpp */,
 				1CEF10721EC0102C00C02850 /* about.cpp */,
@@ -3687,6 +3641,7 @@
 				1C069D4E1EC00820001FF584 /* arrow.hpp */,
 				1C069D4F1EC00820001FF584 /* attack_prediction.cpp */,
 				1CEF10771EC0111600C02850 /* attack_prediction.hpp */,
+				46CB5F4E20546030008A0DB6 /* bcrypt */,
 				1C069D511EC00820001FF584 /* boilerplate-header.cpp */,
 				1CEF119F1EC0213F00C02850 /* boost-patched */,
 				1CEF10781EC0111600C02850 /* buffered_istream.hpp */,
@@ -4117,6 +4072,31 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		46CB5F4E20546030008A0DB6 /* bcrypt */ = {
+			isa = PBXGroup;
+			children = (
+				46CB5F5020546030008A0DB6 /* crypt_blowfish */,
+				46CB5F5B20546030008A0DB6 /* bcrypt.c */,
+				46CB5F5E20546030008A0DB6 /* bcrypt.h */,
+			);
+			name = bcrypt;
+			path = ../../../../src/bcrypt;
+			sourceTree = "<group>";
+		};
+		46CB5F5020546030008A0DB6 /* crypt_blowfish */ = {
+			isa = PBXGroup;
+			children = (
+				46CB5F5120546030008A0DB6 /* crypt_gensalt.c */,
+				46CB5F5220546030008A0DB6 /* crypt_blowfish.h */,
+				46CB5F5420546030008A0DB6 /* wrapper.c */,
+				46CB5F5520546030008A0DB6 /* crypt.h */,
+				46CB5F5620546030008A0DB6 /* crypt_gensalt.h */,
+				46CB5F5820546030008A0DB6 /* crypt_blowfish.c */,
+				46CB5F5A20546030008A0DB6 /* ow-crypt.h */,
+			);
+			path = crypt_blowfish;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -4361,25 +4341,18 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1C063A251F8C79C30096493B /* IconImages.xcassets in Resources */,
+				1C063A251F8C79C30096493B /* Images.xcassets in Resources */,
 				1CEF12141EC0213F00C02850 /* SConstruct in Resources */,
 				3C5B805E16399A2100898722 /* InfoPlist.strings in Resources */,
-				1CB0E1881EE14C8B00CD979C /* Default-Portrait~ipad.png in Resources */,
 				3C5B806816399A2100898722 /* fonts in Resources */,
 				3C5B806916399A2100898722 /* data in Resources */,
 				3C5B806A16399A2100898722 /* images in Resources */,
 				3C5B806B16399A2100898722 /* sounds in Resources */,
-				3C5B806C16399A2100898722 /* Default.png in Resources */,
 				1C42C48E1F805ABC00DC3F5C /* translations in Resources */,
 				1CEF16E11EC0231800C02850 /* wesnoth_fix_vc12_build.patch in Resources */,
-				3C5B806D16399A2100898722 /* Default@2x.png in Resources */,
 				1CEF15D91EC022DD00C02850 /* COPYRIGHT in Resources */,
-				1CB0E1861EE14C8B00CD979C /* Default-Landscape~ipad.png in Resources */,
-				3C5B806E16399A2100898722 /* Default-568h@2x.png in Resources */,
-				1CB0E1871EE14C8B00CD979C /* Default-Portrait@2x~ipad.png in Resources */,
-				1CB0E1851EE14C8B00CD979C /* Default-Landscape@2x~ipad.png in Resources */,
+				46CB5F8B205485C2008A0DB6 /* WesnothLauchScreen.storyboard in Resources */,
 				46BED4E22050848B00842FA5 /* WesnothViewController.storyboard in Resources */,
-				1CA79D0B1F8C7C5E0013728A /* LaunchImages.xcassets in Resources */,
 				1CA79D281F8C7E530013728A /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4470,7 +4443,6 @@
 				1CEF11B81EC0213F00C02850 /* undo_move_action.cpp in Sources */,
 				1CEF16921EC022F900C02850 /* lua_rng.cpp in Sources */,
 				1CEF150C1EC022B200C02850 /* unit_advance.cpp in Sources */,
-				1CFF6749204C749900773676 /* wrapper.c in Sources */,
 				1CEF103C1EC00F4500C02850 /* synced_commands.cpp in Sources */,
 				1C6696151EDDD04400F23301 /* random.cpp in Sources */,
 				1CEF0F851EC00D2600C02850 /* game_state.cpp in Sources */,
@@ -4501,7 +4473,6 @@
 				1CEF15201EC022B200C02850 /* chatbox.cpp in Sources */,
 				1CEF147A1EC022B200C02850 /* uninstall_list.cpp in Sources */,
 				1CEF15161EC022B200C02850 /* unit_recruit.cpp in Sources */,
-				1CFF673E204C745200773676 /* bcrypt.c in Sources */,
 				1CEF15E91EC022DD00C02850 /* ldblib.cpp in Sources */,
 				1CEF15801EC022B200C02850 /* help_topic_generators.cpp in Sources */,
 				1CEF156A1EC022B200C02850 /* unit_preview_pane.cpp in Sources */,
@@ -4511,7 +4482,6 @@
 				1CEF152C1EC022B200C02850 /* helper.cpp in Sources */,
 				1CEF0F8F1EC00E0400C02850 /* halo.cpp in Sources */,
 				1CEF11C81EC0213F00C02850 /* manager.cpp in Sources */,
-				1CFF6748204C749900773676 /* crypt_blowfish.c in Sources */,
 				1C6696931EDDD2E000F23301 /* terrain_palettes.cpp in Sources */,
 				1CEF0F391EC00B3200C02850 /* carryover.cpp in Sources */,
 				1C6088202027FF8A00F117B6 /* player_list_helper.cpp in Sources */,
@@ -4655,6 +4625,7 @@
 				3C5B801816399A2100898722 /* fclist.c in Sources */,
 				1CEF146A1EC022B200C02850 /* timer.cpp in Sources */,
 				3C5B801916399A2100898722 /* fcmatch.c in Sources */,
+				46CB5F6620546031008A0DB6 /* bcrypt.c in Sources */,
 				1CEF15601EC022B200C02850 /* text_box_base.cpp in Sources */,
 				1C6696841EDDD2C800F23301 /* action.cpp in Sources */,
 				1CEF14661EC022B200C02850 /* placer.cpp in Sources */,
@@ -4662,7 +4633,9 @@
 				1CEF16AE1EC022F900C02850 /* savepng.c in Sources */,
 				3C5B801A16399A2100898722 /* fcmatrix.c in Sources */,
 				3C5B801B16399A2100898722 /* fcname.c in Sources */,
+				46CB5F6020546031008A0DB6 /* crypt_gensalt.c in Sources */,
 				1CEF11CC1EC0213F00C02850 /* state.cpp in Sources */,
+				46CB5F6420546031008A0DB6 /* crypt_blowfish.c in Sources */,
 				1C66968C1EDDD2D600F23301 /* editor_map.cpp in Sources */,
 				3C5B801C16399A2100898722 /* fcpat.c in Sources */,
 				1CEF12431EC021D300C02850 /* text_surface.cpp in Sources */,
@@ -4676,6 +4649,7 @@
 				1CEF15041EC022B200C02850 /* theme_list.cpp in Sources */,
 				1CEF14FA1EC022B200C02850 /* simple_item_selector.cpp in Sources */,
 				1CEF12CC1EC0222000C02850 /* singleplayer.cpp in Sources */,
+				46CB5F6220546031008A0DB6 /* wrapper.c in Sources */,
 				3C5B801F16399A2100898722 /* fcxml.c in Sources */,
 				3C5B802016399A2100898722 /* ftglue.c in Sources */,
 				1CEF10631EC00F9D00C02850 /* variable_info.cpp in Sources */,
@@ -4953,7 +4927,6 @@
 				1CEF14E81EC022B200C02850 /* mp_login.cpp in Sources */,
 				1CEF15881EC022B200C02850 /* hotkey_handler_mp.cpp in Sources */,
 				1CEF15521EC022B200C02850 /* settings.cpp in Sources */,
-				1CFF6747204C749900773676 /* crypt_gensalt.c in Sources */,
 				1CEF14721EC022B200C02850 /* window_builder.cpp in Sources */,
 				1CEF177C1EC0233900C02850 /* name_generator_factory.cpp in Sources */,
 				1CEF157A1EC022B200C02850 /* help_impl.cpp in Sources */,
@@ -5064,7 +5037,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -5151,6 +5123,7 @@
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
 				PRODUCT_NAME = "battleforwesnoth-iPad";
@@ -5166,7 +5139,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -5254,7 +5226,7 @@
 					"\"$(SRCROOT)/../lib/SDL_image\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
 				PRODUCT_NAME = "battleforwesnoth-iPad";
@@ -5288,7 +5260,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USE_HEADERMAP = NO;
@@ -5310,7 +5281,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
