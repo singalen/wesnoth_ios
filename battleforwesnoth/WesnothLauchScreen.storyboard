@@ -24,15 +24,15 @@
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Image" translatesAutoresizingMaskIntoConstraints="NO" id="pRJ-YQ-OBk">
                                 <rect key="frame" x="251" y="105" width="165" height="165"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="165" id="d12-uF-GTm"/>
+                                    <constraint firstAttribute="height" constant="165" id="W2r-Cc-hCd"/>
+                                    <constraint firstAttribute="width" constant="165" id="jO3-7c-Kxs"/>
                                 </constraints>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="pRJ-YQ-OBk" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="0mA-d8-0CG"/>
-                            <constraint firstItem="pRJ-YQ-OBk" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="W4h-Wp-mpn"/>
-                            <constraint firstItem="pRJ-YQ-OBk" firstAttribute="top" secondItem="mLP-qN-k5Q" secondAttribute="bottom" constant="105" id="adu-iE-Wuu"/>
+                            <constraint firstItem="pRJ-YQ-OBk" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="4Ji-uZ-qjF"/>
+                            <constraint firstItem="pRJ-YQ-OBk" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="HDK-Pi-uDs"/>
                         </constraints>
                     </view>
                 </viewController>
