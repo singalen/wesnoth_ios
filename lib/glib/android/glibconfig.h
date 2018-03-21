@@ -58,12 +58,21 @@ G_GNUC_EXTENSION typedef unsigned long long guint64;
 #define G_GINT64_FORMAT "lli"
 #define G_GUINT64_FORMAT "llu"
 
-#define GLIB_SIZEOF_VOID_P 4
-#define GLIB_SIZEOF_LONG   4
-#define GLIB_SIZEOF_SIZE_T 4
+#ifdef __LP64__
+// https://developer.apple.com/library/content/documentation/General/Conceptual/CocoaTouch64BitGuide/Major64-BitChanges/Major64-BitChanges.html
+    #define GLIB_SIZEOF_VOID_P 8
+    #define GLIB_SIZEOF_LONG   8
+    #define GLIB_SIZEOF_SIZE_T 8
+    typedef signed long gssize;
+    typedef unsigned long gsize;
+#else
+    #define GLIB_SIZEOF_VOID_P 4
+    #define GLIB_SIZEOF_LONG   4
+    #define GLIB_SIZEOF_SIZE_T 4
+    typedef signed int gssize;
+    typedef unsigned int gsize;
+#endif
 
-typedef signed int gssize;
-typedef unsigned int gsize;
 #define G_GSIZE_MODIFIER ""
 #define G_GSSIZE_FORMAT "i"
 #define G_GSIZE_FORMAT "u"

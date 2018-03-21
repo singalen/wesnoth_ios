@@ -116,6 +116,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1C4062CA2062384900F9B50A /* gthread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gthread.h; path = ../../../../lib/glib/glib/gthread.h; sourceTree = "<group>"; };
 		3C97BEF01631B99500BFE895 /* localcharset.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = localcharset.c; path = ../../../../lib/glib/glib/libcharset/localcharset.c; sourceTree = "<group>"; };
 		3C97BEF31631B9A400BFE895 /* asnprintf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = asnprintf.c; path = ../../../../lib/glib/glib/gnulib/asnprintf.c; sourceTree = "<group>"; };
 		3C97BEF41631B9A400BFE895 /* printf-args.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "printf-args.c"; path = "../../../../lib/glib/glib/gnulib/printf-args.c"; sourceTree = "<group>"; };
@@ -254,6 +255,7 @@
 		3CD06BC11631A7840014DBBB /* glib */ = {
 			isa = PBXGroup;
 			children = (
+				1C4062CA2062384900F9B50A /* gthread.h */,
 				3C97BEF31631B9A400BFE895 /* asnprintf.c */,
 				3C97BEF41631B9A400BFE895 /* printf-args.c */,
 				3C97BEF51631B9A400BFE895 /* printf-parse.c */,
@@ -589,7 +591,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -627,7 +628,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Release;
 		};

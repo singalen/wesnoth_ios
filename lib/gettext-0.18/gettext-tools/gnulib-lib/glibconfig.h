@@ -38,6 +38,17 @@
 typedef uint16_t guint16;
 typedef uint32_t guint32;
 
+#ifdef __LP64__
+// https://developer.apple.com/library/content/documentation/General/Conceptual/CocoaTouch64BitGuide/Major64-BitChanges/Major64-BitChanges.html
+    #define GLIB_SIZEOF_VOID_P 8
+    #define GLIB_SIZEOF_LONG   8
+    #define GLIB_SIZEOF_SIZE_T 8
+#else
+	#define GLIB_SIZEOF_VOID_P 4
+	#define GLIB_SIZEOF_LONG   4
+	#define GLIB_SIZEOF_SIZE_T 4
+#endif
+
 typedef size_t gsize;
 typedef ssize_t gssize;
 

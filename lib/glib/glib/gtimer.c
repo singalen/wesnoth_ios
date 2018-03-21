@@ -53,6 +53,7 @@
 #include "gstrfuncs.h"
 #include "gtestutils.h"
 #include "gthread.h"
+#include "gmain.h"
 
 /**
  * SECTION: timers

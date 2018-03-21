@@ -65,6 +65,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
