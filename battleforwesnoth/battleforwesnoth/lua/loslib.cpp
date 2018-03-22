@@ -36,7 +36,13 @@ static int os_pushresult (lua_State *L, int i, const char *filename) {
 
 
 static int os_execute (lua_State *L) {
-  lua_pushinteger(L, system(luaL_optstring(L, 1, NULL)));
+#if 0
+    int stat = system(luaL_optstring(L, 1, NULL))
+#else
+    // no system() and no wesnothd on iOS.
+    int stat = 127;
+#endif
+  lua_pushinteger(L, stat);
   return 1;
 }
 

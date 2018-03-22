@@ -907,6 +907,7 @@ void game_controller::reload_changed_game_config()
 
 void game_controller::start_wesnothd()
 {
+#ifndef __IPHONEOS__
 	const std::string wesnothd_program =
 		preferences::get_mp_server_program_name().empty() ?
 		get_program_invocation("wesnothd") : preferences::get_mp_server_program_name();
@@ -934,6 +935,7 @@ void game_controller::start_wesnothd()
 	// Couldn't start server so throw error
 	WRN_GENERAL << "Failed to run server start script\n";
 	throw game::mp_server_error("Starting MP server failed!");
+#endif
 }
 
 bool game_controller::play_multiplayer()
