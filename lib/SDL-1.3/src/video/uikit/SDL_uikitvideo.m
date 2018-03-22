@@ -213,8 +213,8 @@ UIKit_VideoInit(_THIS)
     UIScreen *uiscreen = [UIScreen mainScreen];
     const CGSize size = [uiscreen bounds].size;
 #ifdef __IPHONEOS__
-    IOS_SCREEN_WIDTH = size.height;
-    IOS_SCREEN_HEIGHT = size.width;
+    IOS_SCREEN_WIDTH = size.width;
+    IOS_SCREEN_HEIGHT = size.height;
 #endif
     UIKit_AddDisplay(uiscreen, (int)size.width, (int)size.height);
 
