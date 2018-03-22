@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C4062CC2062C55100F9B50A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C4062CB2062C55100F9B50A /* Images.xcassets */; };
 		3C15F683160B778500895032 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C15F682160B778500895032 /* QuartzCore.framework */; };
 		3C15F6A2160B883300895032 /* error_container.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C15F692160B883300895032 /* error_container.cpp */; };
 		3C15F6A4160B883300895032 /* sourceparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C15F695160B883300895032 /* sourceparser.cpp */; };
@@ -1512,6 +1513,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1C4062CB2062C55100F9B50A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3C15F682160B778500895032 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3C15F692160B883300895032 /* error_container.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = error_container.cpp; sourceTree = "<group>"; };
 		3C15F693160B883300895032 /* error_container.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = error_container.hpp; sourceTree = "<group>"; };
@@ -2747,6 +2749,7 @@
 				3C8A365A160766FD0017F0EE /* battleforwesnoth */,
 				3C8A3653160766FD0017F0EE /* Frameworks */,
 				3C8A3651160766FD0017F0EE /* Products */,
+				1C4062CB2062C55100F9B50A /* Images.xcassets */,
 				3C5B80BC16399A2200898722 /* battleforwesnoth copy-Info.plist */,
 			);
 			sourceTree = "<group>";
@@ -4796,6 +4799,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C8A365F160766FD0017F0EE /* InfoPlist.strings in Resources */,
+				1C4062CC2062C55100F9B50A /* Images.xcassets in Resources */,
 				3C8A366B160766FD0017F0EE /* wesnothViewController_iPhone.xib in Resources */,
 				3C8A366E160766FD0017F0EE /* wesnothViewController_iPad.xib in Resources */,
 				3C8A3A94160767980017F0EE /* SConstruct in Resources */,
@@ -6390,6 +6394,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libstdc++";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
@@ -6495,6 +6500,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libstdc++";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
