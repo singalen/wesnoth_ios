@@ -318,6 +318,8 @@ void CVideo::initSDL()
 		ERR_DP << "Could not initialize SDL_video: " << SDL_GetError() << "\n";
 		throw CVideo::error();
 	}
+
+	SDL_SetHint( SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight " );
 }
 
 CVideo::~CVideo()

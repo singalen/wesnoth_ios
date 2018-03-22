@@ -38,4 +38,8 @@
 
 #endif //_MSC_VER
 
+#ifndef __IPHONEOS__
+	#define __IPHONEOS__ 1
+#endif
+
 #endif //GLOBAL_HPP_INCLUDED

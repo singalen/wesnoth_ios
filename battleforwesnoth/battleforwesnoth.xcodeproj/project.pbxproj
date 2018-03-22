@@ -4348,7 +4348,7 @@
 				3C230021160D89CD0086C5CD /* fonts */,
 			);
 			name = Resouce;
-			path = "../res-ipad";
+			path = "../res-iphone";
 			sourceTree = "<group>";
 		};
 		3CD068BC16314A5A0014DBBB /* Products */ = {
