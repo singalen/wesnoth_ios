@@ -526,6 +526,10 @@ void play_music_config(const config &music_node)
 {
 	music_track track( music_node );
 
+	if (!track.valid() && !track.id().empty()) {
+		ERR_AUDIO << "cannot open track '" << track.id() << "'; disabled in this playlist.\n";
+	}
+
 	// If they say play once, we don't alter playlist.
 	if (track.play_once()) {
 		current_track = track;
@@ -562,6 +566,8 @@ void play_music_config(const config &music_node)
 	if (track.immediate()) {
 		current_track = track;
 		play_music();
+	} else if (!track.append()) { // Make sure the current track is finished
+		current_track.set_play_once(true);
 	}
 }
 
@@ -628,7 +634,17 @@ void reposition_sound(int id, unsigned int distance)
 	{
 		if (channel_ids[ch] != id) continue;
 		if (distance >= DISTANCE_SILENT) {
-			Mix_FadeOutChannel(ch, 100);
+			// Don't call Mix_FadeOutChannel if the channel's volume is set to
+			// zero. It doesn't do anything in that case and the channel will
+			// resume playing as soon as its volume is reset to a non-zero
+			// value, which results in issues like sound sources deleted while
+			// their volume is zero coming back to life and escaping Wesnoth's
+			// sound source management code.
+			if(Mix_Volume(ch, -1) == 0) {
+				Mix_HaltChannel(ch);
+			} else {
+				Mix_FadeOutChannel(ch, 100);
+			}
 		} else {
 			Mix_SetDistance(ch, distance);
 		}
