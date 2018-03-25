@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C0DB8C5206600CD001C46F9 /* translations in Resources */ = {isa = PBXBuildFile; fileRef = 1C0DB8C4206600CD001C46F9 /* translations */; };
+		1C0DB8C620660EF7001C46F9 /* translations in Resources */ = {isa = PBXBuildFile; fileRef = 1C0DB8C4206600CD001C46F9 /* translations */; };
 		1C4062CC2062C55100F9B50A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C4062CB2062C55100F9B50A /* Images.xcassets */; };
 		3C15F683160B778500895032 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C15F682160B778500895032 /* QuartzCore.framework */; };
 		3C15F6A2160B883300895032 /* error_container.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C15F692160B883300895032 /* error_container.cpp */; };
@@ -645,7 +647,6 @@
 		3C8A3A91160767980017F0EE /* lua_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A36BC1607678C0017F0EE /* lua_object.cpp */; };
 		3C8A3A92160767980017F0EE /* manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A36BE1607678C0017F0EE /* manager.cpp */; };
 		3C8A3A93160767980017F0EE /* registry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A36C01607678C0017F0EE /* registry.cpp */; };
-		3C8A3A94160767980017F0EE /* SConstruct in Resources */ = {isa = PBXBuildFile; fileRef = 3C8A36C21607678C0017F0EE /* SConstruct */; };
 		3C8A3A95160767980017F0EE /* aspect_attacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A36C41607678C0017F0EE /* aspect_attacks.cpp */; };
 		3C8A3A96160767980017F0EE /* ca.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A36C61607678C0017F0EE /* ca.cpp */; };
 		3C8A3A97160767980017F0EE /* ca_global_fallback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A36C81607678C0017F0EE /* ca_global_fallback.cpp */; };
@@ -663,7 +664,6 @@
 		3C8A3AB5160767980017F0EE /* callable_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A37071607678D0017F0EE /* callable_objects.cpp */; };
 		3C8A3AB7160767980017F0EE /* cavegen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A370B1607678D0017F0EE /* cavegen.cpp */; };
 		3C8A3AB9160767980017F0EE /* clipboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A370F1607678D0017F0EE /* clipboard.cpp */; };
-		3C8A3ABA160767980017F0EE /* CMakeLists.txt in Resources */ = {isa = PBXBuildFile; fileRef = 3C8A37111607678D0017F0EE /* CMakeLists.txt */; };
 		3C8A3ABB160767980017F0EE /* color_range.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A37121607678D0017F0EE /* color_range.cpp */; };
 		3C8A3ABC160767980017F0EE /* commandline_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A37141607678D0017F0EE /* commandline_options.cpp */; };
 		3C8A3ABD160767980017F0EE /* config_cache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A37161607678D0017F0EE /* config_cache.cpp */; };
@@ -852,7 +852,6 @@
 		3C8A3B83160767990017F0EE /* loadscreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A38C8160767900017F0EE /* loadscreen.cpp */; };
 		3C8A3B84160767990017F0EE /* lobby_preferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A38CA160767910017F0EE /* lobby_preferences.cpp */; };
 		3C8A3B85160767990017F0EE /* log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A38CC160767910017F0EE /* log.cpp */; };
-		3C8A3B86160767990017F0EE /* COPYRIGHT in Resources */ = {isa = PBXBuildFile; fileRef = 3C8A38CF160767910017F0EE /* COPYRIGHT */; };
 		3C8A3B87160767990017F0EE /* lapi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A38D0160767910017F0EE /* lapi.cpp */; };
 		3C8A3B88160767990017F0EE /* lauxlib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A38D2160767910017F0EE /* lauxlib.cpp */; };
 		3C8A3B89160767990017F0EE /* lbaselib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A38D4160767910017F0EE /* lbaselib.cpp */; };
@@ -885,8 +884,6 @@
 		3C8A3BA4160767990017F0EE /* lvm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3902160767910017F0EE /* lvm.cpp */; };
 		3C8A3BA5160767990017F0EE /* lzio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3904160767910017F0EE /* lzio.cpp */; };
 		3C8A3BA6160767990017F0EE /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3906160767910017F0EE /* print.cpp */; };
-		3C8A3BA7160767990017F0EE /* README in Resources */ = {isa = PBXBuildFile; fileRef = 3C8A3907160767910017F0EE /* README */; };
-		3C8A3BA8160767990017F0EE /* SConscript in Resources */ = {isa = PBXBuildFile; fileRef = 3C8A3908160767910017F0EE /* SConscript */; };
 		3C8A3BA9160767990017F0EE /* lua_jailbreak_exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3909160767910017F0EE /* lua_jailbreak_exception.cpp */; };
 		3C8A3BAA160767990017F0EE /* malloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A390B160767910017F0EE /* malloc.c */; };
 		3C8A3BAB160767990017F0EE /* map_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A390C160767910017F0EE /* map_create.cpp */; };
@@ -936,8 +933,6 @@
 		3C8A3BDB160767990017F0EE /* save_blocker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3971160767920017F0EE /* save_blocker.cpp */; };
 		3C8A3BDC160767990017F0EE /* savegame_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3973160767960017F0EE /* savegame_config.cpp */; };
 		3C8A3BDD160767990017F0EE /* savegame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3975160767960017F0EE /* savegame.cpp */; };
-		3C8A3BDE160767990017F0EE /* SConscript in Resources */ = {isa = PBXBuildFile; fileRef = 3C8A3977160767960017F0EE /* SConscript */; };
-		3C8A3BDF160767990017F0EE /* SConstruct in Resources */ = {isa = PBXBuildFile; fileRef = 3C8A3978160767960017F0EE /* SConstruct */; };
 		3C8A3BE0160767990017F0EE /* debug_lua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A397B160767960017F0EE /* debug_lua.cpp */; };
 		3C8A3BE1160767990017F0EE /* lua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A397D160767960017F0EE /* lua.cpp */; };
 		3C8A3BE2160767990017F0EE /* sdl_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C8A3980160767960017F0EE /* sdl_utils.cpp */; };
@@ -1513,6 +1508,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1C0DB8C4206600CD001C46F9 /* translations */ = {isa = PBXFileReference; lastKnownFileType = folder; path = translations; sourceTree = "<group>"; };
 		1C4062CB2062C55100F9B50A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3C15F682160B778500895032 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3C15F692160B883300895032 /* error_container.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = error_container.cpp; sourceTree = "<group>"; };
@@ -4345,6 +4341,7 @@
 		3CCED8A6160C92E50014BA5D /* Resouce */ = {
 			isa = PBXGroup;
 			children = (
+				1C0DB8C4206600CD001C46F9 /* translations */,
 				3CC9B8951614AD4800D1110E /* sounds */,
 				3CA8C957160EB0A2004CD2C4 /* images */,
 				3C230030160D9E300086C5CD /* data */,
@@ -4790,6 +4787,7 @@
 				3CEB90CE163C331400565B8A /* Default-Portrait@2x~ipad.png in Resources */,
 				3CEB90D0163C334500565B8A /* Default-Portrait~ipad.png in Resources */,
 				3CD57A9316417E9700FD9626 /* Icon72.png in Resources */,
+				1C0DB8C620660EF7001C46F9 /* translations in Resources */,
 				3CD57A9516417E9A00FD9626 /* Icon144.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4799,16 +4797,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C8A365F160766FD0017F0EE /* InfoPlist.strings in Resources */,
+				1C0DB8C5206600CD001C46F9 /* translations in Resources */,
 				1C4062CC2062C55100F9B50A /* Images.xcassets in Resources */,
 				3C8A366B160766FD0017F0EE /* wesnothViewController_iPhone.xib in Resources */,
 				3C8A366E160766FD0017F0EE /* wesnothViewController_iPad.xib in Resources */,
-				3C8A3A94160767980017F0EE /* SConstruct in Resources */,
-				3C8A3ABA160767980017F0EE /* CMakeLists.txt in Resources */,
-				3C8A3B86160767990017F0EE /* COPYRIGHT in Resources */,
-				3C8A3BA7160767990017F0EE /* README in Resources */,
-				3C8A3BA8160767990017F0EE /* SConscript in Resources */,
-				3C8A3BDE160767990017F0EE /* SConscript in Resources */,
-				3C8A3BDF160767990017F0EE /* SConstruct in Resources */,
 				3C230022160D89CD0086C5CD /* fonts in Resources */,
 				3C230031160D9E300086C5CD /* data in Resources */,
 				3CA8C958160EB0A2004CD2C4 /* images in Resources */,
@@ -6510,6 +6502,7 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INPUT_FILETYPE = automatic;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (

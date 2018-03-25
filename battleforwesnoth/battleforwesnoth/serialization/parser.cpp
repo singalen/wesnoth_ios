@@ -34,6 +34,7 @@
 #include "serialization/validator.hpp"
 
 #include <stack>
+#include <iostream>
 
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -449,7 +450,7 @@ void write_key_val_visitor::operator()(t_string const &value) const
 {
 	bool first = true;
 
-	for (t_string::walker w(value); !w.eos(); w.next())
+    for (t_string::walker w(value.get()); !w.eos(); w.next())
 	{
 		std::string part(w.begin(), w.end());
 
@@ -483,8 +484,12 @@ void write_key_val(std::ostream &out, const std::string &key,
 	if (!boost::get<t_string const>(&value.value)) {
 		for (unsigned i = 0; i < level; ++i) out << '\t';
 		out << key << '=';
+//		std::cout << "key[" << key << "]=";
 	}
+
 	boost::apply_visitor(write_key_val_visitor(out, level, textdomain, key), value.value);
+	//write_key_val_visitor v(out, level, textdomain, key);
+	//boost::apply_visitor(v, value.value);
 	out << '\n';
 }
 
