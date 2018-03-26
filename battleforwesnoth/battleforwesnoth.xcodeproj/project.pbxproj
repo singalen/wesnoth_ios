@@ -20,6 +20,8 @@
 		1C069D301EBFC36B001FF584 /* libiconv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D091EBFB4DD001FF584 /* libiconv.a */; };
 		1C069D311EBFC36F001FF584 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D0A1EBFB4DD001FF584 /* libintl.a */; };
 		1C069D341EBFC3C3001FF584 /* iconv_hack.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D321EBFC3C3001FF584 /* iconv_hack.c */; };
+		1C0DB91D20686C58001C46F9 /* crypt_blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C0DB91B20686C58001C46F9 /* crypt_blowfish.c */; };
+		1C0DB91F20686CC9001C46F9 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C0DB91E20686CC8001C46F9 /* base64.cpp */; };
 		1C14268E1E5A84310044633F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C14268D1E5A84310044633F /* CoreMotion.framework */; };
 		1C178AAE1FA6B42E00707D15 /* player_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C178AAB1FA6B42C00707D15 /* player_info.cpp */; };
 		1C178AAF1FA6B42E00707D15 /* lobby.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C178AAD1FA6B42D00707D15 /* lobby.cpp */; };
@@ -527,8 +529,6 @@
 		1CEF16A61EC022F900C02850 /* surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF16571EC022F900C02850 /* surface.cpp */; };
 		1CEF16A81EC022F900C02850 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF16591EC022F900C02850 /* utils.cpp */; };
 		1CEF16AA1EC022F900C02850 /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF165B1EC022F900C02850 /* window.cpp */; };
-		1CEF16AC1EC022F900C02850 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF165E1EC022F900C02850 /* README.md */; };
-		1CEF16AE1EC022F900C02850 /* savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF165F1EC022F900C02850 /* savepng.c */; };
 		1CEF16B01EC022F900C02850 /* binary_or_text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF16621EC022F900C02850 /* binary_or_text.cpp */; };
 		1CEF16B21EC022F900C02850 /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF16651EC022F900C02850 /* parser.cpp */; };
 		1CEF16B41EC022F900C02850 /* preprocessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF16671EC022F900C02850 /* preprocessor.cpp */; };
@@ -632,10 +632,6 @@
 		3C5B806A16399A2100898722 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 3CA8C957160EB0A2004CD2C4 /* images */; };
 		3C5B806B16399A2100898722 /* sounds in Resources */ = {isa = PBXBuildFile; fileRef = 3CC9B8951614AD4800D1110E /* sounds */; };
 		46BED4E22050848B00842FA5 /* WesnothViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */; };
-		46CB5F6020546031008A0DB6 /* crypt_gensalt.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5120546030008A0DB6 /* crypt_gensalt.c */; };
-		46CB5F6220546031008A0DB6 /* wrapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5420546030008A0DB6 /* wrapper.c */; };
-		46CB5F6420546031008A0DB6 /* crypt_blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5820546030008A0DB6 /* crypt_blowfish.c */; };
-		46CB5F6620546031008A0DB6 /* bcrypt.c in Sources */ = {isa = PBXBuildFile; fileRef = 46CB5F5B20546030008A0DB6 /* bcrypt.c */; };
 		46CB5F8B205485C2008A0DB6 /* WesnothLauchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 46CB5F8A205485C1008A0DB6 /* WesnothLauchScreen.storyboard */; };
 		A69DB6D4196A676100230816 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CBF22C01644C079008D46F4 /* libogg.a */; };
 /* End PBXBuildFile section */
@@ -864,6 +860,9 @@
 		1C069D6E1EC0087D001FF584 /* controller_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = controller_base.cpp; path = ../../../../src/controller_base.cpp; sourceTree = "<group>"; };
 		1C069D701EC0087D001FF584 /* countdown_clock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = countdown_clock.cpp; path = ../../../../src/countdown_clock.cpp; sourceTree = "<group>"; };
 		1C069D721EC0087D001FF584 /* cursor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cursor.cpp; path = ../../../../src/cursor.cpp; sourceTree = "<group>"; };
+		1C0DB91B20686C58001C46F9 /* crypt_blowfish.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crypt_blowfish.c; path = ../../../../../src/crypt_blowfish/crypt_blowfish.c; sourceTree = "<group>"; };
+		1C0DB91C20686C58001C46F9 /* crypt_blowfish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt_blowfish.h; path = ../../../../../src/crypt_blowfish/crypt_blowfish.h; sourceTree = "<group>"; };
+		1C0DB91E20686CC8001C46F9 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
 		1C14268D1E5A84310044633F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		1C178AAA1FA6B42A00707D15 /* lobby.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = lobby.hpp; sourceTree = "<group>"; };
 		1C178AAB1FA6B42C00707D15 /* player_info.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = player_info.cpp; sourceTree = "<group>"; };
@@ -1902,9 +1901,6 @@
 		1CEF165A1EC022F900C02850 /* utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
 		1CEF165B1EC022F900C02850 /* window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = window.cpp; sourceTree = "<group>"; };
 		1CEF165C1EC022F900C02850 /* window.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = window.hpp; sourceTree = "<group>"; };
-		1CEF165E1EC022F900C02850 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		1CEF165F1EC022F900C02850 /* savepng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = savepng.c; sourceTree = "<group>"; };
-		1CEF16601EC022F900C02850 /* savepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = savepng.h; sourceTree = "<group>"; };
 		1CEF16621EC022F900C02850 /* binary_or_text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = binary_or_text.cpp; sourceTree = "<group>"; };
 		1CEF16631EC022F900C02850 /* binary_or_text.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = binary_or_text.hpp; sourceTree = "<group>"; };
 		1CEF16641EC022F900C02850 /* compression.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = compression.hpp; sourceTree = "<group>"; };
@@ -2095,15 +2091,6 @@
 		3CFE119B1608BE8A00DC330D /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		3CFE11A31608E29A00DC330D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		46BED4E12050848B00842FA5 /* WesnothViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = WesnothViewController.storyboard; sourceTree = "<group>"; };
-		46CB5F5120546030008A0DB6 /* crypt_gensalt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypt_gensalt.c; sourceTree = "<group>"; };
-		46CB5F5220546030008A0DB6 /* crypt_blowfish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt_blowfish.h; sourceTree = "<group>"; };
-		46CB5F5420546030008A0DB6 /* wrapper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = wrapper.c; sourceTree = "<group>"; };
-		46CB5F5520546030008A0DB6 /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
-		46CB5F5620546030008A0DB6 /* crypt_gensalt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt_gensalt.h; sourceTree = "<group>"; };
-		46CB5F5820546030008A0DB6 /* crypt_blowfish.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = crypt_blowfish.c; sourceTree = "<group>"; };
-		46CB5F5A20546030008A0DB6 /* ow-crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ow-crypt.h"; sourceTree = "<group>"; };
-		46CB5F5B20546030008A0DB6 /* bcrypt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bcrypt.c; sourceTree = "<group>"; };
-		46CB5F5E20546030008A0DB6 /* bcrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bcrypt.h; sourceTree = "<group>"; };
 		46CB5F8A205485C1008A0DB6 /* WesnothLauchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = WesnothLauchScreen.storyboard; sourceTree = "<group>"; };
 		A65CD528180E84900035576A /* xmlparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlparse.c; path = "../../lib/fontconfig-2.8.0/src/xmlparse.c"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -2160,6 +2147,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1C0DB91A20686C46001C46F9 /* crypt_blowfish */ = {
+			isa = PBXGroup;
+			children = (
+				1C0DB91B20686C58001C46F9 /* crypt_blowfish.c */,
+				1C0DB91C20686C58001C46F9 /* crypt_blowfish.h */,
+			);
+			path = crypt_blowfish;
+			sourceTree = "<group>";
+		};
 		1C29BBFB1E5A325600A701E9 /* desktop */ = {
 			isa = PBXGroup;
 			children = (
@@ -3317,20 +3313,10 @@
 			path = ../../../../src/sdl;
 			sourceTree = "<group>";
 		};
-		1CEF165D1EC022F900C02850 /* SDL_SavePNG */ = {
-			isa = PBXGroup;
-			children = (
-				1CEF165E1EC022F900C02850 /* README.md */,
-				1CEF165F1EC022F900C02850 /* savepng.c */,
-				1CEF16601EC022F900C02850 /* savepng.h */,
-			);
-			name = SDL_SavePNG;
-			path = ../../../../src/SDL_SavePNG;
-			sourceTree = "<group>";
-		};
 		1CEF16611EC022F900C02850 /* serialization */ = {
 			isa = PBXGroup;
 			children = (
+				1C0DB91E20686CC8001C46F9 /* base64.cpp */,
 				1CEF16621EC022F900C02850 /* binary_or_text.cpp */,
 				1CEF16631EC022F900C02850 /* binary_or_text.hpp */,
 				1CEF16641EC022F900C02850 /* compression.hpp */,
@@ -3619,6 +3605,7 @@
 		3C8A365A160766FD0017F0EE /* battleforwesnoth */ = {
 			isa = PBXGroup;
 			children = (
+				1C0DB91A20686C46001C46F9 /* crypt_blowfish */,
 				1CFF6736204C73FA00773676 /* deprecation.cpp */,
 				1CFF6734204C73F900773676 /* deprecation.hpp */,
 				1CEF10721EC0102C00C02850 /* about.cpp */,
@@ -3634,7 +3621,6 @@
 				1C069D4E1EC00820001FF584 /* arrow.hpp */,
 				1C069D4F1EC00820001FF584 /* attack_prediction.cpp */,
 				1CEF10771EC0111600C02850 /* attack_prediction.hpp */,
-				46CB5F4E20546030008A0DB6 /* bcrypt */,
 				1C069D511EC00820001FF584 /* boilerplate-header.cpp */,
 				1CEF119F1EC0213F00C02850 /* boost-patched */,
 				1CEF10781EC0111600C02850 /* buffered_istream.hpp */,
@@ -3819,7 +3805,6 @@
 				1CEF10D71EC01F4D00C02850 /* savegame.hpp */,
 				1CEF16261EC022F900C02850 /* scripting */,
 				1CEF16521EC022F900C02850 /* sdl */,
-				1CEF165D1EC022F900C02850 /* SDL_SavePNG */,
 				1CEF10001EC00F4400C02850 /* seed_rng.cpp */,
 				1CEF10D81EC01FA900C02850 /* seed_rng.hpp */,
 				1CEF16611EC022F900C02850 /* serialization */,
@@ -4063,31 +4048,6 @@
 				3CD06D201631B67A0014DBBB /* libtremor.a */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		46CB5F4E20546030008A0DB6 /* bcrypt */ = {
-			isa = PBXGroup;
-			children = (
-				46CB5F5020546030008A0DB6 /* crypt_blowfish */,
-				46CB5F5B20546030008A0DB6 /* bcrypt.c */,
-				46CB5F5E20546030008A0DB6 /* bcrypt.h */,
-			);
-			name = bcrypt;
-			path = ../../../../src/bcrypt;
-			sourceTree = "<group>";
-		};
-		46CB5F5020546030008A0DB6 /* crypt_blowfish */ = {
-			isa = PBXGroup;
-			children = (
-				46CB5F5120546030008A0DB6 /* crypt_gensalt.c */,
-				46CB5F5220546030008A0DB6 /* crypt_blowfish.h */,
-				46CB5F5420546030008A0DB6 /* wrapper.c */,
-				46CB5F5520546030008A0DB6 /* crypt.h */,
-				46CB5F5620546030008A0DB6 /* crypt_gensalt.h */,
-				46CB5F5820546030008A0DB6 /* crypt_blowfish.c */,
-				46CB5F5A20546030008A0DB6 /* ow-crypt.h */,
-			);
-			path = crypt_blowfish;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -4430,7 +4390,6 @@
 				1CEF15381EC022B200C02850 /* matrix.cpp in Sources */,
 				1CEF0F361EC00B3200C02850 /* attack_prediction.cpp in Sources */,
 				1CEF12941EC0222000C02850 /* callable_objects.cpp in Sources */,
-				1CEF16AC1EC022F900C02850 /* README.md in Sources */,
 				1CEF14EA1EC022B200C02850 /* mp_method_selection.cpp in Sources */,
 				1CEF0F5D1EC00C7800C02850 /* filesystem_sdl.cpp in Sources */,
 				1CEF11B81EC0213F00C02850 /* undo_move_action.cpp in Sources */,
@@ -4618,17 +4577,13 @@
 				3C5B801816399A2100898722 /* fclist.c in Sources */,
 				1CEF146A1EC022B200C02850 /* timer.cpp in Sources */,
 				3C5B801916399A2100898722 /* fcmatch.c in Sources */,
-				46CB5F6620546031008A0DB6 /* bcrypt.c in Sources */,
 				1CEF15601EC022B200C02850 /* text_box_base.cpp in Sources */,
 				1C6696841EDDD2C800F23301 /* action.cpp in Sources */,
 				1CEF14661EC022B200C02850 /* placer.cpp in Sources */,
 				1CEF17581EC0233900C02850 /* abilities.cpp in Sources */,
-				1CEF16AE1EC022F900C02850 /* savepng.c in Sources */,
 				3C5B801A16399A2100898722 /* fcmatrix.c in Sources */,
 				3C5B801B16399A2100898722 /* fcname.c in Sources */,
-				46CB5F6020546031008A0DB6 /* crypt_gensalt.c in Sources */,
 				1CEF11CC1EC0213F00C02850 /* state.cpp in Sources */,
-				46CB5F6420546031008A0DB6 /* crypt_blowfish.c in Sources */,
 				1C66968C1EDDD2D600F23301 /* editor_map.cpp in Sources */,
 				3C5B801C16399A2100898722 /* fcpat.c in Sources */,
 				1CEF12431EC021D300C02850 /* text_surface.cpp in Sources */,
@@ -4642,7 +4597,6 @@
 				1CEF15041EC022B200C02850 /* theme_list.cpp in Sources */,
 				1CEF14FA1EC022B200C02850 /* simple_item_selector.cpp in Sources */,
 				1CEF12CC1EC0222000C02850 /* singleplayer.cpp in Sources */,
-				46CB5F6220546031008A0DB6 /* wrapper.c in Sources */,
 				3C5B801F16399A2100898722 /* fcxml.c in Sources */,
 				3C5B802016399A2100898722 /* ftglue.c in Sources */,
 				1CEF10631EC00F9D00C02850 /* variable_info.cpp in Sources */,
@@ -4782,6 +4736,7 @@
 				1CEF168C1EC022F900C02850 /* lua_map_location_ops.cpp in Sources */,
 				1CEF0FE71EC00EA700C02850 /* playsingle_controller.cpp in Sources */,
 				1CEF11D41EC0213F00C02850 /* aspect.cpp in Sources */,
+				1C0DB91F20686CC9001C46F9 /* base64.cpp in Sources */,
 				1CEF17721EC0233900C02850 /* udisplay.cpp in Sources */,
 				1CEF11EC1EC0213F00C02850 /* ca_move_to_targets.cpp in Sources */,
 				1CEF0FD31EC00EA700C02850 /* mp_game_settings.cpp in Sources */,
@@ -4789,6 +4744,7 @@
 				1CEF14821EC022B200C02850 /* campaign_selection.cpp in Sources */,
 				1CEF11D21EC0213F00C02850 /* ai.cpp in Sources */,
 				1CEF12181EC0213F00C02850 /* testing.cpp in Sources */,
+				1C0DB91D20686C58001C46F9 /* crypt_blowfish.c in Sources */,
 				1CEF12AE1EC0222000C02850 /* manager.cpp in Sources */,
 				1CEF11C21EC0213F00C02850 /* vision.cpp in Sources */,
 				1CEF0FE31EC00EA700C02850 /* play_controller.cpp in Sources */,
