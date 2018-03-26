@@ -127,7 +127,7 @@ int advance_unit_dialog(const map_location &loc)
 #ifndef USE_TINY_GUI
 		                      _("What should our victorious unit become?"),
 #else
-                              _(""),
+                              "",
 #endif
 		                      gui::OK_ONLY);
 		advances.set_menu(lang_options);
