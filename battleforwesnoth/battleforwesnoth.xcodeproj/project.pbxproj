@@ -10,6 +10,7 @@
 		1C0DB8C5206600CD001C46F9 /* translations in Resources */ = {isa = PBXBuildFile; fileRef = 1C0DB8C4206600CD001C46F9 /* translations */; };
 		1C0DB8C620660EF7001C46F9 /* translations in Resources */ = {isa = PBXBuildFile; fileRef = 1C0DB8C4206600CD001C46F9 /* translations */; };
 		1C4062CC2062C55100F9B50A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C4062CB2062C55100F9B50A /* Images.xcassets */; };
+		1CCA0B48206DEE1D00AAC2D3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C4062CB2062C55100F9B50A /* Images.xcassets */; };
 		3C15F683160B778500895032 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C15F682160B778500895032 /* QuartzCore.framework */; };
 		3C15F6A2160B883300895032 /* error_container.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C15F692160B883300895032 /* error_container.cpp */; };
 		3C15F6A4160B883300895032 /* sourceparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C15F695160B883300895032 /* sourceparser.cpp */; };
@@ -4766,6 +4767,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C5B805E16399A2100898722 /* InfoPlist.strings in Resources */,
+				1CCA0B48206DEE1D00AAC2D3 /* Images.xcassets in Resources */,
 				3C5B806116399A2100898722 /* SConstruct in Resources */,
 				3C5B806216399A2100898722 /* CMakeLists.txt in Resources */,
 				3C5B806316399A2100898722 /* COPYRIGHT in Resources */,
