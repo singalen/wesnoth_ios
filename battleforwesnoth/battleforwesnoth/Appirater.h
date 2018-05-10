@@ -55,7 +55,7 @@ extern NSString *const kAppiraterDeclinedToRate;
 /*
  Your app's name.
  */
-#define APPIRATER_APP_NAME				@"iWesnoth" //[[[NSBundle mainBundle] infoDictionary] objectForKey:(NSString*)kCFBundleNameKey]
+#define APPIRATER_APP_NAME				@"Wesnoth" //[[[NSBundle mainBundle] infoDictionary] objectForKey:(NSString*)kCFBundleNameKey]
 
 /*
  This is the message your users will see once they've passed the day+launches
