@@ -44,7 +44,8 @@ NSString *const kAppiraterCurrentVersion			= @"kAppiraterCurrentVersion";
 NSString *const kAppiraterRatedCurrentVersion		= @"kAppiraterRatedCurrentVersion";
 NSString *const kAppiraterDeclinedToRate			= @"kAppiraterDeclinedToRate";
 
-NSString *templateReviewURL = @"itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=APP_ID&onlyLatestVersion=true&pageNumber=0&sortOrdering=1&type=Purple+Software";
+static NSString *const iOS7AppStoreURLFormat = @"itms-apps://itunes.apple.com/app/idAPP_ID";
+static NSString *const iOSAppStoreURLFormat = @"itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=APP_ID";
 
 @interface Appirater (hidden)
 - (BOOL)connectedToNetwork;
@@ -199,7 +200,10 @@ NSString *templateReviewURL = @"itms-apps://itunes.apple.com/WebObjects/MZStore.
 		{
 			// they want to rate it
 
-			NSString *reviewURL = [templateReviewURL stringByReplacingOccurrencesOfString:@"APP_ID" withString:[NSString stringWithFormat:@"%d", APPIRATER_APP_ID]];
+			NSString *reviewURL = [
+					([[UIDevice currentDevice].systemVersion floatValue] >= 7.0f ? iOS7AppStoreURLFormat : iOSAppStoreURLFormat)
+						  stringByReplacingOccurrencesOfString:@"APP_ID" withString:[NSString stringWithFormat:@"%d", APPIRATER_APP_ID]
+			];
             NSLog(@"%@",reviewURL);
 			[[UIApplication sharedApplication] openURL:[NSURL URLWithString:reviewURL]];
 			
