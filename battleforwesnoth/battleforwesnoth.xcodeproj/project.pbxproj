@@ -127,7 +127,6 @@
 		1C8C211320919AAF00219503 /* lctype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C8C20F020919AAE00219503 /* lctype.cpp */; };
 		1C8C211420919AAF00219503 /* ldebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C8C20F220919AAF00219503 /* ldebug.cpp */; };
 		1CA58CE11F608DDF0032C0B2 /* irdya_datetime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */; };
-		1CA79D281F8C7E530013728A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1CA79D211F8C7E520013728A /* Info.plist */; };
 		1CA9ABAD1FC807B900D25658 /* point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAA1FC807B900D25658 /* point.cpp */; };
 		1CA9ABB01FC8094200D25658 /* make.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAE1FC8094100D25658 /* make.cpp */; };
 		1CA9ABB11FC8118600D25658 /* wesnoth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF104F1EC00F9D00C02850 /* wesnoth.cpp */; };
@@ -4311,7 +4310,6 @@
 				1CEF16E11EC0231800C02850 /* wesnoth_fix_vc12_build.patch in Resources */,
 				46CB5F8B205485C2008A0DB6 /* WesnothLauchScreen.storyboard in Resources */,
 				46BED4E22050848B00842FA5 /* WesnothViewController.storyboard in Resources */,
-				1CA79D281F8C7E530013728A /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
