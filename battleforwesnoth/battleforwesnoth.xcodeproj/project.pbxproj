@@ -457,7 +457,6 @@
 		1CEF152E1EC022B200C02850 /* horizontal_scrollbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF13E01EC022B100C02850 /* horizontal_scrollbar.cpp */; };
 		1CEF15301EC022B200C02850 /* image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF13E21EC022B100C02850 /* image.cpp */; };
 		1CEF15321EC022B200C02850 /* label.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF13E51EC022B100C02850 /* label.cpp */; };
-		1CEF15341EC022B200C02850 /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF13E71EC022B100C02850 /* list.cpp */; };
 		1CEF15361EC022B200C02850 /* listbox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF13E91EC022B100C02850 /* listbox.cpp */; };
 		1CEF15381EC022B200C02850 /* matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF13EB1EC022B100C02850 /* matrix.cpp */; };
 		1CEF153A1EC022B200C02850 /* menu_button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF13ED1EC022B100C02850 /* menu_button.cpp */; };
@@ -641,6 +640,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1CC2BB7522584A0800FEBEA8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1CC2BB7122584A0800FEBEA8 /* vorbis.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3CBF24511644FBD5008D46F4;
+			remoteInfo = vorbis;
+		};
 		1CDFD9BC1E10529800E48A19 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1CDFD9B61E10529800E48A19 /* SDL.xcodeproj */;
@@ -1079,6 +1085,7 @@
 		1CC04344215A914700E290AC /* apple_version.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = apple_version.hpp; path = ../../../../src/desktop/apple_version.hpp; sourceTree = "<group>"; };
 		1CC04345215A914700E290AC /* battery_info.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = battery_info.hpp; path = ../../../../src/desktop/battery_info.hpp; sourceTree = "<group>"; };
 		1CC04346215A914700E290AC /* apple_battery_info.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = apple_battery_info.hpp; path = ../../../../src/desktop/apple_battery_info.hpp; sourceTree = "<group>"; };
+		1CC2BB7122584A0800FEBEA8 /* vorbis.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vorbis.xcodeproj; path = lib/vorbis/vorbis.xcodeproj; sourceTree = "<group>"; };
 		1CDFD9B61E10529800E48A19 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../lib/SDL2-2.0.5/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../lib/SDL2_image-2.0.1/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_mixer.xcodeproj; path = "../lib/SDL2_mixer-2.0.1/Xcode-iOS/SDL_mixer.xcodeproj"; sourceTree = "<group>"; };
@@ -1756,8 +1763,6 @@
 		1CEF13E41EC022B100C02850 /* integer_selector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = integer_selector.hpp; sourceTree = "<group>"; };
 		1CEF13E51EC022B100C02850 /* label.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = label.cpp; sourceTree = "<group>"; };
 		1CEF13E61EC022B100C02850 /* label.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = label.hpp; sourceTree = "<group>"; };
-		1CEF13E71EC022B100C02850 /* list.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = list.cpp; sourceTree = "<group>"; };
-		1CEF13E81EC022B100C02850 /* list.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = list.hpp; sourceTree = "<group>"; };
 		1CEF13E91EC022B100C02850 /* listbox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = listbox.cpp; sourceTree = "<group>"; };
 		1CEF13EA1EC022B100C02850 /* listbox.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = listbox.hpp; sourceTree = "<group>"; };
 		1CEF13EB1EC022B100C02850 /* matrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = matrix.cpp; sourceTree = "<group>"; };
@@ -2354,6 +2359,14 @@
 			);
 			name = pango;
 			path = font/pango;
+			sourceTree = "<group>";
+		};
+		1CC2BB7222584A0800FEBEA8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1CC2BB7622584A0800FEBEA8 /* libvorbis.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		1CDFD9B71E10529800E48A19 /* Products */ = {
@@ -3042,8 +3055,6 @@
 				1CEF13E41EC022B100C02850 /* integer_selector.hpp */,
 				1CEF13E51EC022B100C02850 /* label.cpp */,
 				1CEF13E61EC022B100C02850 /* label.hpp */,
-				1CEF13E71EC022B100C02850 /* list.cpp */,
-				1CEF13E81EC022B100C02850 /* list.hpp */,
 				1CEF13E91EC022B100C02850 /* listbox.cpp */,
 				1CEF13EA1EC022B100C02850 /* listbox.hpp */,
 				1CEF13EB1EC022B100C02850 /* matrix.cpp */,
@@ -3553,6 +3564,7 @@
 		3C8A3645160766FD0017F0EE = {
 			isa = PBXGroup;
 			children = (
+				1CC2BB7122584A0800FEBEA8 /* vorbis.xcodeproj */,
 				1CDFD9CC1E1052E500E48A19 /* SDL_ttf.xcodeproj */,
 				1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */,
 				1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */,
@@ -3623,289 +3635,289 @@
 		3C8A365A160766FD0017F0EE /* battleforwesnoth */ = {
 			isa = PBXGroup;
 			children = (
-				1CC0433F215A07AE00E290AC /* iOS_device_info.cpp */,
-				1CC0433E215A07AE00E290AC /* iOS_device_info.hpp */,
-				1CC04336215812AB00E290AC /* game_version.cpp */,
-				1CC04334215812AB00E290AC /* game_version.hpp */,
-				1CC04337215812AC00E290AC /* map_settings.cpp */,
-				1CC04335215812AB00E290AC /* map_settings.hpp */,
-				1CC04332215812AA00E290AC /* picture.cpp */,
-				1CC04333215812AB00E290AC /* picture.hpp */,
-				1C8C205F208AB82E00219503 /* chat_log.cpp */,
-				1C8C205E208AB82E00219503 /* chat_log.hpp */,
-				1C0DB91A20686C46001C46F9 /* crypt_blowfish */,
-				1CFF6736204C73FA00773676 /* deprecation.cpp */,
-				1CFF6734204C73F900773676 /* deprecation.hpp */,
 				1CEF10721EC0102C00C02850 /* about.cpp */,
-				1CEF10751EC0106A00C02850 /* about.hpp */,
-				1CEF11241EC0213E00C02850 /* actions */,
-				1CEF11431EC0213E00C02850 /* addon */,
-				1CEF11501EC0213F00C02850 /* ai */,
 				1C6695DD1EDCF36000F23301 /* animated.cpp */,
-				1C069D4B1EC00820001FF584 /* animated.hpp */,
-				1CA9ABB21FC81B9F00D25658 /* Appirater.h */,
-				1C20DBA91E11F92600D7BE84 /* Appirater.m */,
 				1C069D4D1EC00820001FF584 /* arrow.cpp */,
-				1C069D4E1EC00820001FF584 /* arrow.hpp */,
 				1C069D4F1EC00820001FF584 /* attack_prediction.cpp */,
-				1CEF10771EC0111600C02850 /* attack_prediction.hpp */,
 				1C069D511EC00820001FF584 /* boilerplate-header.cpp */,
-				1CEF119F1EC0213F00C02850 /* boost-patched */,
-				1CEF10781EC0111600C02850 /* buffered_istream.hpp */,
 				1C069D581EC0087C001FF584 /* build_info.cpp */,
-				1CEF10791EC0111600C02850 /* build_info.hpp */,
 				1C069D5A1EC0087C001FF584 /* carryover.cpp */,
-				1CEF107A1EC0111600C02850 /* carryover.hpp */,
 				1C069D5C1EC0087C001FF584 /* chat_command_handler.cpp */,
-				1CEF107B1EC0111600C02850 /* chat_command_handler.hpp */,
 				1C069D5E1EC0087C001FF584 /* chat_events.cpp */,
-				1CEF107C1EC0111600C02850 /* chat_events.hpp */,
+				1C8C205F208AB82E00219503 /* chat_log.cpp */,
 				1C069D601EC0087C001FF584 /* color_range.cpp */,
-				1CEF107D1EC0111600C02850 /* color_range.hpp */,
 				1C069D621EC0087C001FF584 /* color.cpp */,
-				1CEF107E1EC0111600C02850 /* color.hpp */,
 				1C069D641EC0087C001FF584 /* commandline_options.cpp */,
-				1CEF107F1EC0111600C02850 /* commandline_options.hpp */,
 				1C6695DE1EDCF36000F23301 /* config_attribute_value.cpp */,
-				1C6695DF1EDCF36000F23301 /* config_attribute_value.hpp */,
 				1C069D671EC0087C001FF584 /* config_cache.cpp */,
-				1CEF10811EC0111700C02850 /* config_cache.hpp */,
 				1C069D691EC0087C001FF584 /* config.cpp */,
-				1CEF10821EC0111700C02850 /* config.hpp */,
-				1CEF10831EC0111700C02850 /* configr_assign.hpp */,
 				1C069D6E1EC0087D001FF584 /* controller_base.cpp */,
-				1CEF10851EC0111700C02850 /* controller_base.hpp */,
 				1C069D701EC0087D001FF584 /* countdown_clock.cpp */,
-				1CEF10861EC0111700C02850 /* countdown_clock.hpp */,
 				1C069D721EC0087D001FF584 /* cursor.cpp */,
-				1CEF10871EC0111700C02850 /* cursor.hpp */,
-				1C29BBFB1E5A325600A701E9 /* desktop */,
+				1CFF6736204C73FA00773676 /* deprecation.cpp */,
 				1C810323541F41137F70A77B /* display_chat_manager.cpp */,
-				1CEF10881EC01E8300C02850 /* display_chat_manager.hpp */,
 				1CEF0F451EC00C4500C02850 /* display_context.cpp */,
-				1CEF10891EC01E8300C02850 /* display_context.hpp */,
 				1CEF0F461EC00C4500C02850 /* display.cpp */,
-				1CEF108A1EC01E8300C02850 /* display.hpp */,
-				1C6696231EDDD29C00F23301 /* editor */,
 				1CEF0F4B1EC00C7700C02850 /* events.cpp */,
-				1CEF108B1EC01E8300C02850 /* events.hpp */,
-				1CEF108C1EC01E8300C02850 /* exceptions.hpp */,
 				1CEF0F4C1EC00C7700C02850 /* fake_unit_manager.cpp */,
-				1CEF108D1EC01E8300C02850 /* fake_unit_manager.hpp */,
 				1CEF0F4D1EC00C7700C02850 /* fake_unit_ptr.cpp */,
-				1CEF108E1EC01E8300C02850 /* fake_unit_ptr.hpp */,
 				1CEF0F4E1EC00C7700C02850 /* filesystem_boost.cpp */,
 				1CEF0F4F1EC00C7700C02850 /* filesystem_common.cpp */,
 				1CEF0F501EC00C7700C02850 /* filesystem_sdl.cpp */,
-				1CEF10901EC01E8300C02850 /* filter_context.hpp */,
 				1CEF0F5E1EC00CEA00C02850 /* floating_label.cpp */,
-				1CEF10911EC01E8300C02850 /* floating_label.hpp */,
 				1CEF0F5F1EC00CEA00C02850 /* floating_textbox.cpp */,
-				1CEF10921EC01E8300C02850 /* floating_textbox.hpp */,
-				3CCB961716293288007549E6 /* font */,
 				1CEF0F601EC00CEA00C02850 /* format_time_summary.cpp */,
+				1CEF0F681EC00D2600C02850 /* game_board.cpp */,
+				1CEF0F691EC00D2600C02850 /* game_classification.cpp */,
+				1CEF0F6A1EC00D2600C02850 /* game_config_manager.cpp */,
+				1CEF0F6B1EC00D2600C02850 /* game_config.cpp */,
+				1CEF0F6C1EC00D2600C02850 /* game_data.cpp */,
+				1CEF0F6D1EC00D2600C02850 /* game_display.cpp */,
+				1CEF0F6E1EC00D2600C02850 /* game_end_exceptions.cpp */,
+				1CEF0F6F1EC00D2600C02850 /* game_launcher.cpp */,
+				1CEF0F711EC00D2600C02850 /* game_state.cpp */,
+				1CC04336215812AB00E290AC /* game_version.cpp */,
+				1CEF0F861EC00D6400C02850 /* generic_event.cpp */,
+				1CEF0F871EC00D6400C02850 /* gettext_boost.cpp */,
+				1CEF0F8C1EC00E0400C02850 /* halo.cpp */,
+				1CEF0F8D1EC00E0400C02850 /* hash.cpp */,
+				1CEF0F921EC00EA500C02850 /* image_modifications.cpp */,
+				1CC0433F215A07AE00E290AC /* iOS_device_info.cpp */,
+				1CEF0F951EC00EA500C02850 /* joystick.cpp */,
+				1CEF0F961EC00EA500C02850 /* key.cpp */,
+				1CEF0F971EC00EA500C02850 /* language.cpp */,
+				1CEF0F9A1EC00EA600C02850 /* log.cpp */,
+				1CEF0F9B1EC00EA600C02850 /* lua_jailbreak_exception.cpp */,
+				1CC04337215812AC00E290AC /* map_settings.cpp */,
+				1CEF0F9D1EC00EA600C02850 /* menu_events.cpp */,
+				1CEF0F9E1EC00EA600C02850 /* minimap.cpp */,
+				1CEF0F9F1EC00EA600C02850 /* mouse_events.cpp */,
+				1CEF0FA01EC00EA600C02850 /* mouse_handler_base.cpp */,
+				1CEF0FA11EC00EA600C02850 /* movetype.cpp */,
+				1CEF0FA21EC00EA600C02850 /* mp_game_settings.cpp */,
+				1CEF0FA31EC00EA600C02850 /* mp_ui_alerts.cpp */,
+				1CEF0FA41EC00EA600C02850 /* mt_rng.cpp */,
+				1CEF0FA51EC00EA600C02850 /* network_asio.cpp */,
+				1CEF0FA61EC00EA600C02850 /* pathutils.cpp */,
+				1CEF0FA71EC00EA600C02850 /* persist_context.cpp */,
+				1CEF0FA81EC00EA600C02850 /* persist_manager.cpp */,
+				1CEF0FA91EC00EA600C02850 /* persist_var.cpp */,
+				1CC04332215812AA00E290AC /* picture.cpp */,
+				1CEF0FAA1EC00EA600C02850 /* play_controller.cpp */,
+				1CEF0FAB1EC00EA600C02850 /* playmp_controller.cpp */,
+				1CEF0FAC1EC00EA600C02850 /* playsingle_controller.cpp */,
+				1CEF0FAD1EC00EA600C02850 /* playturn_network_adapter.cpp */,
+				1CEF0FAE1EC00EA600C02850 /* playturn.cpp */,
+				1CEF0FB11EC00EA600C02850 /* quit_confirmation.cpp */,
+				1C6695E01EDCF36000F23301 /* random_deterministic.cpp */,
+				1C6695E21EDCF36000F23301 /* random_synced.cpp */,
+				1C6695E41EDCF36000F23301 /* random.cpp */,
+				1CEF0FF51EC00F4400C02850 /* recall_list_manager.cpp */,
+				1CEF0FF61EC00F4400C02850 /* replay_controller.cpp */,
+				1CEF0FF71EC00F4400C02850 /* replay_helper.cpp */,
+				1CEF0FF81EC00F4400C02850 /* replay_recorder_base.cpp */,
+				1CEF0FF91EC00F4400C02850 /* replay.cpp */,
+				1CEF0FFA1EC00F4400C02850 /* reports.cpp */,
+				1CEF0FFB1EC00F4400C02850 /* resources.cpp */,
+				1CEF0FFC1EC00F4400C02850 /* save_blocker.cpp */,
+				1CEF0FFD1EC00F4400C02850 /* save_index.cpp */,
+				1CEF0FFE1EC00F4400C02850 /* saved_game.cpp */,
+				1CEF0FFF1EC00F4400C02850 /* savegame.cpp */,
+				1CEF10001EC00F4400C02850 /* seed_rng.cpp */,
+				1CEF10021EC00F4400C02850 /* show_dialog.cpp */,
+				1CEF10031EC00F4400C02850 /* side_filter.cpp */,
+				1CEF10041EC00F4400C02850 /* sound_music_track.cpp */,
+				1CEF10051EC00F4400C02850 /* sound.cpp */,
+				1CEF10061EC00F4400C02850 /* soundsource.cpp */,
+				1CEF10071EC00F4500C02850 /* statistics.cpp */,
+				1CEF10081EC00F4500C02850 /* synced_checkup.cpp */,
+				1CEF10091EC00F4500C02850 /* synced_commands.cpp */,
+				1CEF100A1EC00F4500C02850 /* synced_context.cpp */,
+				1CEF100B1EC00F4500C02850 /* synced_user_choice.cpp */,
+				1CEF100C1EC00F4500C02850 /* syncmp_handler.cpp */,
+				1CEF10431EC00F9C00C02850 /* team.cpp */,
+				1CEF10441EC00F9C00C02850 /* teambuilder.cpp */,
+				1CEF10451EC00F9C00C02850 /* theme.cpp */,
+				1CEF10461EC00F9C00C02850 /* time_of_day.cpp */,
+				1CEF10471EC00F9C00C02850 /* tod_manager.cpp */,
+				1CEF10481EC00F9C00C02850 /* tooltips.cpp */,
+				1CEF10491EC00F9C00C02850 /* tracer.cpp */,
+				1CEF104A1EC00F9C00C02850 /* tstring.cpp */,
+				1CEF104B1EC00F9C00C02850 /* variable_info.cpp */,
+				1CEF104C1EC00F9C00C02850 /* variable.cpp */,
+				1CEF104E1EC00F9C00C02850 /* video.cpp */,
+				1CEF104F1EC00F9D00C02850 /* wesnoth.cpp */,
+				1CEF10501EC00F9D00C02850 /* wesnothd_connection.cpp */,
+				1CEF10511EC00F9D00C02850 /* wml_exception.cpp */,
+				1CA9ABB21FC81B9F00D25658 /* Appirater.h */,
+				1CEF10701EC00FC400C02850 /* wesconfig.h */,
+				1CEF10711EC0100700C02850 /* wesnoth_lua_config.h */,
+				3C8A3663160766FD0017F0EE /* wesnothAppDelegate.h */,
+				3C8A3666160766FD0017F0EE /* wesnothViewController.h */,
+				1CEF10751EC0106A00C02850 /* about.hpp */,
+				1C069D4B1EC00820001FF584 /* animated.hpp */,
+				1C069D4E1EC00820001FF584 /* arrow.hpp */,
+				1CEF10771EC0111600C02850 /* attack_prediction.hpp */,
+				1CEF10781EC0111600C02850 /* buffered_istream.hpp */,
+				1CEF10791EC0111600C02850 /* build_info.hpp */,
+				1CEF107A1EC0111600C02850 /* carryover.hpp */,
+				1CEF107B1EC0111600C02850 /* chat_command_handler.hpp */,
+				1CEF107C1EC0111600C02850 /* chat_events.hpp */,
+				1C8C205E208AB82E00219503 /* chat_log.hpp */,
+				1CEF107D1EC0111600C02850 /* color_range.hpp */,
+				1CEF107E1EC0111600C02850 /* color.hpp */,
+				1CEF107F1EC0111600C02850 /* commandline_options.hpp */,
+				1C6695DF1EDCF36000F23301 /* config_attribute_value.hpp */,
+				1CEF10811EC0111700C02850 /* config_cache.hpp */,
+				1CEF10821EC0111700C02850 /* config.hpp */,
+				1CEF10831EC0111700C02850 /* configr_assign.hpp */,
+				1CEF10851EC0111700C02850 /* controller_base.hpp */,
+				1CEF10861EC0111700C02850 /* countdown_clock.hpp */,
+				1CEF10871EC0111700C02850 /* cursor.hpp */,
+				1CFF6734204C73F900773676 /* deprecation.hpp */,
+				1CEF10881EC01E8300C02850 /* display_chat_manager.hpp */,
+				1CEF10891EC01E8300C02850 /* display_context.hpp */,
+				1CEF108A1EC01E8300C02850 /* display.hpp */,
+				1CEF108B1EC01E8300C02850 /* events.hpp */,
+				1CEF108C1EC01E8300C02850 /* exceptions.hpp */,
+				1CEF108D1EC01E8300C02850 /* fake_unit_manager.hpp */,
+				1CEF108E1EC01E8300C02850 /* fake_unit_ptr.hpp */,
+				1CEF108F1EC01E8300C02850 /* filesystem.hpp */,
+				1CEF10901EC01E8300C02850 /* filter_context.hpp */,
+				1CEF10911EC01E8300C02850 /* floating_label.hpp */,
+				1CEF10921EC01E8300C02850 /* floating_textbox.hpp */,
 				1CEF10931EC01E8300C02850 /* format_time_summary.hpp */,
 				1CEF10941EC01E8300C02850 /* formatter.hpp */,
-				1CEF12461EC0222000C02850 /* formula */,
-				1CEF0F681EC00D2600C02850 /* game_board.cpp */,
 				1CEF10951EC01EC000C02850 /* game_board.hpp */,
-				1CEF0F691EC00D2600C02850 /* game_classification.cpp */,
 				1CEF10961EC01EC000C02850 /* game_classification.hpp */,
-				1CEF0F6A1EC00D2600C02850 /* game_config_manager.cpp */,
 				1CEF10971EC01EC000C02850 /* game_config_manager.hpp */,
-				1CEF0F6B1EC00D2600C02850 /* game_config.cpp */,
 				1CEF10981EC01EC000C02850 /* game_config.hpp */,
-				1CEF0F6C1EC00D2600C02850 /* game_data.cpp */,
 				1CEF10991EC01EC000C02850 /* game_data.hpp */,
-				1CEF0F6D1EC00D2600C02850 /* game_display.cpp */,
 				1CEF109A1EC01EC000C02850 /* game_display.hpp */,
-				1CEF0F6E1EC00D2600C02850 /* game_end_exceptions.cpp */,
 				1CEF109B1EC01EC000C02850 /* game_end_exceptions.hpp */,
 				1CEF109C1EC01EC000C02850 /* game_errors.hpp */,
-				1CEF125C1EC0222000C02850 /* game_events */,
-				1CEF126F1EC0222000C02850 /* game_initialization */,
-				1CEF0F6F1EC00D2600C02850 /* game_launcher.cpp */,
 				1CEF109D1EC01EC000C02850 /* game_launcher.hpp */,
-				1CEF0F711EC00D2600C02850 /* game_state.cpp */,
 				1CEF109F1EC01EC100C02850 /* game_state.hpp */,
-				1CEF12861EC0222000C02850 /* generators */,
-				1CEF0F861EC00D6400C02850 /* generic_event.cpp */,
+				1CC04334215812AB00E290AC /* game_version.hpp */,
 				1CEF10A01EC01EC100C02850 /* generic_event.hpp */,
-				1CEF0F871EC00D6400C02850 /* gettext_boost.cpp */,
 				1CEF10A11EC01EC100C02850 /* gettext.hpp */,
 				1CEF10A21EC01EC100C02850 /* global.hpp */,
-				1CEF12D91EC022B100C02850 /* gui */,
-				1CEF0F8C1EC00E0400C02850 /* halo.cpp */,
 				1CEF10A31EC01EC100C02850 /* halo.hpp */,
-				1CEF0F8D1EC00E0400C02850 /* hash.cpp */,
 				1CEF10A41EC01EC100C02850 /* hash.hpp */,
-				1CEF142B1EC022B100C02850 /* help */,
-				1CEF143A1EC022B100C02850 /* hotkey */,
-				1CEF0F921EC00EA500C02850 /* image_modifications.cpp */,
 				1CEF10A51EC01F0600C02850 /* image_modifications.hpp */,
-				1C810157E87B6FD6D2E9FA6D /* ios */,
-				1CEF0F951EC00EA500C02850 /* joystick.cpp */,
+				1CC0433E215A07AE00E290AC /* iOS_device_info.hpp */,
 				1CEF10A81EC01F0600C02850 /* joystick.hpp */,
-				1CEF0F961EC00EA500C02850 /* key.cpp */,
 				1CEF10A91EC01F0600C02850 /* key.hpp */,
-				1CEF0F971EC00EA500C02850 /* language.cpp */,
 				1CEF10AA1EC01F0600C02850 /* language.hpp */,
 				1CEF10AB1EC01F0600C02850 /* lexical_cast.hpp */,
 				1CEF10AC1EC01F0600C02850 /* libc_error.hpp */,
-				1CEF0F9A1EC00EA600C02850 /* log.cpp */,
 				1CEF10AF1EC01F0600C02850 /* log.hpp */,
-				1CEF158F1EC022DD00C02850 /* lua */,
-				1CEF0F9B1EC00EA600C02850 /* lua_jailbreak_exception.cpp */,
 				1CEF10B01EC01F0600C02850 /* lua_jailbreak_exception.hpp */,
-				1CEF15CA1EC022DD00C02850 /* map */,
 				1CEF10B11EC01F0600C02850 /* map_command_handler.hpp */,
-				1CEF0F9D1EC00EA600C02850 /* menu_events.cpp */,
+				1CC04335215812AB00E290AC /* map_settings.hpp */,
 				1CEF10B31EC01F0600C02850 /* menu_events.hpp */,
-				1CEF0F9E1EC00EA600C02850 /* minimap.cpp */,
 				1CEF10B41EC01F0600C02850 /* minimap.hpp */,
-				1CEF0F9F1EC00EA600C02850 /* mouse_events.cpp */,
 				1CEF10B51EC01F0600C02850 /* mouse_events.hpp */,
-				1CEF0FA01EC00EA600C02850 /* mouse_handler_base.cpp */,
 				1CEF10B61EC01F0600C02850 /* mouse_handler_base.hpp */,
-				1CEF0FA11EC00EA600C02850 /* movetype.cpp */,
 				1CEF10B71EC01F0600C02850 /* movetype.hpp */,
-				1CEF0FA21EC00EA600C02850 /* mp_game_settings.cpp */,
 				1CEF10B81EC01F0600C02850 /* mp_game_settings.hpp */,
-				1CEF0FA31EC00EA600C02850 /* mp_ui_alerts.cpp */,
 				1CEF10B91EC01F0700C02850 /* mp_ui_alerts.hpp */,
-				1CEF0FA41EC00EA600C02850 /* mt_rng.cpp */,
 				1CEF10BA1EC01F0700C02850 /* mt_rng.hpp */,
 				1CEF10BB1EC01F0700C02850 /* multiplayer_error_codes.hpp */,
-				1CEF0FA51EC00EA600C02850 /* network_asio.cpp */,
 				1CEF10BC1EC01F0700C02850 /* network_asio.hpp */,
 				1CEF10BD1EC01F4D00C02850 /* overlay.hpp */,
-				1CEF15D21EC022DD00C02850 /* pathfind */,
-				1CEF0FA61EC00EA600C02850 /* pathutils.cpp */,
 				1CEF10BE1EC01F4D00C02850 /* pathutils.hpp */,
-				1CEF0FA71EC00EA600C02850 /* persist_context.cpp */,
 				1CEF10BF1EC01F4D00C02850 /* persist_context.hpp */,
-				1CEF0FA81EC00EA600C02850 /* persist_manager.cpp */,
 				1CEF10C01EC01F4D00C02850 /* persist_manager.hpp */,
-				1CEF0FA91EC00EA600C02850 /* persist_var.cpp */,
 				1CEF10C11EC01F4D00C02850 /* persist_var.hpp */,
-				1CEF0FAA1EC00EA600C02850 /* play_controller.cpp */,
+				1CC04333215812AB00E290AC /* picture.hpp */,
 				1CEF10C21EC01F4D00C02850 /* play_controller.hpp */,
-				1CEF0FAB1EC00EA600C02850 /* playmp_controller.cpp */,
 				1CEF10C31EC01F4D00C02850 /* playmp_controller.hpp */,
-				1CEF0FAC1EC00EA600C02850 /* playsingle_controller.cpp */,
 				1CEF10C41EC01F4D00C02850 /* playsingle_controller.hpp */,
-				1CEF0FAD1EC00EA600C02850 /* playturn_network_adapter.cpp */,
 				1CEF10C51EC01F4D00C02850 /* playturn_network_adapter.hpp */,
-				1CEF0FAE1EC00EA600C02850 /* playturn.cpp */,
 				1CEF10C61EC01F4D00C02850 /* playturn.hpp */,
-				1C6695F31EDD0BCB00F23301 /* preferences */,
-				1CEF0FB11EC00EA600C02850 /* quit_confirmation.cpp */,
 				1CEF10C91EC01F4D00C02850 /* quit_confirmation.hpp */,
-				1C6695E01EDCF36000F23301 /* random_deterministic.cpp */,
 				1C6695E11EDCF36000F23301 /* random_deterministic.hpp */,
-				1C6695E21EDCF36000F23301 /* random_synced.cpp */,
 				1C6695E31EDCF36000F23301 /* random_synced.hpp */,
-				1C6695E41EDCF36000F23301 /* random.cpp */,
 				1C6695E51EDCF36000F23301 /* random.hpp */,
-				1CEF0FF51EC00F4400C02850 /* recall_list_manager.cpp */,
 				1CEF10CD1EC01F4D00C02850 /* recall_list_manager.hpp */,
-				1CEF0FF61EC00F4400C02850 /* replay_controller.cpp */,
 				1CEF10CE1EC01F4D00C02850 /* replay_controller.hpp */,
-				1CEF0FF71EC00F4400C02850 /* replay_helper.cpp */,
 				1CEF10CF1EC01F4D00C02850 /* replay_helper.hpp */,
-				1CEF0FF81EC00F4400C02850 /* replay_recorder_base.cpp */,
 				1CEF10D01EC01F4D00C02850 /* replay_recorder_base.hpp */,
-				1CEF0FF91EC00F4400C02850 /* replay.cpp */,
 				1CEF10D11EC01F4D00C02850 /* replay.hpp */,
-				1CEF0FFA1EC00F4400C02850 /* reports.cpp */,
 				1CEF10D21EC01F4D00C02850 /* reports.hpp */,
-				1CEF0FFB1EC00F4400C02850 /* resources.cpp */,
 				1CEF10D31EC01F4D00C02850 /* resources.hpp */,
-				1CEF0FFC1EC00F4400C02850 /* save_blocker.cpp */,
 				1CEF10D41EC01F4D00C02850 /* save_blocker.hpp */,
-				1CEF0FFD1EC00F4400C02850 /* save_index.cpp */,
 				1CEF10D51EC01F4D00C02850 /* save_index.hpp */,
-				1CEF0FFE1EC00F4400C02850 /* saved_game.cpp */,
 				1CEF10D61EC01F4D00C02850 /* saved_game.hpp */,
-				1CEF0FFF1EC00F4400C02850 /* savegame.cpp */,
 				1CEF10D71EC01F4D00C02850 /* savegame.hpp */,
-				1CEF16261EC022F900C02850 /* scripting */,
-				1CEF16521EC022F900C02850 /* sdl */,
-				1CEF10001EC00F4400C02850 /* seed_rng.cpp */,
 				1CEF10D81EC01FA900C02850 /* seed_rng.hpp */,
-				1CEF16611EC022F900C02850 /* serialization */,
-				1CEF10021EC00F4400C02850 /* show_dialog.cpp */,
 				1CEF10DA1EC01FA900C02850 /* show_dialog.hpp */,
-				1CEF10031EC00F4400C02850 /* side_filter.cpp */,
 				1CEF10DB1EC01FA900C02850 /* side_filter.hpp */,
-				1CEF10041EC00F4400C02850 /* sound_music_track.cpp */,
 				1CEF10DC1EC01FAA00C02850 /* sound_music_track.hpp */,
-				1CEF10051EC00F4400C02850 /* sound.cpp */,
 				1CEF10DD1EC01FAA00C02850 /* sound.hpp */,
-				1CEF10061EC00F4400C02850 /* soundsource.cpp */,
 				1CEF10DE1EC01FAA00C02850 /* soundsource.hpp */,
-				1CEF16C11EC0231800C02850 /* spirit_po */,
-				1CEF10071EC00F4500C02850 /* statistics.cpp */,
 				1CEF10E01EC01FAA00C02850 /* statistics.hpp */,
-				1CEF16CC1EC0231800C02850 /* storyscreen */,
-				3C8A365B160766FD0017F0EE /* Supporting Files */,
-				1CEF10081EC00F4500C02850 /* synced_checkup.cpp */,
 				1CEF10E11EC01FAA00C02850 /* synced_checkup.hpp */,
-				1CEF10091EC00F4500C02850 /* synced_commands.cpp */,
 				1CEF10E21EC01FAA00C02850 /* synced_commands.hpp */,
-				1CEF100A1EC00F4500C02850 /* synced_context.cpp */,
 				1CEF10E31EC01FAA00C02850 /* synced_context.hpp */,
-				1CEF100B1EC00F4500C02850 /* synced_user_choice.cpp */,
 				1CEF10E41EC01FAA00C02850 /* synced_user_choice.hpp */,
-				1CEF100C1EC00F4500C02850 /* syncmp_handler.cpp */,
 				1CEF10E51EC01FAA00C02850 /* syncmp_handler.hpp */,
-				1CEF10431EC00F9C00C02850 /* team.cpp */,
 				1CEF10E61EC01FAA00C02850 /* team.hpp */,
-				1CEF10441EC00F9C00C02850 /* teambuilder.cpp */,
 				1CEF10E71EC01FAA00C02850 /* teambuilder.hpp */,
-				1CEF16D51EC0231800C02850 /* terrain */,
-				1CEF10451EC00F9C00C02850 /* theme.cpp */,
 				1CEF10E81EC01FAA00C02850 /* theme.hpp */,
-				1CEF10461EC00F9C00C02850 /* time_of_day.cpp */,
 				1CEF10E91EC01FAA00C02850 /* time_of_day.hpp */,
-				1CEF10471EC00F9C00C02850 /* tod_manager.cpp */,
 				1CEF10EA1EC01FAA00C02850 /* tod_manager.hpp */,
-				1CEF10481EC00F9C00C02850 /* tooltips.cpp */,
 				1CEF10EB1EC01FAA00C02850 /* tooltips.hpp */,
-				1CEF10491EC00F9C00C02850 /* tracer.cpp */,
 				1CEF10EC1EC01FAA00C02850 /* tracer.hpp */,
-				1CEF104A1EC00F9C00C02850 /* tstring.cpp */,
 				1CEF10ED1EC01FAA00C02850 /* tstring.hpp */,
-				1CEF16F41EC0233900C02850 /* units */,
-				1CEF17151EC0233900C02850 /* utils */,
 				1CEF10EE1EC01FFE00C02850 /* variable_info_detail.hpp */,
 				1C6695E61EDCF36000F23301 /* variable_info_private.hpp */,
-				1CEF104B1EC00F9C00C02850 /* variable_info.cpp */,
 				1CEF10EF1EC01FFE00C02850 /* variable_info.hpp */,
-				1CEF104C1EC00F9C00C02850 /* variable.cpp */,
 				1CEF10F01EC01FFE00C02850 /* variable.hpp */,
-				1CEF104E1EC00F9C00C02850 /* video.cpp */,
 				1CEF10F21EC01FFE00C02850 /* video.hpp */,
-				1CEF10701EC00FC400C02850 /* wesconfig.h */,
-				1CEF10711EC0100700C02850 /* wesnoth_lua_config.h */,
-				1CEF104F1EC00F9D00C02850 /* wesnoth.cpp */,
-				3C8A3663160766FD0017F0EE /* wesnothAppDelegate.h */,
-				3C8A3664160766FD0017F0EE /* wesnothAppDelegate.m */,
 				1CEF10F31EC01FFE00C02850 /* wesnothd_connection_error.hpp */,
-				1CEF10501EC00F9D00C02850 /* wesnothd_connection.cpp */,
 				1CEF10F41EC01FFE00C02850 /* wesnothd_connection.hpp */,
-				3C8A366C160766FD0017F0EE /* wesnothViewController_iPad.xib */,
-				3C8A3669160766FD0017F0EE /* wesnothViewController_iPhone.xib */,
-				3C8A3666160766FD0017F0EE /* wesnothViewController.h */,
-				3C8A3667160766FD0017F0EE /* wesnothViewController.m */,
-				1CEF172A1EC0233900C02850 /* whiteboard */,
-				1CEF17431EC0233900C02850 /* widgets */,
-				1CEF10511EC00F9D00C02850 /* wml_exception.cpp */,
 				1CEF10F51EC01FFE00C02850 /* wml_exception.hpp */,
 				1CEF10F61EC01FFE00C02850 /* wml_separators.hpp */,
-				1CEF17531EC0233900C02850 /* xBRZ */,
-				1CEF108F1EC01E8300C02850 /* filesystem.hpp */,
+				1C20DBA91E11F92600D7BE84 /* Appirater.m */,
+				3C8A3664160766FD0017F0EE /* wesnothAppDelegate.m */,
+				3C8A3667160766FD0017F0EE /* wesnothViewController.m */,
 				1C069D4C1EC00820001FF584 /* animated.tpp */,
+				1CEF11241EC0213E00C02850 /* actions */,
+				1CEF11431EC0213E00C02850 /* addon */,
+				1CEF11501EC0213F00C02850 /* ai */,
+				1CEF119F1EC0213F00C02850 /* boost-patched */,
+				1C0DB91A20686C46001C46F9 /* crypt_blowfish */,
+				1C29BBFB1E5A325600A701E9 /* desktop */,
+				1C6696231EDDD29C00F23301 /* editor */,
+				3CCB961716293288007549E6 /* font */,
+				1CEF12461EC0222000C02850 /* formula */,
+				1CEF125C1EC0222000C02850 /* game_events */,
+				1CEF126F1EC0222000C02850 /* game_initialization */,
+				1CEF12861EC0222000C02850 /* generators */,
+				1CEF12D91EC022B100C02850 /* gui */,
+				1CEF142B1EC022B100C02850 /* help */,
+				1CEF143A1EC022B100C02850 /* hotkey */,
+				1C810157E87B6FD6D2E9FA6D /* ios */,
+				1CEF158F1EC022DD00C02850 /* lua */,
+				1CEF15CA1EC022DD00C02850 /* map */,
+				1CEF15D21EC022DD00C02850 /* pathfind */,
+				1C6695F31EDD0BCB00F23301 /* preferences */,
+				1CEF16261EC022F900C02850 /* scripting */,
+				1CEF16521EC022F900C02850 /* sdl */,
+				1CEF16611EC022F900C02850 /* serialization */,
+				1CEF16C11EC0231800C02850 /* spirit_po */,
+				1CEF16CC1EC0231800C02850 /* storyscreen */,
+				3C8A365B160766FD0017F0EE /* Supporting Files */,
+				1CEF16D51EC0231800C02850 /* terrain */,
+				1CEF16F41EC0233900C02850 /* units */,
+				1CEF17151EC0233900C02850 /* utils */,
+				3C8A366C160766FD0017F0EE /* wesnothViewController_iPad.xib */,
+				3C8A3669160766FD0017F0EE /* wesnothViewController_iPhone.xib */,
+				1CEF172A1EC0233900C02850 /* whiteboard */,
+				1CEF17431EC0233900C02850 /* widgets */,
+				1CEF17531EC0233900C02850 /* xBRZ */,
 			);
 			path = battleforwesnoth;
 			sourceTree = "<group>";
@@ -4185,6 +4197,10 @@
 					ProjectRef = 3CD06D1B1631B6780014DBBB /* tremor.xcodeproj */;
 				},
 				{
+					ProductGroup = 1CC2BB7222584A0800FEBEA8 /* Products */;
+					ProjectRef = 1CC2BB7122584A0800FEBEA8 /* vorbis.xcodeproj */;
+				},
+				{
 					ProductGroup = 3CD06C9E1631B5880014DBBB /* Products */;
 					ProjectRef = 3CD06C9D1631B5880014DBBB /* xml2.xcodeproj */;
 				},
@@ -4197,6 +4213,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		1CC2BB7622584A0800FEBEA8 /* libvorbis.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvorbis.a;
+			remoteRef = 1CC2BB7522584A0800FEBEA8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		1CDFD9BD1E10529800E48A19 /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -4509,7 +4532,6 @@
 				1CEF14A21EC022B200C02850 /* new_map.cpp in Sources */,
 				1CEF10611EC00F9D00C02850 /* tstring.cpp in Sources */,
 				1CEF169E1EC022F900C02850 /* context.cpp in Sources */,
-				1CEF15341EC022B200C02850 /* list.cpp in Sources */,
 				1CEF167E1EC022F900C02850 /* game_lua_kernel.cpp in Sources */,
 				1C66969B1EDDD39800F23301 /* mouse_action_select.cpp in Sources */,
 				1CEF14CE1EC022B200C02850 /* lua_interpreter.cpp in Sources */,
@@ -5014,6 +5036,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -5067,6 +5090,7 @@
 					"\"$(SRCROOT)/../../../src/boost-patched\"",
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
 					"\"$(SRCROOT)/battleforwesnoth\"",
+					"\"$(SRCROOT)/../lib/libvorbis-1.3.3/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
@@ -5085,6 +5109,7 @@
 					"\"$(SRCROOT)/../lib/xml2\"",
 					"\"$(SRCROOT)/../lib/mikmod\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
+					"\"$(SRCROOT)/../lib/libvorbis-1.3.3\"",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
@@ -5093,7 +5118,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SYSTEM_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../lib/iOS_device_info/src\"";
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -5106,6 +5131,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -5160,6 +5186,7 @@
 					"\"$(SRCROOT)/../../../src/boost-patched\"",
 					"\"$(SRCROOT)/../lib/iOS_boost_1_60/libs/boost/include\"",
 					"\"$(SRCROOT)/battleforwesnoth\"",
+					"\"$(SRCROOT)/../lib/libvorbis-1.3.3/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
@@ -5178,6 +5205,7 @@
 					"\"$(SRCROOT)/../lib/xml2\"",
 					"\"$(SRCROOT)/../lib/mikmod\"",
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
+					"\"$(SRCROOT)/../lib/libvorbis-1.3.3\"",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
@@ -5186,7 +5214,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SYSTEM_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../lib/iOS_device_info/src\"";
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
 			};
