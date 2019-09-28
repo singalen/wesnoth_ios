@@ -20,6 +20,7 @@
 		1C069D301EBFC36B001FF584 /* libiconv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D091EBFB4DD001FF584 /* libiconv.a */; };
 		1C069D311EBFC36F001FF584 /* libintl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C069D0A1EBFB4DD001FF584 /* libintl.a */; };
 		1C069D341EBFC3C3001FF584 /* iconv_hack.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D321EBFC3C3001FF584 /* iconv_hack.c */; };
+		1C08CC0C231DF2FA0013938D /* ios_filesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C08CC03231DF2F90013938D /* ios_filesystem.m */; };
 		1C0DB91D20686C58001C46F9 /* crypt_blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C0DB91B20686C58001C46F9 /* crypt_blowfish.c */; };
 		1C0DB91F20686CC9001C46F9 /* base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C0DB91E20686CC8001C46F9 /* base64.cpp */; };
 		1C14268E1E5A84310044633F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C14268D1E5A84310044633F /* CoreMotion.framework */; };
@@ -870,6 +871,8 @@
 		1C069D6E1EC0087D001FF584 /* controller_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = controller_base.cpp; path = ../../../../src/controller_base.cpp; sourceTree = "<group>"; };
 		1C069D701EC0087D001FF584 /* countdown_clock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = countdown_clock.cpp; path = ../../../../src/countdown_clock.cpp; sourceTree = "<group>"; };
 		1C069D721EC0087D001FF584 /* cursor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cursor.cpp; path = ../../../../src/cursor.cpp; sourceTree = "<group>"; };
+		1C08CC03231DF2F90013938D /* ios_filesystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ios_filesystem.m; path = ../../../../../src/ios/ios_filesystem.m; sourceTree = "<group>"; };
+		1C08CC0B231DF2FA0013938D /* ios_filesystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ios_filesystem.h; path = ../../../../../src/ios/ios_filesystem.h; sourceTree = "<group>"; };
 		1C0DB91B20686C58001C46F9 /* crypt_blowfish.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crypt_blowfish.c; path = ../../../../../src/crypt_blowfish/crypt_blowfish.c; sourceTree = "<group>"; };
 		1C0DB91C20686C58001C46F9 /* crypt_blowfish.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crypt_blowfish.h; path = ../../../../../src/crypt_blowfish/crypt_blowfish.h; sourceTree = "<group>"; };
 		1C0DB91E20686CC8001C46F9 /* base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64.cpp; sourceTree = "<group>"; };
@@ -2341,6 +2344,8 @@
 		1C810157E87B6FD6D2E9FA6D /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				1C08CC0B231DF2FA0013938D /* ios_filesystem.h */,
+				1C08CC03231DF2F90013938D /* ios_filesystem.m */,
 				1C6088252028066600F117B6 /* SDLMain.h */,
 				1C6088242028066600F117B6 /* SDLMain.mm */,
 				1C069D321EBFC3C3001FF584 /* iconv_hack.c */,
@@ -4134,6 +4139,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 3C8A3645160766FD0017F0EE;
@@ -4893,6 +4899,7 @@
 				1CEF14E61EC022B200C02850 /* mp_join_game_password_prompt.cpp in Sources */,
 				1CEF16E71EC0231800C02850 /* part.cpp in Sources */,
 				1CEF168E1EC022F900C02850 /* lua_preferences.cpp in Sources */,
+				1C08CC0C231DF2FA0013938D /* ios_filesystem.m in Sources */,
 				1CEF12B81EC0222000C02850 /* configure_engine.cpp in Sources */,
 				1CEF14E01EC022B200C02850 /* mp_create_game.cpp in Sources */,
 				1CEF0F4A1EC00C4500C02850 /* display.cpp in Sources */,
