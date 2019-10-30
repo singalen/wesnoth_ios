@@ -21,13 +21,25 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.14.8</string>
 	<key>CFBundleVersion</key>
-	<string>61</string>
+	<string>66</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.strategy-games</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSUbiquitousContainers</key>
+	<dict>
+		<key>iCloud.com.dailin.battleforwesnoth-iPad</key>
+		<dict>
+			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
+			<true/>
+			<key>NSUbiquitousContainerName</key>
+			<string>Wesnoth</string>
+			<key>NSUbiquitousContainerSupportedFolderLevels</key>
+			<string>Any</string>
+		</dict>
+	</dict>
 	<key>UIInterfaceOrientation</key>
 	<string>UIInterfaceOrientationLandscapeRight</string>
 	<key>UILaunchStoryboardName</key>

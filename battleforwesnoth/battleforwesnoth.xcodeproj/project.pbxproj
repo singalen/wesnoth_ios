@@ -1003,6 +1003,7 @@
 		1C7B37971E5C128B00F58FE8 /* libz.1.2.8.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.8.tbd; path = usr/lib/libz.1.2.8.tbd; sourceTree = SDKROOT; };
 		1C7B37991E5C132700F58FE8 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		1C810323541F41137F70A77B /* display_chat_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = display_chat_manager.cpp; path = ../../../../src/display_chat_manager.cpp; sourceTree = "<group>"; };
+		1C8B4F7723680C1700808776 /* battleforwesnoth-iPad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "battleforwesnoth-iPad.entitlements"; sourceTree = "<group>"; };
 		1C8C205E208AB82E00219503 /* chat_log.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = chat_log.hpp; path = ../../../../src/chat_log.hpp; sourceTree = "<group>"; };
 		1C8C205F208AB82E00219503 /* chat_log.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = chat_log.cpp; path = ../../../../src/chat_log.cpp; sourceTree = "<group>"; };
 		1C8C20BA20919AA400219503 /* ltm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ltm.cpp; sourceTree = "<group>"; };
@@ -3569,6 +3570,7 @@
 		3C8A3645160766FD0017F0EE = {
 			isa = PBXGroup;
 			children = (
+				1C8B4F7723680C1700808776 /* battleforwesnoth-iPad.entitlements */,
 				1CC2BB7122584A0800FEBEA8 /* vorbis.xcodeproj */,
 				1CDFD9CC1E1052E500E48A19 /* SDL_ttf.xcodeproj */,
 				1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */,
@@ -4131,6 +4133,11 @@
 					3C5B7E0216399A2100898722 = {
 						DevelopmentTeam = N5CYW96P9T;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -5042,6 +5049,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = "battleforwesnoth-iPad.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -5137,6 +5145,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = "battleforwesnoth-iPad.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
