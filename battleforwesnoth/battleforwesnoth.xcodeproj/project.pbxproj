@@ -128,6 +128,7 @@
 		1C8C211320919AAF00219503 /* lctype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C8C20F020919AAE00219503 /* lctype.cpp */; };
 		1C8C211420919AAF00219503 /* ldebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C8C20F220919AAF00219503 /* ldebug.cpp */; };
 		1CA58CE11F608DDF0032C0B2 /* irdya_datetime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */; };
+		1CA7594E237D0FC000166E30 /* iOS_device_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7594D237D0FC000166E30 /* iOS_device_info.cpp */; };
 		1CA9ABAD1FC807B900D25658 /* point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAA1FC807B900D25658 /* point.cpp */; };
 		1CA9ABB01FC8094200D25658 /* make.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CA9ABAE1FC8094100D25658 /* make.cpp */; };
 		1CA9ABB11FC8118600D25658 /* wesnoth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF104F1EC00F9D00C02850 /* wesnoth.cpp */; };
@@ -135,7 +136,6 @@
 		1CC04339215812AC00E290AC /* game_version.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04336215812AB00E290AC /* game_version.cpp */; };
 		1CC0433A215812AC00E290AC /* map_settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04337215812AC00E290AC /* map_settings.cpp */; };
 		1CC0433D215812F100E290AC /* game_version_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0433C215812F100E290AC /* game_version_dialog.cpp */; };
-		1CC04340215A07AE00E290AC /* iOS_device_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0433F215A07AE00E290AC /* iOS_device_info.cpp */; };
 		1CC04347215A914800E290AC /* battery_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04341215A914600E290AC /* battery_info.cpp */; };
 		1CC04348215A914800E290AC /* apple_version.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04342215A914600E290AC /* apple_version.mm */; };
 		1CC04349215A914800E290AC /* apple_battery_info.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04343215A914600E290AC /* apple_battery_info.mm */; };
@@ -1066,6 +1066,8 @@
 		1C8C20F320919AAF00219503 /* lparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lparser.h; sourceTree = "<group>"; };
 		1CA58CD81F608DD90032C0B2 /* irdya_datetime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = irdya_datetime.cpp; sourceTree = "<group>"; };
 		1CA58CD91F608DD90032C0B2 /* irdya_datetime.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = irdya_datetime.hpp; sourceTree = "<group>"; };
+		1CA7594C237D0FC000166E30 /* iOS_device_info.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = iOS_device_info.hpp; path = ../../../../../src/ios/iOS_device_info.hpp; sourceTree = "<group>"; };
+		1CA7594D237D0FC000166E30 /* iOS_device_info.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = iOS_device_info.cpp; path = ../../../../../src/ios/iOS_device_info.cpp; sourceTree = "<group>"; };
 		1CA79D211F8C7E520013728A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1CA9ABAA1FC807B900D25658 /* point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = point.cpp; sourceTree = "<group>"; };
 		1CA9ABAB1FC807B900D25658 /* point.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = point.hpp; sourceTree = "<group>"; };
@@ -1081,8 +1083,6 @@
 		1CC04337215812AC00E290AC /* map_settings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = map_settings.cpp; path = ../../../../src/map_settings.cpp; sourceTree = "<group>"; };
 		1CC0433B215812F100E290AC /* game_version_dialog.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = game_version_dialog.hpp; sourceTree = "<group>"; };
 		1CC0433C215812F100E290AC /* game_version_dialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = game_version_dialog.cpp; sourceTree = "<group>"; };
-		1CC0433E215A07AE00E290AC /* iOS_device_info.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = iOS_device_info.hpp; path = ../../lib/iOS_device_info/src/iOS_device_info.hpp; sourceTree = "<group>"; };
-		1CC0433F215A07AE00E290AC /* iOS_device_info.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = iOS_device_info.cpp; path = ../../lib/iOS_device_info/src/iOS_device_info.cpp; sourceTree = "<group>"; };
 		1CC04341215A914600E290AC /* battery_info.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = battery_info.cpp; path = ../../../../src/desktop/battery_info.cpp; sourceTree = "<group>"; };
 		1CC04342215A914600E290AC /* apple_version.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = apple_version.mm; path = ../../../../src/desktop/apple_version.mm; sourceTree = "<group>"; };
 		1CC04343215A914600E290AC /* apple_battery_info.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = apple_battery_info.mm; path = ../../../../src/desktop/apple_battery_info.mm; sourceTree = "<group>"; };
@@ -2345,6 +2345,8 @@
 		1C810157E87B6FD6D2E9FA6D /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				1CA7594D237D0FC000166E30 /* iOS_device_info.cpp */,
+				1CA7594C237D0FC000166E30 /* iOS_device_info.hpp */,
 				1C08CC0B231DF2FA0013938D /* ios_filesystem.h */,
 				1C08CC03231DF2F90013938D /* ios_filesystem.m */,
 				1C6088252028066600F117B6 /* SDLMain.h */,
@@ -3689,7 +3691,6 @@
 				1CEF0F8C1EC00E0400C02850 /* halo.cpp */,
 				1CEF0F8D1EC00E0400C02850 /* hash.cpp */,
 				1CEF0F921EC00EA500C02850 /* image_modifications.cpp */,
-				1CC0433F215A07AE00E290AC /* iOS_device_info.cpp */,
 				1CEF0F951EC00EA500C02850 /* joystick.cpp */,
 				1CEF0F961EC00EA500C02850 /* key.cpp */,
 				1CEF0F971EC00EA500C02850 /* language.cpp */,
@@ -3812,7 +3813,6 @@
 				1CEF10A31EC01EC100C02850 /* halo.hpp */,
 				1CEF10A41EC01EC100C02850 /* hash.hpp */,
 				1CEF10A51EC01F0600C02850 /* image_modifications.hpp */,
-				1CC0433E215A07AE00E290AC /* iOS_device_info.hpp */,
 				1CEF10A81EC01F0600C02850 /* joystick.hpp */,
 				1CEF10A91EC01F0600C02850 /* key.hpp */,
 				1CEF10AA1EC01F0600C02850 /* language.hpp */,
@@ -4809,7 +4809,6 @@
 				1CEF0FD31EC00EA700C02850 /* mp_game_settings.cpp in Sources */,
 				1CEF11DC1EC0213F00C02850 /* goal.cpp in Sources */,
 				1CEF14821EC022B200C02850 /* campaign_selection.cpp in Sources */,
-				1CC04340215A07AE00E290AC /* iOS_device_info.cpp in Sources */,
 				1CEF11D21EC0213F00C02850 /* ai.cpp in Sources */,
 				1CEF12181EC0213F00C02850 /* testing.cpp in Sources */,
 				1C0DB91D20686C58001C46F9 /* crypt_blowfish.c in Sources */,
@@ -4906,6 +4905,7 @@
 				1CEF14E61EC022B200C02850 /* mp_join_game_password_prompt.cpp in Sources */,
 				1CEF16E71EC0231800C02850 /* part.cpp in Sources */,
 				1CEF168E1EC022F900C02850 /* lua_preferences.cpp in Sources */,
+				1CA7594E237D0FC000166E30 /* iOS_device_info.cpp in Sources */,
 				1C08CC0C231DF2FA0013938D /* ios_filesystem.m in Sources */,
 				1CEF12B81EC0222000C02850 /* configure_engine.cpp in Sources */,
 				1CEF14E01EC022B200C02850 /* mp_create_game.cpp in Sources */,
@@ -5079,11 +5079,7 @@
 				);
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/../lib/SDL_net/include\"",
-					"\"$(SRCROOT)/../lib/SDL2_ttf-2.0.14\"",
-					"\"$(SRCROOT)/../lib/SDL_gfx/include\"",
-					"\"$(SRCROOT)/../lib/SDL2_mixer-2.0.1\"",
-					"\"$(SRCROOT)/../lib/SDL2_image-2.0.1\"",
+					"\"$(SRCROOT)/../include\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../../../src\"",
 					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
@@ -5132,7 +5128,7 @@
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SYSTEM_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../lib/iOS_device_info/src\"";
+				SYSTEM_HEADER_SEARCH_PATHS = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
@@ -5176,11 +5172,7 @@
 				);
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/../lib/SDL_net/include\"",
-					"\"$(SRCROOT)/../lib/SDL2_ttf-2.0.14\"",
-					"\"$(SRCROOT)/../lib/SDL_gfx/include\"",
-					"\"$(SRCROOT)/../lib/SDL2_mixer-2.0.1\"",
-					"\"$(SRCROOT)/../lib/SDL2_image-2.0.1\"",
+					"\"$(SRCROOT)/../include\"",
 					"\"$(SRCROOT)/../lib/fontconfig-2.8.0\"",
 					"\"$(SRCROOT)/../../../src\"",
 					"\"$(SRCROOT)/../lib/cairo-1.10.0/src\"",
@@ -5229,7 +5221,7 @@
 				PRODUCT_NAME = "battleforwesnoth-iPad";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SYSTEM_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../lib/iOS_device_info/src\"";
+				SYSTEM_HEADER_SEARCH_PATHS = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USE_HEADERMAP = NO;
 				WRAPPER_EXTENSION = app;
