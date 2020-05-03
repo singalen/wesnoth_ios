@@ -5052,6 +5052,7 @@
 				CODE_SIGN_ENTITLEMENTS = "battleforwesnoth-iPad.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 85;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -5122,6 +5123,7 @@
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 					"\"$(SRCROOT)/../lib/libvorbis-1.3.3\"",
 				);
+				MARKETING_VERSION = 1.14.13;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
@@ -5144,6 +5146,7 @@
 				CODE_SIGN_ENTITLEMENTS = "battleforwesnoth-iPad.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 85;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -5215,7 +5218,8 @@
 					"\"$(SRCROOT)/../lib/iOS_Boost_1_60/libs/boost/ios\"",
 					"\"$(SRCROOT)/../lib/libvorbis-1.3.3\"",
 				);
-				ONLY_ACTIVE_ARCH = YES;
+				MARKETING_VERSION = 1.14.13;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dailin.battleforwesnoth-iPad";
 				PRODUCT_NAME = "battleforwesnoth-iPad";
