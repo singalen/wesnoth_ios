@@ -333,7 +333,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
-					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.12/include\"",
 					"\"$(SRCROOT)/../../../lib/freetype-2.4.12/include\"",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
@@ -352,7 +352,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
-					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.12/include\"",
 					"\"$(SRCROOT)/../../../lib/freetype-2.4.12/include\"",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;

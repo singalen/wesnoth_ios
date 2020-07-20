@@ -16,6 +16,8 @@
 		04939B4B17E607250015E4E3 /* load_mp3.h in Headers */ = {isa = PBXBuildFile; fileRef = 04939B4917E607250015E4E3 /* load_mp3.h */; };
 		04A8FCA60A19CAEC0046373F /* dynamic_mp3.c in Sources */ = {isa = PBXBuildFile; fileRef = 04A8FCA40A19CAEC0046373F /* dynamic_mp3.c */; };
 		04A8FCAB0A19CB070046373F /* dynamic_ogg.c in Sources */ = {isa = PBXBuildFile; fileRef = 04A8FCA90A19CB070046373F /* dynamic_ogg.c */; };
+		1C29BBEB1E5983DE00A701E9 /* bitwise.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBE91E5983DE00A701E9 /* bitwise.c */; };
+		1C29BBEC1E5983DE00A701E9 /* framing.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBEA1E5983DE00A701E9 /* framing.c */; };
 		AA5F0F0914B6A6490036992F /* dynamic_fluidsynth.c in Sources */ = {isa = PBXBuildFile; fileRef = AA5F0F0214B6A6490036992F /* dynamic_fluidsynth.c */; };
 		AA5F0F0A14B6A6490036992F /* dynamic_fluidsynth.h in Headers */ = {isa = PBXBuildFile; fileRef = AA5F0F0314B6A6490036992F /* dynamic_fluidsynth.h */; };
 		AA5F0F0B14B6A6490036992F /* dynamic_mod.h in Headers */ = {isa = PBXBuildFile; fileRef = AA5F0F0414B6A6490036992F /* dynamic_mod.h */; };
@@ -62,8 +64,6 @@
 		AA60219617653A9800662B9C /* tables.h in Headers */ = {isa = PBXBuildFile; fileRef = AA60217117653A9800662B9C /* tables.h */; };
 		AA60219917653B8700662B9C /* dynamic_modplug.c in Sources */ = {isa = PBXBuildFile; fileRef = AA60219717653B8700662B9C /* dynamic_modplug.c */; };
 		AA60219A17653B8700662B9C /* dynamic_modplug.h in Headers */ = {isa = PBXBuildFile; fileRef = AA60219817653B8700662B9C /* dynamic_modplug.h */; };
-		1C29BBEB1E5983DE00A701E9 /* bitwise.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBE91E5983DE00A701E9 /* bitwise.c */; };
-		1C29BBEC1E5983DE00A701E9 /* framing.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C29BBEA1E5983DE00A701E9 /* framing.c */; };
 		AA64429E175B0E2500A2125A /* asm_arm.h in Headers */ = {isa = PBXBuildFile; fileRef = AA644296175B0E2500A2125A /* asm_arm.h */; };
 		AA64429F175B0E2500A2125A /* backends.h in Headers */ = {isa = PBXBuildFile; fileRef = AA644297175B0E2500A2125A /* backends.h */; };
 		AA6442A0175B0E2500A2125A /* block.c in Sources */ = {isa = PBXBuildFile; fileRef = AA644298175B0E2500A2125A /* block.c */; };
@@ -157,6 +157,8 @@
 		04A8FCA40A19CAEC0046373F /* dynamic_mp3.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = dynamic_mp3.c; path = ../dynamic_mp3.c; sourceTree = SOURCE_ROOT; };
 		04A8FCA90A19CB070046373F /* dynamic_ogg.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = dynamic_ogg.c; path = ../dynamic_ogg.c; sourceTree = SOURCE_ROOT; };
 		1014BAEA010A4B677F000001 /* SDL_mixer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SDL_mixer.h; path = ../SDL_mixer.h; sourceTree = SOURCE_ROOT; };
+		1C29BBE91E5983DE00A701E9 /* bitwise.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bitwise.c; path = "../../libogg-1.3.1/src/bitwise.c"; sourceTree = "<group>"; };
+		1C29BBEA1E5983DE00A701E9 /* framing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = framing.c; path = "../../libogg-1.3.1/src/framing.c"; sourceTree = "<group>"; };
 		5CC1B879012FB8CD7F000001 /* mixer.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = mixer.c; path = ../mixer.c; sourceTree = "<group>"; };
 		5CC1B87A012FB8CD7F000001 /* music_cmd.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = music_cmd.c; path = ../music_cmd.c; sourceTree = "<group>"; };
 		5CC1B87B012FB8CD7F000001 /* music_cmd.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = music_cmd.h; path = ../music_cmd.h; sourceTree = "<group>"; };
@@ -236,8 +238,6 @@
 		AA60217117653A9800662B9C /* tables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tables.h; path = src/tables.h; sourceTree = "<group>"; };
 		AA60219717653B8700662B9C /* dynamic_modplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dynamic_modplug.c; path = ../dynamic_modplug.c; sourceTree = "<group>"; };
 		AA60219817653B8700662B9C /* dynamic_modplug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dynamic_modplug.h; path = ../dynamic_modplug.h; sourceTree = "<group>"; };
-		1C29BBE91E5983DE00A701E9 /* bitwise.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bitwise.c; path = "../../libogg-1.3.1/src/bitwise.c"; sourceTree = "<group>"; };
-		1C29BBEA1E5983DE00A701E9 /* framing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = framing.c; path = "../../libogg-1.3.1/src/framing.c"; sourceTree = "<group>"; };
 		AA644296175B0E2500A2125A /* asm_arm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = asm_arm.h; path = "libvorbisidec-1.2.1/asm_arm.h"; sourceTree = "<group>"; };
 		AA644297175B0E2500A2125A /* backends.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = backends.h; path = "libvorbisidec-1.2.1/backends.h"; sourceTree = "<group>"; };
 		AA644298175B0E2500A2125A /* block.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = block.c; path = "libvorbisidec-1.2.1/block.c"; sourceTree = "<group>"; };
@@ -714,7 +714,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
-					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.12/include\"",
 					"\"$(SRCROOT)/../../libogg-1.3.1/include\"",
 					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\"",
 					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\"",
@@ -735,7 +735,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)\"",
 					"\"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)\"",
-					"\"$(SRCROOT)/../../SDL2-2.0.5/include\"",
+					"\"$(SRCROOT)/../../SDL2-2.0.12/include\"",
 					"\"$(SRCROOT)/../../libogg-1.3.1/include\"",
 					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src\"",
 					"\"$(SRCROOT)/../external/libmodplug-0.8.8.4/src/libmodplug\"",
