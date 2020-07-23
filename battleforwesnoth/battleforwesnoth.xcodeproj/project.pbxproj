@@ -144,6 +144,7 @@
 		1CC04347215A914800E290AC /* battery_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04341215A914600E290AC /* battery_info.cpp */; };
 		1CC04348215A914800E290AC /* apple_version.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04342215A914600E290AC /* apple_version.mm */; };
 		1CC04349215A914800E290AC /* apple_battery_info.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1CC04343215A914600E290AC /* apple_battery_info.mm */; };
+		1CDFD76D24C6D52B006A636F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1CDFD76C24C6D52B006A636F /* InfoPlist.strings */; };
 		1CEF0F351EC00B3200C02850 /* arrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4D1EC00820001FF584 /* arrow.cpp */; };
 		1CEF0F361EC00B3200C02850 /* attack_prediction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D4F1EC00820001FF584 /* attack_prediction.cpp */; };
 		1CEF0F371EC00B3200C02850 /* boilerplate-header.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1C069D511EC00820001FF584 /* boilerplate-header.cpp */; };
@@ -1130,6 +1131,7 @@
 		1CC04345215A914700E290AC /* battery_info.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = battery_info.hpp; path = ../../../../src/desktop/battery_info.hpp; sourceTree = "<group>"; };
 		1CC04346215A914700E290AC /* apple_battery_info.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = apple_battery_info.hpp; path = ../../../../src/desktop/apple_battery_info.hpp; sourceTree = "<group>"; };
 		1CC2BB7122584A0800FEBEA8 /* vorbis.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vorbis.xcodeproj; path = lib/vorbis/vorbis.xcodeproj; sourceTree = "<group>"; };
+		1CDFD76C24C6D52B006A636F /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		1CDFD9C01E1052BF00E48A19 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../lib/SDL2_image-2.0.1/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9C61E1052D100E48A19 /* SDL_mixer.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_mixer.xcodeproj; path = "../lib/SDL2_mixer-2.0.1/Xcode-iOS/SDL_mixer.xcodeproj"; sourceTree = "<group>"; };
 		1CDFD9CC1E1052E500E48A19 /* SDL_ttf.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_ttf.xcodeproj; path = "../lib/SDL2_ttf-2.0.14/Xcode-iOS/SDL_ttf.xcodeproj"; sourceTree = "<group>"; };
@@ -3621,6 +3623,7 @@
 		3C8A3645160766FD0017F0EE = {
 			isa = PBXGroup;
 			children = (
+				1CDFD76C24C6D52B006A636F /* InfoPlist.strings */,
 				1C2BC73324C41A0A00722D63 /* SDL.xcodeproj */,
 				1C8B4F7723680C1700808776 /* battleforwesnoth-iPad.entitlements */,
 				1CC2BB7122584A0800FEBEA8 /* vorbis.xcodeproj */,
@@ -4436,6 +4439,7 @@
 				1C063A251F8C79C30096493B /* Images.xcassets in Resources */,
 				1CEF12141EC0213F00C02850 /* SConstruct in Resources */,
 				1C8C20F820919AAF00219503 /* COPYRIGHT in Resources */,
+				1CDFD76D24C6D52B006A636F /* InfoPlist.strings in Resources */,
 				3C5B805E16399A2100898722 /* InfoPlist.strings in Resources */,
 				3C5B806816399A2100898722 /* fonts in Resources */,
 				3C5B806916399A2100898722 /* data in Resources */,
@@ -5134,7 +5138,7 @@
 				CODE_SIGN_ENTITLEMENTS = "battleforwesnoth-iPad.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 86;
+				CURRENT_PROJECT_VERSION = 88;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -5228,7 +5232,7 @@
 				CODE_SIGN_ENTITLEMENTS = "battleforwesnoth-iPad.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 86;
+				CURRENT_PROJECT_VERSION = 88;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = N5CYW96P9T;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";

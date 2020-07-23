@@ -62,5 +62,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>Wesnoth may use a Bluetooth mouse, touchpad, and (feature is planned) keyboard</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Wesnoth may use a Bluetooth mouse, touchpad, and (feature is planned) keyboard</string>
 </dict>
 </plist>

@@ -1,0 +1,6 @@
+/* 
+  TODO: Add to localizable strings.
+*/
+
+NSBluetoothPeripheralUsageDescription = "Wesnoth may use a Bluetooth mouse, touchpad, and (feature is planned) keyboard";
+NSBluetoothAlwaysUsageDescription = "Wesnoth may use a Bluetooth mouse, touchpad, and (feature is planned) keyboard";
